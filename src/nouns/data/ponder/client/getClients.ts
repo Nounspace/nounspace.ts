@@ -93,7 +93,7 @@ export async function getClients(): Promise<Client[]> {
     const clientInfo = CLIENT_INFO[c.id];
 
     return {
-      id: c.id,
+      id: Number(c.id),
       name: c.name,
       approved: c.approved,
 

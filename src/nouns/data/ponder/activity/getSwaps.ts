@@ -1,7 +1,7 @@
 "use server";
 import { graphql } from "@nouns/data/generated/ponder";
 import { graphQLFetch } from "@nouns/data/utils/graphQLFetch";
-import { RedeemsQuery, SwapsQuery } from "@nouns/data/generated/ponder/graphql";
+import { RedeemsQuery, SwapsQuery } from "@nouns/data/generated/ponder";
 import { SECONDS_PER_DAY } from "@nouns/utils/constants";
 import { CHAIN_CONFIG } from "@nouns/config";
 

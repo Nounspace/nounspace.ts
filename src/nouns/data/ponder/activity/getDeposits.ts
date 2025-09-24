@@ -1,7 +1,7 @@
 "use server";
 import { graphql } from "@nouns/data/generated/ponder";
 import { graphQLFetch } from "@nouns/data/utils/graphQLFetch";
-import { DepositsQuery } from "@nouns/data/generated/ponder/graphql";
+import { DepositsQuery } from "@nouns/data/generated/ponder";
 import { CHAIN_CONFIG } from "@nouns/config";
 
 const query = graphql(/* GraphQL */ `

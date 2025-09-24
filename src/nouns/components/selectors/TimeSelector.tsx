@@ -44,7 +44,7 @@ export default function TimeSelector() {
 
   const handleChange = useCallback(
     (value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       params.set(TIME_SELECTOR_FILTER_KEY, value);
       window.history.pushState(null, "", `?${params.toString()}`);
     },
@@ -66,7 +66,7 @@ export default function TimeSelector() {
 
 export function useTimeSelector(): TimeSelector {
   const searchParams = useSearchParams();
-  const timeFilter = searchParams.get(TIME_SELECTOR_FILTER_KEY);
+  const timeFilter = searchParams?.get(TIME_SELECTOR_FILTER_KEY);
 
   return useMemo(() => {
     const timeSelector = timeFilter as TimeSelector;

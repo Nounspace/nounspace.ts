@@ -1,7 +1,7 @@
 import { GraphQLError } from "graphql";
-import { TypedDocumentString as SubgraphTypedDocumentString } from "../generated/gql/graphql";
-import { TypedDocumentString as PonderTypedDocumentString } from "../generated/ponder/graphql";
-import { TypedDocumentString as CmsTypedDocumentString } from "../generated/cms/graphql";
+import { TypedDocumentString as SubgraphTypedDocumentString } from "../generated/gql";
+import { TypedDocumentString as PonderTypedDocumentString } from "../generated/ponder";
+import { TypedDocumentString as CmsTypedDocumentString } from "../generated/cms";
 import { safeFetch } from "@nouns/utils/safeFetch";
 
 type GraphQLResponse<Data> = { data: Data } | { errors: GraphQLError[] };

@@ -27,7 +27,7 @@ import { TransactionState } from "@nouns/hooks/transactions/types";
 import { Avatar, Name } from "@paperclip-labs/whisk-sdk/identity";
 import { getAddress, zeroAddress } from "viem";
 import { X } from "lucide-react";
-import { VoteValue } from "@nouns/data/generated/ponder/graphql";
+import { VoteValue } from "@nouns/data/generated/ponder";
 import { HTMLAttributes, useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { useReadNounsNftTokenGetPriorVotes } from "@nouns/data/generated/wagmi";
@@ -48,7 +48,7 @@ function encodeRevote(vote: ProposalVote): string {
 }
 
 function encodeReply(vote: ProposalVote, reply: string): string {
-  return `\n\n@${vote.voterAddress.slice(0, 6)}...${vote.voterAddress.slice(-4)}\n\n${reply}\n${(vote.reason ?? "").replace(/^/gm, "> ")}\n\n`;
+  return `\n\n@${vote.voter.slice(0, 6)}...${vote.voter.slice(-4)}\n\n${reply}\n${(vote.reason ?? "").replace(/^/gm, "> ")}\n\n`;
 }
 
 export function CreateVote({ proposal }: { proposal: Proposal }) {
@@ -378,15 +378,15 @@ function RevoteCard({
       {...props}
     >
       <div className="flex min-w-0 items-center gap-1">
-        <Avatar address={getAddress(revote.voterAddress)} size={20} />
-        <Name address={getAddress(revote.voterAddress)} />
+        <Avatar address={getAddress(revote.voter)} size={20} />
+        <Name address={getAddress(revote.voter)} />
         <div
           className={clsx({
-            "text-semantic-positive": revote.value == VoteValue.For,
-            "text-semantic-negative": revote.value == VoteValue.Against,
+            "text-semantic-positive": revote.support == VoteValue.For,
+            "text-semantic-negative": revote.support == VoteValue.Against,
           })}
         >
-          ({revote.value.toLowerCase()})
+          ({revote.support.toLowerCase()})
         </div>
         <div className="overflow-hidden text-ellipsis whitespace-nowrap paragraph-sm">
           {revote.reason ?? ""}

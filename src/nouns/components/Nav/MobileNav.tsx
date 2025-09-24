@@ -24,7 +24,7 @@ export default function MobileNav() {
         const active =
           item.href == "/"
             ? pathName == item.href
-            : pathName.includes(item.href);
+            : pathName?.includes(item.href);
         return (
           <Link
             href={item.href}

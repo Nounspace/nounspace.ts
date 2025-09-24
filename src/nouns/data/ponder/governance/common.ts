@@ -1,6 +1,6 @@
 import { graphql } from "@nouns/data/generated/ponder";
-import { ProposalOverviewFragmentFragment } from "@nouns/data/generated/ponder/graphql";
-import { LastKnownProposalState } from "@nouns/data/generated/ponder/graphql";
+import { ProposalOverviewFragmentFragment } from "@nouns/data/generated/ponder";
+import { LastKnownProposalState } from "@nouns/data/generated/ponder";
 import { Address, getAddress } from "viem";
 
 const ETHEREUM_BLOCK_TIME_S = 12;
@@ -64,7 +64,7 @@ export const proposalOverviewFragment = graphql(/* GraphQL */ `
 export const proposalVoteFragment = graphql(/* GraphQL */ `
   fragment proposalVoteFragment on vote {
     id
-    voterAddress
+    voter
     value
     weight
     reason
@@ -74,7 +74,7 @@ export const proposalVoteFragment = graphql(/* GraphQL */ `
     voteRevotes {
       items {
         revote {
-          voterAddress
+          voter
           value
           reason
         }
@@ -83,7 +83,7 @@ export const proposalVoteFragment = graphql(/* GraphQL */ `
     voteReplies {
       items {
         replyVote {
-          voterAddress
+          voter
           value
           reason
         }
@@ -110,15 +110,15 @@ export function mapProposalOverviewFragmentToProposalOverview(
       state = "vetoed";
       break;
     case LastKnownProposalState.Updatable:
-      if (currentBlockNumber < item.updatePeriodEndBlock) {
+      if (currentBlockNumber < Number(item.updatePeriodEndBlock)) {
         state = "updateable";
-      } else if (currentBlockNumber < item.votingStartBlock) {
+      } else if (currentBlockNumber < Number(item.votingStartBlock)) {
         state = "pending";
-      } else if (currentBlockNumber < item.votingEndBlock) {
+      } else if (currentBlockNumber < Number(item.votingEndBlock)) {
         state = "active";
       } else if (
-        item.forVotes <= item.againstVotes ||
-        item.forVotes < item.quorumVotes
+        Number(item.forVotes) <= Number(item.againstVotes) ||
+        Number(item.forVotes) < Number(item.quorumVotes)
       ) {
         state = "failed";
       } else {
@@ -134,10 +134,14 @@ export function mapProposalOverviewFragmentToProposalOverview(
       } else {
         state = "queued";
       }
+      break;
+    default:
+      state = "pending";
+      break;
   }
   // Count be negative
-  const blocksToVotingStart = item.votingStartBlock - currentBlockNumber;
-  const blocksToVotingEnd = item.votingEndBlock - currentBlockNumber;
+  const blocksToVotingStart = Number(item.votingStartBlock) - currentBlockNumber;
+  const blocksToVotingEnd = Number(item.votingEndBlock) - currentBlockNumber;
 
   return {
     id: item.id,

@@ -38,7 +38,7 @@ export default function ActivitySelector() {
 
   const handleChange = useCallback(
     (value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       params.set(ACTIVITY_SELECTOR_FILTER_KEY, value);
       window.history.pushState(null, "", `?${params.toString()}`);
     },
@@ -63,7 +63,7 @@ export default function ActivitySelector() {
 
 export function useActivitySelector(): ActivitySelector {
   const searchParams = useSearchParams();
-  const activityFilter = searchParams.get(ACTIVITY_SELECTOR_FILTER_KEY);
+  const activityFilter = searchParams?.get(ACTIVITY_SELECTOR_FILTER_KEY);
 
   return useMemo(() => {
     const activity = activityFilter as ActivitySelector;

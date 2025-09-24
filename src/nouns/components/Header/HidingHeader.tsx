@@ -19,7 +19,7 @@ export default function HidingHeader({ children }: HidingHeaderProps) {
   const pathname = usePathname();
 
   const fixedHeader = useMemo(() => {
-    return FIXED_HEADER_ROUTES.some((route) => pathname.includes(route));
+    return FIXED_HEADER_ROUTES.some((route) => pathname?.includes(route));
   }, [pathname]);
 
   useMotionValueEvent(scrollY, "change", (y) => {

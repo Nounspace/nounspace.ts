@@ -1,6 +1,6 @@
 "use client";
 import { CHAIN_CONFIG } from "@nouns/config";
-import { VoteValue } from "@nouns/data/generated/ponder/graphql";
+import { VoteValue } from "@nouns/data/generated/ponder";
 import { ProposalVote as ProposalVoteType } from "@nouns/data/ponder/governance/getProposal";
 import { Avatar, Name } from "@paperclip-labs/whisk-sdk/identity";
 import clsx from "clsx";
@@ -24,14 +24,14 @@ export default function ProposalVote({
   proposalState,
 }: ProposalVoteProps) {
   const timestamp = Math.floor(Date.now() / 1000);
-  const timeDelta = Math.max(timestamp - Number(vote.timestamp), 0);
+  const timeDelta = Math.max(timestamp - Number(vote.blockTimestamp), 0);
 
   const { addReply, addRevote } = useCreateVoteContext();
 
   return (
     <div className="flex gap-4">
       <Avatar
-        address={getAddress(vote.voterAddress)}
+        address={getAddress(vote.voter)}
         size={40}
         className="mt-1"
       />
@@ -40,25 +40,25 @@ export default function ProposalVote({
         <div className="flex w-full items-center justify-between gap-2">
           <div
             className={clsx("inline whitespace-pre-wrap label-md", {
-              "text-semantic-positive": vote.value === VoteValue.For,
-              "text-semantic-negative": vote.value === VoteValue.Against,
-              "text-content-secondary": vote.value === VoteValue.Abstain,
+              "text-semantic-positive": vote.support === VoteValue.For,
+              "text-semantic-negative": vote.support === VoteValue.Against,
+              "text-content-secondary": vote.support === VoteValue.Abstain,
             })}
           >
             <LinkExternal
               href={
                 CHAIN_CONFIG.publicClient.chain?.blockExplorers?.default.url +
                 "/address/" +
-                vote.voterAddress
+                vote.voter
               }
               className="inline *:inline hover:underline"
             >
               <Name
-                address={getAddress(vote.voterAddress)}
+                address={getAddress(vote.voter)}
                 className="inline text-content-primary *:inline"
               />
             </LinkExternal>{" "}
-            voted {vote.value.toLowerCase()} ({vote.weight})
+            voted {vote.support.toLowerCase()} ({vote.votes})
           </div>
           <Popover>
             <PopoverTrigger className="flex h-full justify-start pt-0.5">
@@ -82,28 +82,30 @@ export default function ProposalVote({
           </Popover>
         </div>
 
-        {vote.voteRevotes?.items.map(({ revote }, i) =>
+        {/* TODO: Fix voteRevotes structure - property doesn't exist in ProposalVote type */}
+        {/* {vote.voteRevotes?.items.map(({ revote }, i) =>
           revote ? (
             <Revote
-              revoteVoterAddress={revote.voterAddress}
+              revoteVoterAddress={revote.voter}
               revoteReason={revote.reason ?? ""}
               revoteValue={revote.value}
               key={i}
             />
           ) : null,
-        )}
+        )} */}
 
-        {vote.voteReplies?.items.map(({ replyVote, reply }, i) =>
+        {/* TODO: Fix voteReplies structure - property doesn't exist in ProposalVote type */}
+        {/* {vote.voteReplies?.items.map(({ replyVote, reply }, i) =>
           replyVote ? (
             <Reply
-              voterAddress={replyVote.voterAddress}
+              voterAddress={replyVote.voter}
               reason={replyVote.reason ?? ""}
               value={replyVote.value}
               reply={reply}
               key={i}
             />
           ) : null,
-        )}
+        )} */}
 
         <ExpandableContent maxCollapsedHeight={80}>
           <MarkdownRenderer>{vote.reason ?? ""}</MarkdownRenderer>
@@ -168,12 +170,12 @@ function Revote({
 }
 
 function Reply({
-  voterAddress,
+  voter,
   reason,
   value,
   reply,
 }: {
-  voterAddress: string;
+  voter: string;
   reason: string;
   value: VoteValue;
   reply: string;
@@ -181,7 +183,7 @@ function Reply({
   return (
     <div>
       <Revote
-        revoteVoterAddress={voterAddress}
+        revoteVoterAddress={voter}
         revoteReason={reason}
         revoteValue={value}
       />

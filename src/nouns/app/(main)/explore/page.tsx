@@ -10,7 +10,7 @@ export async function generateMetadata(props: {
   searchParams: Promise<{ nounId?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  const nounId = searchParams.nounId;
+  const nounId = searchParams?.nounId;
 
   let filteredFrameMetadata: Record<string, string> = {};
   if (nounId) {

@@ -23,7 +23,7 @@ export function LinkRetainSearchParams(
   props: React.ComponentProps<typeof Link>,
 ) {
   const searchParams = useSearchParams();
-  return <Link {...props} href={`${props.href}?${searchParams.toString()}`} />;
+  return <Link {...props} href={`${props.href}?${searchParams?.toString() || ''}`} />;
 }
 
 interface LinkShallowProps extends ComponentProps<typeof Button> {
@@ -43,7 +43,7 @@ export function LinkShallow({
   return (
     <Button
       onClick={() => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams(searchParams?.toString() || '');
         if (searchParam.value === null) {
           params.delete(searchParam.name);
         } else {

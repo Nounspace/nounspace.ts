@@ -38,7 +38,7 @@ export default function NounDialog({
   secondaryFloorListing,
 }: NounsDialogProps) {
   const searchParams = useSearchParams();
-  const nounId = searchParams.get("nounId");
+  const nounId = searchParams?.get("nounId");
 
   const [noun, setNoun] = useState<Noun | undefined>();
 
@@ -59,7 +59,7 @@ export default function NounDialog({
 
   function handleOpenChange(open: boolean) {
     if (!open) {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       params.delete("nounId");
       window.history.pushState(null, "", `?${params.toString()}`);
     }
@@ -258,7 +258,7 @@ function NounTraitCard({ type, noun }: { type: NounTraitType; noun?: Noun }) {
 
   const handleClick = useCallback(() => {
     if (trait) {
-      const currentParams = new URLSearchParams(searchParams.toString());
+      const currentParams = new URLSearchParams(searchParams?.toString() || '');
       const params = new URLSearchParams();
       const filterKey = type + "[]";
 

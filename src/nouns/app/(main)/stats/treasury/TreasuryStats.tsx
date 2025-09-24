@@ -38,8 +38,8 @@ export default function TreasuryStats({ data }: StatsProps) {
       timestamp: d.timestamp,
       value:
         currencySelector == "USD"
-          ? d.treasuryBalanceInUsd
-          : d.treasuryBalanceInEth,
+          ? Number(d.treasuryBalanceInUsd)
+          : Number(d.treasuryBalanceInEth),
     }))
     .filter((d) => d.timestamp >= timeCutoff);
 
@@ -48,9 +48,9 @@ export default function TreasuryStats({ data }: StatsProps) {
       timestamp: d.timestamp,
       revenue:
         currencySelector == "USD"
-          ? d.auctionRevenueInUsd
-          : d.auctionRevenueInEth,
-      cost: currencySelector == "USD" ? d.propSpendInUsd : d.propSpendInEth,
+          ? Number(d.auctionRevenueInUsd)
+          : Number(d.auctionRevenueInEth),
+      cost: currencySelector == "USD" ? Number(d.propSpendInUsd) : Number(d.propSpendInEth),
     }))
     .filter((d) => d.timestamp >= timeCutoff);
 

@@ -34,7 +34,7 @@ export async function getPostOverviews() {
     },
   );
 
-  const posts = data?.Posts?.docs
+  const posts = (data as any)?.Posts?.docs
     ?.filter((post) => post != null)
     .filter((post) => post.discoverable);
 

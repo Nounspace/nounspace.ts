@@ -1,5 +1,5 @@
 import { getNounData } from "@nouns/utils/nounImages/nounImage";
-import { AllNounsQuery } from "../generated/gql/graphql";
+import { AllNounsQuery } from "../generated/gql";
 import { Noun } from "./types";
 import { getAddress } from "viem";
 
@@ -32,7 +32,7 @@ export function transformQueryNounToNoun(
     traits: {
       background: {
         seed: seed.background,
-        name: queryNoun.seed.background == "0" ? "Cool" : "Warm",
+        name: queryNoun.seed.background === 0 ? "Cool" : "Warm",
       },
       body: {
         seed: seed.body,

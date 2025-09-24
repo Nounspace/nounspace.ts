@@ -75,7 +75,7 @@ async function getAuctionByIdUncached(
     getProtocolParams(),
   ]);
 
-  const auction = result?.auction;
+  const auction = (result as any)?.auction;
   if (!auction) {
     console.error("getAuctionByIdUncached - no auction found", id);
     return undefined;

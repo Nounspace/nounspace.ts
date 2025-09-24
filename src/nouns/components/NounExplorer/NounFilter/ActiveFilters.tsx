@@ -56,7 +56,7 @@ function ActiveFilterItem({ type, seed }: ActiveFilterItemInterface) {
 
   const removeFilter = useCallback(
     (type: ActiveFilterItemInterface["type"], seed: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
 
       if (type == "heldByTreasury") {
         if (params.get(ONLY_TREASURY_NOUNS_FILTER_KEY) === "1") {

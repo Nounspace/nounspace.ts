@@ -97,7 +97,7 @@ export default function AuctionClient({ clients }: { clients: Client[] }) {
       currentAuctionId &&
       Number(requestedAuctionId) >= Number(currentAuctionId)
     ) {
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(searchParams?.toString() || '');
       params.delete("auctionId");
       window.history.pushState(null, "", `?${params.toString()}`);
     }

@@ -32,7 +32,7 @@ export async function getNounByIdUncached(id: string): Promise<Noun | undefined>
     graphQLFetchWithFallback(CHAIN_CONFIG.subgraphUrl, query, { id }, { next: { revalidate: 0 } }),
     getSecondaryListingForNoun(id),
   ]);
-  const noun = response ? transformQueryNounToNoun(response.noun as any) : undefined;
+  const noun = response ? transformQueryNounToNoun((response as any).noun) : undefined;
 
   if (noun) {
     checkForAllNounRevalidation(id);

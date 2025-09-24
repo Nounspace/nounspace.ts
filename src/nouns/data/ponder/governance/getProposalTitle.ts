@@ -24,5 +24,5 @@ export async function getProposalTitle(id: number): Promise<string | null> {
     },
   );
 
-  return data?.proposal?.title ?? null;
+  return (data as any)?.proposal?.title ?? null;
 }

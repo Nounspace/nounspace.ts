@@ -10,13 +10,13 @@ export default function BuyNowFilter() {
   const searchParams = useSearchParams();
 
   const isChecked = useMemo(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     return params.get(BUY_NOW_FILTER_KEY) === "1";
   }, [searchParams]);
 
   const handleBuyNowFilterChange = useCallback(
     (checked: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       if (!checked) {
         params.delete(BUY_NOW_FILTER_KEY);
       } else {

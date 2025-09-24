@@ -33,5 +33,5 @@ export async function getProposalVotesAfterTimestamp(
     },
   );
 
-  return data?.proposal?.votes?.items ?? [];
+  return (data as any)?.proposal?.votes?.items ?? [];
 }

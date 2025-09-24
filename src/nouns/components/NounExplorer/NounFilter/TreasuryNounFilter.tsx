@@ -10,13 +10,13 @@ export default function TreasuryNounFilter() {
   const searchParams = useSearchParams();
 
   const isChecked = useMemo(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     return params.get(ONLY_TREASURY_NOUNS_FILTER_KEY) === "1";
   }, [searchParams]);
 
   const handleOnlyInstantSwapFilterChange = useCallback(
     (checked: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       if (!checked) {
         params.delete(ONLY_TREASURY_NOUNS_FILTER_KEY);
       } else {

@@ -24,7 +24,7 @@ export default function CurrencySelector() {
 
   const handleChange = useCallback(
     (value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       params.set(CURRENCY_SELECTOR_FILTER_KEY, value);
       window.history.pushState(null, "", `?${params.toString()}`);
     },
@@ -47,7 +47,7 @@ export default function CurrencySelector() {
 
 export function useCurrencySelector(): CurrencySelector {
   const searchParams = useSearchParams();
-  const currencyFilter = searchParams.get(CURRENCY_SELECTOR_FILTER_KEY);
+  const currencyFilter = searchParams?.get(CURRENCY_SELECTOR_FILTER_KEY);
 
   return useMemo(() => {
     const currency = currencyFilter as CurrencySelector;

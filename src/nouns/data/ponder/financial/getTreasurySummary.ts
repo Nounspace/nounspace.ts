@@ -17,8 +17,8 @@ async function getTreasurySummaryUncached(): Promise<TreasurySummary> {
   const data = await getDailyFinancialSnapshots();
   const lastEntry = data[data.length - 1];
 
-  const treasuryBalanceInEth = lastEntry.treasuryBalanceInEth;
-  const treasuryBalanceInUsd = lastEntry.treasuryBalanceInUsd;
+  const treasuryBalanceInEth = Number(lastEntry.treasuryBalanceInEth);
+  const treasuryBalanceInUsd = Number(lastEntry.treasuryBalanceInUsd);
 
   let auctionRevenueInUsd = 0;
   let auctionRevenueInEth = 0;
@@ -26,10 +26,10 @@ async function getTreasurySummaryUncached(): Promise<TreasurySummary> {
   let propSpendInEth = 0;
 
   for (const entry of data) {
-    auctionRevenueInUsd += entry.auctionRevenueInUsd;
-    auctionRevenueInEth += entry.auctionRevenueInEth;
-    propSpendInUsd += entry.propSpendInUsd;
-    propSpendInEth += entry.propSpendInEth;
+    auctionRevenueInUsd += Number(entry.auctionRevenueInUsd);
+    auctionRevenueInEth += Number(entry.auctionRevenueInEth);
+    propSpendInUsd += Number(entry.propSpendInUsd);
+    propSpendInEth += Number(entry.propSpendInEth);
   }
 
   return {

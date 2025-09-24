@@ -24,5 +24,5 @@ export async function getExecutedProposalsCount(): Promise<number> {
     },
   );
 
-  return data?.executedProposals.totalCount ?? 0;
+  return (data as any)?.executedProposals.totalCount ?? 0;
 }

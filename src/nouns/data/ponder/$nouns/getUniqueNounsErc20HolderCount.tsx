@@ -32,5 +32,5 @@ export async function getUniqueNounsErc20HolderCount(): Promise<number> {
     },
   );
 
-  return data?.accounts.totalCount ?? 0;
+  return (data as any)?.accounts.totalCount ?? 0;
 }

@@ -37,5 +37,5 @@ export async function getPostBySlug(slug: string) {
     },
   );
 
-  return data?.Posts?.docs?.[0] ?? null;
+  return (data as any)?.Posts?.docs?.[0] ?? null;
 }

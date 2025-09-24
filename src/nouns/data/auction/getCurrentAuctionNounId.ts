@@ -19,6 +19,6 @@ export async function getCurrentAuctionNounId(): Promise<BigIntString> {
     {},
     { next: { revalidate: 2 } },
   );
-  const currentAuction = result?.auctions?.[0] ?? null;
+  const currentAuction = (result as any)?.auctions?.[0] ?? null;
   return currentAuction?.id ?? "1";
 }

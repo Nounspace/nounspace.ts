@@ -4,7 +4,18 @@ import { Address } from "viem";
 import { getNounById } from "./noun/getNounById";
 import { CHAIN_CONFIG } from "../config";
 import { graphql } from "./generated/gql";
-import { ProposalStatus } from "./generated/gql/graphql";
+// ProposalStatus enum for runtime usage
+const ProposalStatus = {
+  Active: 'ACTIVE',
+  Executed: 'EXECUTED', 
+  Cancelled: 'CANCELLED',
+  Succeeded: 'SUCCEEDED',
+  Queued: 'QUEUED',
+  Defeated: 'DEFEATED',
+  Expired: 'EXPIRED',
+  Vetoed: 'VETOED',
+  Pending: 'PENDING',
+} as const;
 import { graphQLFetchWithFallback } from "./utils/graphQLFetch";
 import { getBlockNumber } from "viem/actions";
 
@@ -53,8 +64,8 @@ export async function getNounSwapProposalsForProposer(address: Address): Promise
   );
 
   if (queryResult) {
-    const proposals = queryResult.proposals;
-    const proposalCandidates = queryResult.proposalCandidates;
+    const proposals = (queryResult as any).proposals;
+    const proposalCandidates = (queryResult as any).proposalCandidates;
 
     const swapNounProposals: SwapNounProposal[] = [];
 

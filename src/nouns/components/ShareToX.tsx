@@ -21,7 +21,7 @@ export default function ShareToX({
 
   return (
     <LinkExternal
-      href={`${BASE_COMPOSE_URL}?${searchParams.toString()}`}
+      href={`${BASE_COMPOSE_URL}?${searchParams?.toString() || ''}`}
       {...props}
     />
   );

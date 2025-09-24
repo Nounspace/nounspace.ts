@@ -12,7 +12,7 @@ export default function FeatureHighlight() {
   const router = useRouter();
 
   const handlePermissionlessSwapClick = useCallback(() => {
-    const auctionId = searchParams.get("auctionId");
+    const auctionId = searchParams?.get("auctionId");
     const params = new URLSearchParams();
 
     // Clear all except auctionId
@@ -27,7 +27,7 @@ export default function FeatureHighlight() {
   }, [searchParams]);
 
   const handleTreasurySwapClick = useCallback(() => {
-    const auctionId = searchParams.get("auctionId");
+    const auctionId = searchParams?.get("auctionId");
     const params = new URLSearchParams();
 
     // Clear all except auctionId

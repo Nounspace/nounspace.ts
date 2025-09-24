@@ -11,7 +11,7 @@ export function ClearAllFiltersButton({ className, ...props }: ButtonHTMLAttribu
   const searchParams = useSearchParams();
 
   const clearAllFilters = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     params.delete(ONLY_TREASURY_NOUNS_FILTER_KEY);
     params.delete(INSTANT_SWAP_FILTER_KEY);
     params.delete(BUY_NOW_FILTER_KEY);

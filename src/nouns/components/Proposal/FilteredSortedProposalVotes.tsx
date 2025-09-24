@@ -28,15 +28,15 @@ export default function FilteredSortedProposalVotes({
         (vote.reason ?? "")
           .toLowerCase()
           .includes(debouncedSearchValue.toLowerCase()) ||
-        vote.voterAddress
+        vote.voter
           .toLowerCase()
           .includes(debouncedSearchValue.toLowerCase())
       );
     });
     filteredSortedVotes.sort((a, b) =>
       sortValue == "weight"
-        ? b.weight - a.weight
-        : Number(b.timestamp) - Number(a.timestamp),
+        ? Number(b.votes) - Number(a.votes)
+        : Number(b.blockTimestamp) - Number(a.blockTimestamp),
     );
 
     return filteredSortedVotes;

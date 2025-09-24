@@ -7,7 +7,7 @@ import {
   ProposalOverview,
 } from "./common";
 import { getBlockNumber } from "viem/actions";
-import { ProposalQuery } from "@nouns/data/generated/ponder/graphql";
+import { ProposalQuery } from "@nouns/data/generated/ponder";
 import { Address, getAddress, Hex } from "viem";
 
 export interface ProposalTransaction {
@@ -60,7 +60,7 @@ export async function getProposal(id: number): Promise<Proposal | null> {
   const blockNumber = Number(await getBlockNumber(CHAIN_CONFIG.publicClient));
   const timestamp = Math.floor(Date.now() / 1000);
 
-  const proposal = data?.proposal;
+  const proposal = (data as any)?.proposal;
 
   if (proposal) {
     const overview = mapProposalOverviewFragmentToProposalOverview(
@@ -81,6 +81,12 @@ export async function getProposal(id: number): Promise<Proposal | null> {
 
     return {
       ...overview,
+      id: Number(overview.id),
+      forVotes: Number(overview.forVotes),
+      againstVotes: Number(overview.againstVotes),
+      abstainVotes: Number(overview.abstainVotes),
+      quorumVotes: Number(overview.quorumVotes),
+      executionETA: overview.executionETA ? Number(overview.executionETA) : null,
       description: proposal.description,
       transactions,
       votes: proposal.votes?.items ?? [],

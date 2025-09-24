@@ -42,7 +42,7 @@ export async function getNounsErc20VolumeUsd() {
     return 0;
   }
 
-  const totalVolume = data.nounsErc20DailyVolumes.items.reduce((acc, item) => {
+  const totalVolume = (data as any).nounsErc20DailyVolumes.items.reduce((acc, item) => {
     return acc + BigInt(item.mainnetVolume) + BigInt(item.baseVolume);
   }, BigInt(0));
 

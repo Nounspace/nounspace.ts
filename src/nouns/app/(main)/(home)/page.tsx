@@ -31,7 +31,7 @@ export async function generateMetadata(props: {
   }
 
   return {
-    other: searchParams.frame != undefined ? filteredFrameMetadata : {},
+    other: searchParams?.frame != undefined ? filteredFrameMetadata : {},
     alternates: {
       canonical: "./",
     },
@@ -46,7 +46,7 @@ export default async function Page(props: {
     <div className="flex w-full flex-col items-center gap-[160px] pb-24 md:gap-[196px]">
       <div className="flex w-full flex-col items-center justify-center gap-[80px]">
         <section className="flex w-full max-w-[1680px] flex-col gap-4 px-6 pt-6 md:px-10 md:pt-10">
-          <Auction initialAuctionId={searchParams.auctionId} />
+          <Auction initialAuctionId={searchParams?.auctionId} />
         </section>
 
         <ThisIsNouns />

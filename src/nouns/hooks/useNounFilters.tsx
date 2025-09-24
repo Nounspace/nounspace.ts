@@ -21,14 +21,14 @@ export function useNounFilters(): NounFilters {
   const searchParams = useSearchParams();
 
   return useMemo(() => {
-    const background = searchParams.getAll("background[]");
-    const head = searchParams.getAll("head[]");
-    const glasses = searchParams.getAll("glasses[]");
-    const body = searchParams.getAll("body[]");
-    const accessory = searchParams.getAll("accessory[]");
-    const heldByTreasury = searchParams.get(ONLY_TREASURY_NOUNS_FILTER_KEY) != null;
-    const heldByNounsErc20 = searchParams.get(INSTANT_SWAP_FILTER_KEY) != null;
-    const buyNow = searchParams.get(BUY_NOW_FILTER_KEY) != null;
+    const background = searchParams?.getAll("background[]") || [];
+    const head = searchParams?.getAll("head[]") || [];
+    const glasses = searchParams?.getAll("glasses[]") || [];
+    const body = searchParams?.getAll("body[]") || [];
+    const accessory = searchParams?.getAll("accessory[]") || [];
+    const heldByTreasury = searchParams?.get(ONLY_TREASURY_NOUNS_FILTER_KEY) != null;
+    const heldByNounsErc20 = searchParams?.get(INSTANT_SWAP_FILTER_KEY) != null;
+    const buyNow = searchParams?.get(BUY_NOW_FILTER_KEY) != null;
 
     const totalCount =
       background.length +

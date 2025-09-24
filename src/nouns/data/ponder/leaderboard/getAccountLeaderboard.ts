@@ -1,7 +1,7 @@
 "use server";
 import { graphql } from "@nouns/data/generated/ponder";
 import { graphQLFetch } from "@nouns/data/utils/graphQLFetch";
-import { AccountLeaderboardQuery } from "@nouns/data/generated/ponder/graphql";
+import { AccountLeaderboardQuery } from "@nouns/data/generated/ponder";
 import { CHAIN_CONFIG } from "@nouns/config";
 import { getAddress, isAddressEqual } from "viem";
 

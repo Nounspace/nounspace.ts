@@ -10,13 +10,13 @@ export default function InstantSwapFilter() {
   const searchParams = useSearchParams();
 
   const isChecked = useMemo(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     return params.get(INSTANT_SWAP_FILTER_KEY) === "1";
   }, [searchParams]);
 
   const handleOnlyTreasuryNounFilterChange = useCallback(
     (checked: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       if (!checked) {
         params.delete(INSTANT_SWAP_FILTER_KEY);
       } else {

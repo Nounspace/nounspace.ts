@@ -3,7 +3,7 @@ import { CHAIN_CONFIG } from "@nouns/config";
 import { graphql } from "../generated/gql";
 import { graphQLFetchWithFallback } from "../utils/graphQLFetch";
 import { Noun } from "./types";
-import { AllNounsQuery } from "../generated/gql/graphql";
+import { AllNounsQuery } from "../generated/gql";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { transformQueryNounToNoun } from "./helpers";
 import { getSecondaryNounListings } from "./getSecondaryNounListings";
@@ -39,7 +39,7 @@ async function runPaginatedNounsQueryUncached() {
       { batchSize: BATCH_SIZE, skip },
       { next: { revalidate: 0 } },
     );
-    const responseNouns = response?.nouns;
+    const responseNouns = (response as any)?.nouns;
     if (!responseNouns) {
       break;
     }

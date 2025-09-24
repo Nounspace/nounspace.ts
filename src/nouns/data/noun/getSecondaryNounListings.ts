@@ -113,11 +113,11 @@ export async function getSecondaryTopOffer(): Promise<SecondaryNounOffer | null>
     return null;
   }
 
-  if (data.orders?.length != 1) {
+  if ((data as any).orders?.length != 1) {
     return null;
   }
 
-  const order = data.orders[0];
+  const order = (data as any).orders[0];
   if (
     order.price?.amount?.native != undefined &&
     order.price?.amount?.usd != undefined

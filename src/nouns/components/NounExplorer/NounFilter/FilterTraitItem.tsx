@@ -23,14 +23,14 @@ export function FilterTraitItem({ traitType, trait }: FilterTraitItemProps) {
   const filterKey = useMemo(() => traitType + "[]", [traitType]);
 
   const isChecked = useMemo(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     const traitFilterParams = params.getAll(filterKey);
     return traitFilterParams.includes(trait.seed.toString());
   }, [searchParams, filterKey, trait.seed]);
 
   const handleCheckChange = useCallback(
     (checked: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() || '');
       const traitFilterParams = params.getAll(filterKey);
 
       const index = traitFilterParams.indexOf(trait.seed.toString());

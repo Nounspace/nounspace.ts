@@ -43,16 +43,16 @@ export async function getBuyNounOnSecondaryPayload(
       revalidate: 0,
     },
   });
-  const steps = data?.steps;
+  const steps = (data as any)?.steps;
 
   if (
     !data ||
-    (data.errors && data.errors.length != 0) ||
+    ((data as any).errors && (data as any).errors.length != 0) ||
     !steps ||
     steps.length === 0
   ) {
     console.error(
-      `getBuyNounOnSecondaryPayload: error ${data?.errors}, steps: ${steps}`,
+      `getBuyNounOnSecondaryPayload: error ${(data as any)?.errors}, steps: ${steps}`,
     );
     return null;
   }
