@@ -39,6 +39,10 @@ const cspHeader = `
       https://api.segment.io
       https://api.imgbb.com
       https://api.goldsky.com
+      https://api.thegraph.com
+      https://eth-mainnet.g.alchemy.com
+      https://*.g.alchemy.com
+      https://cca-lite.coinbase.com
       https://base-mainnet.g.alchemy.com;
 
     upgrade-insecure-requests;
