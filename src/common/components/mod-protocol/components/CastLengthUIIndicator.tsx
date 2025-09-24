@@ -6,10 +6,14 @@ import { useTextLength } from "../hooks/useTextLength";
 
 interface CastLengthUIIndicatorProps {
   getText: () => string;
+  maxByteLength?: number;
 }
 
-export function CastLengthUIIndicator({ getText }: CastLengthUIIndicatorProps) {
-  const { length: _length, tailwindColor: _tailwindColor } = useTextLength(getText);
+export function CastLengthUIIndicator({ getText, maxByteLength = 320 }: CastLengthUIIndicatorProps) {
+  const { length: _length, tailwindColor: _tailwindColor } = useTextLength({
+    getText,
+    maxByteLength,
+  });
 
   // For now, we'll return null since the original component doesn't render anything visible
   // You can customize this to show the character count if needed

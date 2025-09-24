@@ -23,6 +23,11 @@ export function useTextLength({
 
   const eightyFivePercentComplete = maxByteLength * 0.85;
 
+  const getOrangeShade = () => {
+    const shade = Math.min(9, 2 + Math.floor((lengthInBytes - eightyFivePercentComplete) / 10));
+    return `orange.${shade}00`;
+  };
+
   return {
     length: lengthInBytes,
     isValid: lengthInBytes <= maxByteLength,
@@ -30,13 +35,11 @@ export function useTextLength({
       lengthInBytes > maxByteLength
         ? "red"
         : lengthInBytes > eightyFivePercentComplete
-        ? `orange.${
-            2 + Math.floor((lengthInBytes - eightyFivePercentComplete) / 10)
-          }00`
+        ? getOrangeShade()
         : "gray",
     label:
       lengthInBytes > maxByteLength
-        ? `-${lengthInBytes - maxByteLength} characters left`
+        ? `${lengthInBytes - maxByteLength} characters over limit`
         : lengthInBytes > eightyFivePercentComplete
         ? `${maxByteLength - lengthInBytes} characters left`
         : ``,

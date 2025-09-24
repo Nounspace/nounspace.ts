@@ -2,19 +2,6 @@
 // Source: https://github.com/mod-protocol/mod/blob/main/packages/farcaster/src/structure-cast.ts
 
 // Regex to match URLs - supports http(s), ftp, and other protocols, as well as www domains
-const _URL_REGEX = new RegExp(
-  '(?:(?:https?:\\/\\/)|(?:ftp:\\/\\/)|(?:www\\.))(?:[-\\w.]+)(?:\\.[a-zA-Z]{2,})(?:\\/[^\\s]*)?|' +
-  '(?:^|\\s)((?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)' +
-  '+[a-zA-Z]{2,})(?=\\s|$)',
-  'g'
-);
-
-// needs to not match textcuts incorrectly
-// Test here: https://regex101.com/r/kA5zRX/1
-/**
- * Node js and browser regex engines are different, so theres the possibility of a hydration issue here.
- * Avoid using this regex in Node.js as it seems to act nondeterministically.
- */
 export const urlRegex = new RegExp(
   '((?:(?:(?:https?|ftp):)?//)?(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})' +
   '(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})' +
@@ -22,7 +9,7 @@ export const urlRegex = new RegExp(
   '(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z0-9\\u00a1-\\uffff]' +
   '[a-z0-9\\u00a1-\\uffff_-]{0,62})?[a-z0-9\\u00a1-\\uffff][a-z0-9\\u00a1-\\uffff_-]{0,62}\\.)' +
   '+(?:[a-z\\u00a1-\\uffff]{2,}\\.?))(?::\\d{2,5})?(?:[/?#]\\S*)?)',
-  'gi'
+  'i'
 );
 
 // must not be global for the way we are using it!
@@ -44,11 +31,18 @@ const mentionRegex = /(?<=^|\s)@([a-zA-Z0-9_.-]+)/g;
 
 const newlineRegex = /(\n)/gi;
 
+// Non-global version for exec() calls to avoid persistent state bugs
+const newlineRegexNonGlobal = /(\n)/i;
+
 // For .split must be: Capture groups join to entire string
 const textcutsForSplit =
   /((?:\b)(?:[^ .\n,]+)(?:.)(?:twitter|github|lens|telegram|eth)(?:$| |\n))/gi;
 const textcuts =
   /(\b)([^ .\n,]+)(.)(twitter|github|lens|telegram|eth)($| |\n)/gi;
+
+// Non-global version for exec() calls to avoid persistent state bugs
+const textcutsNonGlobal =
+  /(\b)([^ .\n,]+)(.)(twitter|github|lens|telegram|eth)($| |\n)/i;
 
 // none of these are composable right now
 export type StructuredCastUnit =
@@ -95,8 +89,9 @@ function extractMentions(
   return structuredCast.serializedContent
     .split(usernameRegexForSplit)
     .map((part, i) => {
-      const e = usernameRegex.exec(part);
-      if (!e) {
+      // Reset regex state and test
+      usernameRegex.lastIndex = 0;
+      if (!usernameRegex.test(part)) {
         return { type: "plaintext", serializedContent: part };
       }
       return { type: "mention", serializedContent: part };
@@ -186,7 +181,7 @@ function extractTextcuts(
   return structuredCast.serializedContent
     .split(textcutsForSplit)
     .flatMap((part, i): StructuredCastUnit[] => {
-      const e = textcuts.exec(part);
+      const e = textcutsNonGlobal.exec(part);
 
       if (!e) {
         return [{ type: "plaintext", serializedContent: part }];
@@ -243,7 +238,7 @@ function extractNewlines(
   return structuredCast.serializedContent
     .split(newlineRegex)
     .map((part, i): StructuredCastUnit => {
-      const e = newlineRegex.exec(part);
+      const e = newlineRegexNonGlobal.exec(part);
       if (!e) {
         return { type: "plaintext", serializedContent: part };
       }
