@@ -3,7 +3,7 @@ import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import neynar from "@/common/data/api/neynar";
 import { unstable_noStore as noStore } from "next/cache";
 import { ProfileSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
-import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
+import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 
 export type Tab = {
   spaceId: string;
@@ -101,7 +101,7 @@ export const createProfileSpaceData = (
   tabName: string
 ): Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'> => {
   const config = {
-    ...createIntialPersonSpaceConfigForFid(fid, spaceName),
+    ...createIntialProfileSpaceConfigForFid(fid, spaceName),
     timestamp: new Date().toISOString(),
   };
 

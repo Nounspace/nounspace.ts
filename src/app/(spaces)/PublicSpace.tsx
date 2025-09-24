@@ -7,9 +7,8 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import { useAppStore } from "@/common/data/stores/app";
-import { MasterToken } from "@/common/providers/TokenProvider";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
 import { useWallets } from "@privy-io/react-auth";
 import { indexOf, isNil, mapValues, noop } from "lodash";
@@ -42,7 +41,7 @@ export default function PublicSpace({
   
   // Extract ownership props based on space type
   const spaceOwnerFid = isProfileSpace(spaceData) ? spaceData.fid : undefined;
-  const spaceOwnerAddress = isTokenSpace(spaceData) ? spaceData.ownerAddress : 
+  const _spaceOwnerAddress = isTokenSpace(spaceData) ? spaceData.ownerAddress : 
                            isProposalSpace(spaceData) ? spaceData.ownerAddress : undefined;
   
   // Extract token-specific props
@@ -112,7 +111,7 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
-  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
+  const _currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
 
   
   // Clear cache only when switching to a different space
@@ -156,7 +155,13 @@ export default function PublicSpace({
     }
     
     let nextSpaceId = providedSpaceId;
-    let nextTabName = decodeURIComponent(providedTabName);
+    // Make sure we use the correct default tab if providedTabName is empty or "Profile" for token spaces
+    let nextTabName = providedTabName ? decodeURIComponent(providedTabName) : spaceData.defaultTab;
+    
+    // For token spaces, if the tab is "Profile", use the default tab instead
+    if (isTokenSpace(spaceData) && nextTabName === "Profile") {
+      nextTabName = spaceData.defaultTab;
+    }
 
     const localSpacesSnapshot = localSpaces;
 
@@ -206,7 +211,7 @@ export default function PublicSpace({
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
-      const currentTabName = getCurrentTabName() ?? "Profile";
+      const currentTabName = getCurrentTabName() ?? spaceData.defaultTab;
       const tabOrder = localSpaces[spaceId]?.order || [];
       
       // Initialize the set of loaded tabs for this space if it doesn't exist
@@ -343,23 +348,42 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
+  const currentSpaceId = getCurrentSpaceId();
+  const currentTabName = getCurrentTabName() ?? spaceData.defaultTab;
+  
+  console.log("[PublicSpace] Getting space config:", {
+    currentSpaceId,
+    currentTabName,
+    initialConfig,
+    hasInitialConfig: !!initialConfig,
+    spaceDataDefaultTab: spaceData.defaultTab
+  });
+  
   const currentConfig = getCurrentSpaceConfig();
-  if (!currentConfig) {
-    console.error("Current space config is undefined");
-  }
-
+  console.log("[PublicSpace] Current space config:", {
+    hasConfig: !!currentConfig,
+    configTabs: currentConfig && currentConfig.tabs ? Object.keys(currentConfig.tabs) : [],
+    currentTab: currentTabName,
+    isUnregisteredSpace: !currentSpaceId // This is normal for unregistered spaces
+  });
+  
+  // If currentConfig is undefined, we'll use initialConfig directly
+  // This is normal for spaces that haven't been registered yet and is not an error
   const config = {
-    ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
-      ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
+    ...(currentConfig && currentConfig.tabs && currentConfig.tabs[currentTabName]
+      ? currentConfig.tabs[currentTabName]
       : { ...initialConfig, isEditable }),
     isEditable,
   };
+  
+  console.log("[PublicSpace] Resolved config:", {
+    usedCurrentConfig: !!(currentConfig && currentConfig.tabs && currentConfig.tabs[currentTabName]),
+    usedInitialConfig: !(currentConfig && currentConfig.tabs && currentConfig.tabs[currentTabName]),
+    hasConfig: !!config,
+    config: config
+  });
 
   const memoizedConfig = useMemo(() => {
-    if (!config) {
-      console.error("Config is undefined");
-      return { ...initialConfig, isEditable }; // Fallback to initialConfig with isEditable
-    }
     return config;
   }, [
     Object.keys(config?.fidgetInstanceDatums || {}).sort().join(','),
@@ -369,6 +393,7 @@ export default function PublicSpace({
     config?.fidgetTrayContents,
     config?.theme,
     initialConfig,
+    isEditable
   ]);
 
   // Update the space registration effect to use the new editability check
@@ -376,6 +401,16 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
 
     // Attempt registration when space is missing and user is identified
+    console.log("[PublicSpace] Space registration check:", {
+      isEditable,
+      currentSpaceId,
+      isCurrentSpaceIdNil: isNil(currentSpaceId),
+      currentUserFid,
+      isCurrentUserFidNil: isNil(currentUserFid),
+      loading,
+      shouldRegister: isEditable && isNil(currentSpaceId) && !isNil(currentUserFid) && !loading
+    });
+    
     if (
       isEditable &&
       isNil(currentSpaceId) &&
@@ -384,6 +419,7 @@ export default function PublicSpace({
     ) {
 
       const registerSpace = async () => {
+        console.log("[PublicSpace] Starting space registration");
         try {
           let newSpaceId: string | undefined;
 
@@ -397,7 +433,7 @@ export default function PublicSpace({
 
             if (existingSpace) {
               setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName("Profile");
+              setCurrentTabName(spaceData.defaultTab);
               return;
             }
           } else if (resolvedPageType === "proposal") {
@@ -414,15 +450,23 @@ export default function PublicSpace({
 
             if (existingSpace) {
               setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName("Profile");
+              setCurrentTabName(spaceData.defaultTab);
               return;
             }
           }
 
           if (isTokenPage && contractAddress && tokenData?.network) {
+            console.log("[PublicSpace] Registering token space:", {
+              contractAddress,
+              currentUserFid,
+              initialConfig,
+              hasInitialConfig: !!initialConfig,
+              network: tokenData.network
+            });
+            
             newSpaceId = await registerSpaceContract(
               contractAddress,
-              "Profile",
+              spaceData.defaultTab,
               currentUserFid,
               initialConfig,
               tokenData.network,
@@ -435,11 +479,11 @@ export default function PublicSpace({
           } else if (!isTokenPage) {
             newSpaceId = await registerSpaceFid(
               currentUserFid,
-              "Profile",
-              getSpacePageUrl("Profile"),
+              spaceData.defaultTab,
+              getSpacePageUrl(spaceData.defaultTab),
             );
 
-            const newUrl = getSpacePageUrl("Profile");
+            const newUrl = getSpacePageUrl(spaceData.defaultTab);
             router.replace(newUrl);
           }
 
@@ -493,7 +537,7 @@ export default function PublicSpace({
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
       const currentSpaceId = getCurrentSpaceId();
-      const currentTabName = getCurrentTabName() ?? "Profile";
+      const currentTabName = getCurrentTabName() ?? spaceData.defaultTab;
 
       if (isNil(currentSpaceId)) {
         throw new Error("Cannot save config until space is registered");
@@ -595,11 +639,11 @@ export default function PublicSpace({
       isTokenPage={isTokenPage}
       pageType={pageType}
       inHomebase={false}
-      currentTab={getCurrentTabName() ?? "Profile"}
+      currentTab={getCurrentTabName() ?? spaceData.defaultTab}
       tabList={
         getCurrentSpaceId()
           ? localSpaces[getCurrentSpaceId()!]?.order
-          : ["Profile"]
+          : [spaceData.defaultTab]
       }
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
@@ -674,8 +718,9 @@ export default function PublicSpace({
       />
     );
 
-  if (!profile) {
-    console.warn("Profile component is undefined");
+  // For token and proposal spaces, profile will be undefined - this is expected
+  if (!profile && !isTokenPage && pageType !== "proposal") {
+    console.warn("Profile component is undefined for a non-token, non-proposal space");
   }
 
   const MemoizedSpacePage = useMemo(() => (
@@ -698,7 +743,7 @@ export default function PublicSpace({
     providedSpaceId !== undefined && providedSpaceId !== "" &&
     // Avoid showing skeleton for tabs that have already been loaded
     !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
-      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));
+      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? spaceData.defaultTab));
 
   if (shouldShowSkeleton) {
     return (

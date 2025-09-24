@@ -88,7 +88,7 @@ const makeGridDetails = (
   borderRadius,
 });
 
-type GridDetails = ReturnType<typeof makeGridDetails>;
+type _GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
@@ -517,7 +517,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const newTrayContents = fidgetTrayContents.filter(
       (fidget) => fidget.id !== fidgetId,
     );
-    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
+    const { [fidgetId]: _removed, ...newFidgetInstanceDatums } =
       fidgetInstanceDatums;
 
     // Only save if we have fidgets left or if we're removing the last one

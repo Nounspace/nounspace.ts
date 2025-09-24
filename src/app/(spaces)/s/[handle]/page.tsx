@@ -2,7 +2,8 @@ import React from "react";
 import { loadUserSpaceData } from "./utils";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import ProfileSpace from "./ProfileSpace";
-import { ProfileSpaceData } from "@/common/types/spaceData";
+// ProfileSpaceData imported but not used
+// import { ProfileSpaceData } from "@/common/types/spaceData";
 
 interface ProfileSpacePageProps {
   params: Promise<{

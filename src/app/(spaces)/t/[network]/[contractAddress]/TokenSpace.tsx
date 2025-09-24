@@ -74,19 +74,39 @@ export default function TokenSpace({
   tabName,
 }: TokenSpaceProps) {
   const { tokenData } = useToken();
+  
+  console.log("[TokenSpace] Received spaceData:", {
+    id: spaceData.id,
+    spaceType: spaceData.spaceType,
+    defaultTab: spaceData.defaultTab,
+    hasConfig: !!spaceData.config,
+    configKeys: spaceData.config ? Object.keys(spaceData.config) : [],
+    tabName
+  });
 
   // Use the passed-in spaceData, but update it with current tokenData from context and add isEditable and spacePageUrl
   const updatedSpaceData: TokenSpaceData = useMemo(() => ({
     ...spaceData,
     spacePageUrl: (tabName: string) => `/t/${spaceData.network}/${spaceData.contractAddress}/${encodeURIComponent(tabName)}`,
     tokenData: tokenData || spaceData.tokenData,
-    isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => 
-      checkTokenSpaceEditability(
+    isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => {
+      const isEditable = checkTokenSpaceEditability(
         spaceData.ownerAddress, 
         tokenData || spaceData.tokenData, 
         currentUserFid, 
         wallets || []
-      ),
+      );
+      
+      console.log("[TokenSpace] Checking editability:", {
+        currentUserFid,
+        ownerAddress: spaceData.ownerAddress,
+        wallets: wallets || [],
+        hasTokenData: !!(tokenData || spaceData.tokenData),
+        isEditable
+      });
+      
+      return isEditable;
+    },
   }), [spaceData, tokenData]);
 
   return (

@@ -9,7 +9,7 @@ import {
   StaticFidgetOption, 
   CuratedFidgetOption, 
   MiniAppFidgetOption,
-  FidgetSearchFilters 
+  _FidgetSearchFilters 
 } from "@/common/types/fidgetOptions";
 import { Input } from "../atoms/input";
 

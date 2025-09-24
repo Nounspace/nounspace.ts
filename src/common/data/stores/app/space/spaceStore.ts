@@ -6,9 +6,8 @@ import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
-import createIntialPersonSpaceConfigForFid, {
-  INITIAL_SPACE_CONFIG_EMPTY,
-} from "@/constants/initialPersonSpace";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
+import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -32,7 +31,7 @@ import {
   debounce,
   filter,
   fromPairs,
-  includes,
+  _includes,
   isArray,
   isNil,
   isUndefined,
@@ -715,7 +714,7 @@ export const createSpaceStoreFunc = (
         ? moment(localSpace.orderUpdatedAt)
         : moment(0);
       const remoteIsNew = remoteTimestamp.isAfter(localTimestamp);
-      const diff = moment.duration(remoteTimestamp.diff(localTimestamp));
+      const _diff = moment.duration(remoteTimestamp.diff(localTimestamp));
       // console.debug("debug", {
       //   remoteIsNew,
       //   remote: remoteTimestamp.toISOString(),
@@ -824,7 +823,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        createIntialPersonSpaceConfigForFid(fid),
+        createIntialProfileSpaceConfigForFid(fid),
       );
       analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
         type: "user",

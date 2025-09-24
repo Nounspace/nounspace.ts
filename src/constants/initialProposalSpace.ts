@@ -1,6 +1,6 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import { cloneDeep } from "lodash";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialSpaceConfig";
 import { Address } from "viem";
 
 export const createInitalProposalSpaceConfigForProposalId = (
