@@ -42,7 +42,6 @@ export type NounsAuctionSettings = FidgetSettingsStyle;
 const properties: FidgetProperties = {
   fidgetName: "Nouns Auction",
   icon: 0x1f3c6,
-  description: "Follow and participate in the daily Nouns auction.",
   fields: [...defaultStyleFields],
   size: {
     minHeight: 8,
