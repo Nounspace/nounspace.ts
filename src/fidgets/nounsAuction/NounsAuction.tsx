@@ -20,6 +20,7 @@ import {
 } from "@tanstack/react-query";
 import {
   ConnectedWallet,
+  useActiveWallet,
   useLogin,
   usePrivy,
 } from "@privy-io/react-auth";
@@ -268,7 +269,8 @@ const NounsAuctionFidget: React.FC<FidgetArgs<NounsAuctionSettings>> = () => {
   }, [auction, now]);
 
   const { login } = useLogin();
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated } = usePrivy();
+  const { wallet: activeWallet } = useActiveWallet();
 
   const [bidInput, setBidInput] = useState("");
   const [txnState, setTxnState] = useState<"idle" | "pending" | "success" | "error">(
@@ -287,8 +289,8 @@ const NounsAuctionFidget: React.FC<FidgetArgs<NounsAuctionSettings>> = () => {
     if (!ready) {
       throw new Error("Wallet is not ready yet");
     }
-    const wallet = user?.wallet;
-    if (!wallet) {
+    const wallet = activeWallet;
+    if (!wallet || wallet.type !== "ethereum") {
       await login();
       throw new Error("Wallet connection required");
     }
