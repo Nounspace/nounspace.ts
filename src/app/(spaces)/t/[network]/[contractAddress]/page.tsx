@@ -1,8 +1,10 @@
-import { loadTokenSpaceData } from "./utils";
+import { loadTokenSpacePageData} from "./utils";
 import React from "react";
 import { TokenProvider } from "@/common/providers/TokenProvider";
 import TokenSpace from "./TokenSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
+import { Address } from "viem";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 export default async function TokenSpacePage({ 
   params 
@@ -19,25 +21,29 @@ export default async function TokenSpacePage({
   }
 
   // Load token space data
-  const tokenSpaceData = await loadTokenSpaceData(resolvedParams, decodedTabNameParam);
+  const tokenSpacePageData = await loadTokenSpacePageData(
+    resolvedParams.contractAddress, 
+    resolvedParams.network, 
+    decodedTabNameParam
+  );
 
   // Guard against null/undefined tokenSpaceData
-  if (!tokenSpaceData) {
+  if (!tokenSpacePageData) {
     return (
       <SpaceNotFound />
     );
   }
 
   return (
-      <TokenProvider
-        contractAddress={tokenSpaceData.contractAddress as `0x${string}`}
-        network={tokenSpaceData.network as any}
-        defaultTokenData={tokenSpaceData.tokenData}
-      >
-        <TokenSpace
-          spaceData={tokenSpaceData}
-          tabName={decodedTabNameParam || tokenSpaceData.defaultTab}
-        />
-      </TokenProvider>
+    <TokenProvider
+      contractAddress={tokenSpacePageData.contractAddress as Address}
+      network={tokenSpacePageData.network as EtherScanChainName}
+      defaultTokenData={tokenSpacePageData.tokenData}
+    >
+      <TokenSpace
+        spacePageData={tokenSpacePageData}
+        tabName={decodedTabNameParam || tokenSpacePageData.defaultTab}
+      />
+    </TokenProvider>
   );
 }

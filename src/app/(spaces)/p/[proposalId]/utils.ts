@@ -2,7 +2,7 @@ import { Address } from "viem";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
-import { ProposalSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
+import { ProposalSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
 
 export interface ProposalData {
@@ -229,7 +229,7 @@ export const createProposalSpaceData = (
   ownerAddress: Address,
   tabName: string,
   proposalData?: ProposalData
-): Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'> => {
+): Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'> => {
   
   const config = {
     ...createInitalProposalSpaceConfigForProposalId(
@@ -241,7 +241,7 @@ export const createProposalSpaceData = (
 
   return {
     // Base SpaceData properties
-    id: spaceId,
+    spaceId: spaceId,
     spaceName,
     spaceType: SPACE_TYPES.PROPOSAL,
     updatedAt: new Date().toISOString(),
@@ -249,7 +249,7 @@ export const createProposalSpaceData = (
     config,
     // ProposalSpaceData specific properties
     proposalId,
-    ownerAddress,
+    spaceOwnerAddress: ownerAddress,
     proposalData,
   };
 };
@@ -257,7 +257,7 @@ export const createProposalSpaceData = (
 export const loadProposalSpaceData = async (
   proposalId: string,
   tabNameParam?: string
-): Promise<Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'> | null> => {
+): Promise<Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'> | null> => {
   const proposalData = await loadProposalData(proposalId || "0");
   
   // Check if proposal data is valid (not the fallback with 0x0 address)

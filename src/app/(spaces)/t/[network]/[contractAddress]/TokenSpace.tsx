@@ -32,11 +32,11 @@ import React, { useMemo } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { Address, isAddressEqual } from 'viem';
-import { TokenSpaceData } from "@/common/types/spaceData";
+import { TokenSpacePageData } from "@/common/types/spaceData";
 import { isNil } from "lodash";
 
 export interface TokenSpaceProps {
-  spaceData: Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'>;
+  spacePageData: Omit<TokenSpacePageData, 'isEditable' | 'spacePageUrl'>;
   tabName: string;
 }
 
@@ -70,48 +70,29 @@ const checkTokenSpaceEditability = (
 };
 
 export default function TokenSpace({
-  spaceData,
+  spacePageData: spaceData,
   tabName,
 }: TokenSpaceProps) {
   const { tokenData } = useToken();
   
-  console.log("[TokenSpace] Received spaceData:", {
-    id: spaceData.id,
-    spaceType: spaceData.spaceType,
-    defaultTab: spaceData.defaultTab,
-    hasConfig: !!spaceData.config,
-    configKeys: spaceData.config ? Object.keys(spaceData.config) : [],
-    tabName
-  });
-
   // Use the passed-in spaceData, but update it with current tokenData from context and add isEditable and spacePageUrl
-  const updatedSpaceData: TokenSpaceData = useMemo(() => ({
+  const updatedSpaceData: TokenSpacePageData = useMemo(() => ({
     ...spaceData,
     spacePageUrl: (tabName: string) => `/t/${spaceData.network}/${spaceData.contractAddress}/${encodeURIComponent(tabName)}`,
     tokenData: tokenData || spaceData.tokenData,
     isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => {
-      const isEditable = checkTokenSpaceEditability(
-        spaceData.ownerAddress, 
+      return checkTokenSpaceEditability(
+        spaceData.spaceOwnerAddress, 
         tokenData || spaceData.tokenData, 
         currentUserFid, 
         wallets || []
       );
-      
-      console.log("[TokenSpace] Checking editability:", {
-        currentUserFid,
-        ownerAddress: spaceData.ownerAddress,
-        wallets: wallets || [],
-        hasTokenData: !!(tokenData || spaceData.tokenData),
-        isEditable
-      });
-      
-      return isEditable;
     },
   }), [spaceData, tokenData]);
 
   return (
     <PublicSpace
-      spaceData={updatedSpaceData}
+      spacePageData={updatedSpaceData}
       tabName={tabName}
     />
   );

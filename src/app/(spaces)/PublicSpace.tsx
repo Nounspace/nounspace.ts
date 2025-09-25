@@ -19,40 +19,38 @@ import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
-import { SpaceData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/spaceData";
+import { SpacePageData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/spaceData";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
 
 interface PublicSpaceProps {
-  spaceData: SpaceData;
+  spacePageData: SpacePageData;
   tabName: string;
 }
 
 export default function PublicSpace({
-  spaceData,
+  spacePageData,
   tabName: providedTabName,
 }: PublicSpaceProps) {
 
   // Extract variables from spaceData to match existing variable names
-  const providedSpaceId = spaceData.id;
-  const initialConfig = spaceData.config;
-  const getSpacePageUrl = spaceData.spacePageUrl;
+  const providedSpaceId = spacePageData.spaceId;
+  const initialConfig = spacePageData.config;
+  const getSpacePageUrl = spacePageData.spacePageUrl;
   
   // Extract ownership props based on space type
-  const spaceOwnerFid = isProfileSpace(spaceData) ? spaceData.fid : undefined;
-  const _spaceOwnerAddress = isTokenSpace(spaceData) ? spaceData.ownerAddress : 
-                           isProposalSpace(spaceData) ? spaceData.ownerAddress : undefined;
+  const spaceOwnerFid = isProfileSpace(spacePageData) ? spacePageData.spaceOwnerFid : undefined;
   
   // Extract token-specific props
-  const isTokenPage = isTokenSpace(spaceData);
-  const contractAddress = isTokenSpace(spaceData) ? spaceData.contractAddress : undefined;
-  const tokenData = isTokenSpace(spaceData) ? spaceData.tokenData : undefined;
+  const isTokenPage = isTokenSpace(spacePageData);
+  const contractAddress = isTokenSpace(spacePageData) ? spacePageData.contractAddress : undefined;
+  const tokenData = isTokenSpace(spacePageData) ? spacePageData.tokenData : undefined;
   
   // Determine page type from space type
-  const pageType: SpacePageType = isProfileSpace(spaceData) ? "profile" :
-                                 isTokenSpace(spaceData) ? "token" :
-                                 isProposalSpace(spaceData) ? "proposal" : "profile";
+  const pageType: SpacePageType = isProfileSpace(spacePageData) ? "profile" :
+                                 isTokenSpace(spacePageData) ? "token" :
+                                 isProposalSpace(spacePageData) ? "proposal" : "profile";
 
   const {
     clearLocalSpaces,
@@ -132,8 +130,11 @@ export default function PublicSpace({
 
   // Use isEditable logic from spaceData
   const isEditable = useMemo(() => {
-    return spaceData.isEditable(currentUserFid || undefined, wallets.map((w) => ({ address: w.address as Address })));
-  }, [spaceData, currentUserFid, wallets]);
+    return spacePageData.isEditable(
+      currentUserFid || undefined, 
+      wallets.map((w) => ({ address: w.address as Address }))
+    );
+  }, [spacePageData, currentUserFid, wallets]);
 
   // Determine the page type if not explicitly provided
   const resolvedPageType = useMemo(() => {
@@ -156,11 +157,11 @@ export default function PublicSpace({
     
     let nextSpaceId = providedSpaceId;
     // Make sure we use the correct default tab if providedTabName is empty or "Profile" for token spaces
-    let nextTabName = providedTabName ? decodeURIComponent(providedTabName) : spaceData.defaultTab;
+    let nextTabName = providedTabName ? decodeURIComponent(providedTabName) : spacePageData.defaultTab;
     
     // For token spaces, if the tab is "Profile", use the default tab instead
-    if (isTokenSpace(spaceData) && nextTabName === "Profile") {
-      nextTabName = spaceData.defaultTab;
+    if (isTokenSpace(spacePageData) && nextTabName === "Profile") {
+      nextTabName = spacePageData.defaultTab;
     }
 
     const localSpacesSnapshot = localSpaces;
@@ -211,7 +212,7 @@ export default function PublicSpace({
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
-      const currentTabName = getCurrentTabName() ?? spaceData.defaultTab;
+      const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
       const tabOrder = localSpaces[spaceId]?.order || [];
       
       // Initialize the set of loaded tabs for this space if it doesn't exist
@@ -349,14 +350,14 @@ export default function PublicSpace({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const currentSpaceId = getCurrentSpaceId();
-  const currentTabName = getCurrentTabName() ?? spaceData.defaultTab;
+  const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
   
   console.log("[PublicSpace] Getting space config:", {
     currentSpaceId,
     currentTabName,
     initialConfig,
     hasInitialConfig: !!initialConfig,
-    spaceDataDefaultTab: spaceData.defaultTab
+    spaceDataDefaultTab: spacePageData.defaultTab
   });
   
   const currentConfig = getCurrentSpaceConfig();
@@ -433,14 +434,14 @@ export default function PublicSpace({
 
             if (existingSpace) {
               setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName(spaceData.defaultTab);
+              setCurrentTabName(spacePageData.defaultTab);
               return;
             }
           } else if (resolvedPageType === "proposal") {
             // For proposal spaces, if we have a spaceId, use it directly
             if (providedSpaceId) {
               setCurrentSpaceId(providedSpaceId);
-              setCurrentTabName(spaceData.defaultTab);
+              setCurrentTabName(spacePageData.defaultTab);
               return;
             }
           } else if (!isTokenPage) {
@@ -450,7 +451,7 @@ export default function PublicSpace({
 
             if (existingSpace) {
               setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName(spaceData.defaultTab);
+              setCurrentTabName(spacePageData.defaultTab);
               return;
             }
           }
@@ -466,41 +467,41 @@ export default function PublicSpace({
             
             newSpaceId = await registerSpaceContract(
               contractAddress,
-              spaceData.defaultTab,
+              spacePageData.defaultTab,
               currentUserFid,
               initialConfig,
               tokenData.network,
             );
-          } else if (isProposalSpace(spaceData)) {
+          } else if (isProposalSpace(spacePageData)) {
             newSpaceId = await registerProposalSpace(
-              spaceData.proposalId,
+              spacePageData.proposalId,
               initialConfig,
             );
           } else if (!isTokenPage) {
             newSpaceId = await registerSpaceFid(
               currentUserFid,
-              spaceData.defaultTab,
-              getSpacePageUrl(spaceData.defaultTab),
+              spacePageData.defaultTab,
+              getSpacePageUrl(spacePageData.defaultTab),
             );
 
-            const newUrl = getSpacePageUrl(spaceData.defaultTab);
+            const newUrl = getSpacePageUrl(spacePageData.defaultTab);
             router.replace(newUrl);
           }
 
           if (newSpaceId) {
             // Set both spaceId and currentSpaceId atomically
             setCurrentSpaceId(newSpaceId);
-            setCurrentTabName(spaceData.defaultTab);
+            setCurrentTabName(spacePageData.defaultTab);
 
             // Load the space data after registration
             await loadSpaceTabOrder(newSpaceId);
             await loadEditableSpaces(); // First load
-            await loadSpaceTab(newSpaceId, spaceData.defaultTab);
+            await loadSpaceTab(newSpaceId, spacePageData.defaultTab);
 
             // Load remaining tabs
             const tabOrder = localSpaces[newSpaceId]?.order || [];
             for (const tabName of tabOrder) {
-              if (tabName !== spaceData.defaultTab) {
+              if (tabName !== spacePageData.defaultTab) {
                 await loadSpaceTab(newSpaceId, tabName);
               }
             }
@@ -509,7 +510,7 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            const newUrl = getSpacePageUrl(spaceData.defaultTab);
+            const newUrl = getSpacePageUrl(spacePageData.defaultTab);
             router.replace(newUrl);
           }
         } catch (error) {
@@ -530,14 +531,14 @@ export default function PublicSpace({
     getCurrentTabName,
     localSpaces,
     resolvedPageType,
-    spaceData,
+    spacePageData,
     registerProposalSpace,
   ]);
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
       const currentSpaceId = getCurrentSpaceId();
-      const currentTabName = getCurrentTabName() ?? spaceData.defaultTab;
+      const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
 
       if (isNil(currentSpaceId)) {
         throw new Error("Cannot save config until space is registered");
@@ -639,11 +640,11 @@ export default function PublicSpace({
       isTokenPage={isTokenPage}
       pageType={pageType}
       inHomebase={false}
-      currentTab={getCurrentTabName() ?? spaceData.defaultTab}
+      currentTab={getCurrentTabName() ?? spacePageData.defaultTab}
       tabList={
         getCurrentSpaceId()
           ? localSpaces[getCurrentSpaceId()!]?.order
-          : [spaceData.defaultTab]
+          : [spacePageData.defaultTab]
       }
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
@@ -743,7 +744,7 @@ export default function PublicSpace({
     providedSpaceId !== undefined && providedSpaceId !== "" &&
     // Avoid showing skeleton for tabs that have already been loaded
     !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
-      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? spaceData.defaultTab));
+      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? spacePageData.defaultTab));
 
   if (shouldShowSkeleton) {
     return (

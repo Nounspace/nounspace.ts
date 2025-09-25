@@ -10,7 +10,7 @@ import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { SpaceTypeValue, SpaceData, isTokenSpace } from "@/common/types/spaceData";
+import { SpaceTypeValue, SpacePageData, isTokenSpace } from "@/common/types/spaceData";
 import { useSidebarContext } from "./Sidebar";
 import { Button } from "../atoms/button";
 
@@ -30,7 +30,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isEditable?: boolean;
   // New spaceData prop - can derive other props from this
-  spaceData?: SpaceData;
+  spaceData?: SpacePageData;
   // Legacy props for backward compatibility (can be derived from spaceData)
   isTokenPage?: boolean;
   contractAddress?: Address;
@@ -38,7 +38,7 @@ interface TabBarProps {
   spaceId?: string | null;
 }
 
-const isEditableTab = (tabName: string, spaceData?: SpaceData) => {
+const isEditableTab = (tabName: string, spaceData?: SpacePageData) => {
   const permanentTabs = ["Feed", spaceData?.defaultTab || "Profile"];
   return !permanentTabs.includes(tabName);
 };
@@ -88,7 +88,7 @@ function TabBar({
     ? spaceData.contractAddress as Address 
     : contractAddress;
   const derivedPageType = spaceData ? spaceData.spaceType : pageType;
-  const derivedSpaceId = spaceData ? spaceData.id : spaceId;
+  const derivedSpaceId = spaceData ? spaceData.spaceId : spaceId;
   const defaultTab = spaceData ? spaceData.defaultTab : "Profile";
   const tabList = tabListParam || [defaultTab];
 

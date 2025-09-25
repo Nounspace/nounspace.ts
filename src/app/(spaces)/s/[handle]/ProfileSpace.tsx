@@ -26,10 +26,10 @@
 
 import React, { useMemo } from "react";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
-import { ProfileSpaceData } from "@/common/types/spaceData";
+import { ProfileSpacePageData } from "@/common/types/spaceData";
 
 export interface ProfileSpaceProps {
-  spaceData: Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'>;
+  spacePageData: Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'>;
   tabName: string;
 }
 
@@ -42,7 +42,7 @@ const isProfileSpaceEditable = (
 };
 
 export default function ProfileSpace({
-  spaceData,
+  spacePageData: spaceData,
   tabName,
 }: ProfileSpaceProps) {
 

@@ -29,11 +29,11 @@
 import React, { useMemo } from "react";
 import { Address } from "viem";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
-import { ProposalSpaceData } from "@/common/types/spaceData";
+import { ProposalSpacePageData } from "@/common/types/spaceData";
 import { useProposal } from "@/common/providers/ProposalProvider";
 
 export interface ProposalSpaceProps {
-  spaceData: Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'>;
+  spaceData: Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'>;
   tabName: string;
 }
 
@@ -56,12 +56,12 @@ export default function ProposalSpace({
 
   // Use the passed-in spaceData, but update it with current proposalData from context 
   // and add isEditable and spacePageUrl
-  const updatedSpaceData: ProposalSpaceData = useMemo(() => ({
+  const updatedSpaceData: ProposalSpacePageData = useMemo(() => ({
     ...spaceData,
     spacePageUrl: (tabName: string) => `/p/${spaceData.proposalId}/${encodeURIComponent(tabName)}`,
     proposalData: proposalData || spaceData.proposalData,
     isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) =>
-      isProposalSpaceEditable(spaceData.ownerAddress, currentUserFid, wallets),
+      isProposalSpaceEditable(spaceData.spaceOwnerAddress, currentUserFid, wallets),
   }), [spaceData, proposalData]);
 
   return (

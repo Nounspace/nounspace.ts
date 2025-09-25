@@ -14,12 +14,15 @@ export const SPACE_TYPES = {
 export type SpaceTypeValue = typeof SPACE_TYPES[keyof typeof SPACE_TYPES];
 
 // Base space interface with common properties
-export interface SpaceData {
+export interface SpacePageData {
   // Metadata
-  id: string | undefined;
+  spaceId: string | undefined;
   spaceName: string;
   spaceType: SpaceTypeValue;
   updatedAt: string;
+  defaultTab: string;
+  currentTab: string;
+  spaceOwnerFid: number | undefined;
   
   // URL generation function for this space
   spacePageUrl: (tabName: string) => string;
@@ -27,47 +30,46 @@ export interface SpaceData {
   // Each space type implements its own logic for editability
   isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => boolean;
   
-  // Default tab name for this space
-  defaultTab: string;
-  
   // Configuration - using Omit<SpaceConfig, "isEditable"> since isEditable is determined at runtime
   config: Omit<SpaceConfig, "isEditable">;
 }
 
 // Type-specific space interfaces
-export interface ProfileSpaceData extends SpaceData {
+export interface ProfileSpacePageData extends SpacePageData {
   spaceType: typeof SPACE_TYPES.PROFILE;
-  fid: number;
+  defaultTab: 'Profile';
 }
 
-export interface TokenSpaceData extends SpaceData {
+export interface TokenSpacePageData extends SpacePageData {
   spaceType: typeof SPACE_TYPES.TOKEN;
+  defaultTab: 'Token';
   contractAddress: string;
   network: string;
-  ownerAddress: Address;
+  spaceOwnerAddress: Address;
   tokenData?: MasterToken; // Optional to allow for loading states
 }
 
-export interface ProposalSpaceData extends SpaceData {
+export interface ProposalSpacePageData extends SpacePageData {
   spaceType: typeof SPACE_TYPES.PROPOSAL;
+  defaultTab: 'Overview';
   proposalId: string;
-  ownerAddress: Address;
+  spaceOwnerAddress: Address;
   proposalData?: ProposalData;
 }
 
 // Union type for all spaces
-export type Space = ProfileSpaceData | TokenSpaceData | ProposalSpaceData;
+export type Space = ProfileSpacePageData | TokenSpacePageData | ProposalSpacePageData;
 
 // Type guards (actual TypeScript type guards that narrow types)
-export function isProfileSpace(space: SpaceData): space is ProfileSpaceData {
+export function isProfileSpace(space: SpacePageData): space is ProfileSpacePageData {
   return space.spaceType === SPACE_TYPES.PROFILE;
 }
 
-export function isTokenSpace(space: SpaceData): space is TokenSpaceData {
+export function isTokenSpace(space: SpacePageData): space is TokenSpacePageData {
   return space.spaceType === SPACE_TYPES.TOKEN;
 }
 
-export function isProposalSpace(space: SpaceData): space is ProposalSpaceData {
+export function isProposalSpace(space: SpacePageData): space is ProposalSpacePageData {
   return space.spaceType === SPACE_TYPES.PROPOSAL;
 }
 

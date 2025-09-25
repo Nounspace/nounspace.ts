@@ -2,7 +2,7 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import neynar from "@/common/data/api/neynar";
 import { unstable_noStore as noStore } from "next/cache";
-import { ProfileSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
+import { ProfileSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 
 export type Tab = {
@@ -99,7 +99,7 @@ export const createProfileSpaceData = (
   spaceName: string,
   fid: number,
   tabName: string
-): Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'> => {
+): Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'> => {
   const config = {
     ...createIntialProfileSpaceConfigForFid(fid, spaceName),
     timestamp: new Date().toISOString(),
@@ -107,21 +107,21 @@ export const createProfileSpaceData = (
 
   return {
     // Base SpaceData properties
-    id: spaceId,
+    spaceId: spaceId,
     spaceName,
     spaceType: SPACE_TYPES.PROFILE,
     updatedAt: new Date().toISOString(),
     defaultTab: "Profile",
+    currentTab: tabName,
     config,
-    // ProfileSpaceData specific properties
-    fid,
+    spaceOwnerFid: fid,
   };
 };
 
 export const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string
-): Promise<Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'> | null> => {
+): Promise<Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'> | null> => {
   noStore(); 
 
   const userMetadata = await getUserMetadata(handle);

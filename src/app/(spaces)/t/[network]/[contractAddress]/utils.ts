@@ -1,4 +1,4 @@
-import { isNil, isString, isUndefined } from "lodash"; // cloneDeep imported but not used
+import { isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
   loadViemViewOnlyContract,
@@ -8,171 +8,45 @@ import {
   loadOwnedItentitiesForFid,
   loadOwnedItentitiesForWalletAddress,
 } from "@/common/data/database/supabase/serverHelpers";
-import { tokenRequestorFromContractAddress } from "@/common/data/queries/clanker";
+import { tokenRequestorFromContractAddress, TokenOwnerLookup } from "@/common/data/queries/clanker";
 import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { TokenSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
-import { MasterToken } from "@/common/providers/TokenProvider";
+import { TokenSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
+import { MasterToken as _MasterToken } from "@/common/providers/TokenProvider";
 import { loadTokenData } from "@/common/data/queries/tokenData";
 import createInitialTokenSpaceConfigForAddress from "@/constants/initialTokenSpace";
+
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
-const defaultContractPageProps = {
-  spaceId: undefined,
-  ownerId: null,
-  ownerIdType: "address" as OwnerType,
-  tabName: "Profile",
-  contractAddress: null,
-  owningIdentities: [],
-  network: "base",
-};
-
-export async function loadTokenSpaceMetadata(
-  params: Record<string, string | string[]>,
-) {
-
-  noStore();
-  if (isUndefined(params)) {
-    return {
-      props: defaultContractPageProps,
-    };
-  }
-
-  const { contractAddress, tabName: tabNameUnparsed, network } = params;
-  console.log("[loadTokenSpaceMetadata] Contract address validation:", { 
-    contractAddress, 
-    network,
-    isNil: isNil(contractAddress),
-    isArray: Array.isArray(contractAddress),
-    matchesRegex: contractAddress && !Array.isArray(contractAddress) 
-      ? ETH_CONTRACT_ADDRESS_REGEX.test(contractAddress) 
-      : false
-  });
-  
-  const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
+/**
+ * Validates a contract address format
+ */
+export function validateContractAddress(contractAddress: string | null): boolean {
   if (
     isNil(contractAddress) ||
-    Array.isArray(contractAddress) ||
     !ETH_CONTRACT_ADDRESS_REGEX.test(contractAddress)
   ) {
-    console.log("[loadTokenSpaceMetadata] Contract address validation failed, returning default props");
-    return {
-      props: {
-        ...defaultContractPageProps,
-        tabName,
-      },
-    };
+    return false;
   }
-  const contractAddressStr = contractAddress as string;
-  // console.log("network contractPageProps", network);
+  return true;
+}
 
-  console.log("[loadTokenSpaceMetadata] Loading contract data for:", {
-    contractAddressStr,
-    network: isString(network) ? network : undefined
-  });
-  
-  const contractData = await loadViemViewOnlyContract(
-    contractAddressStr,
-    isString(network) ? network : undefined,
-  );
-  
-  console.log("[loadTokenSpaceMetadata] Contract data loading result:", {
-    success: !isUndefined(contractData),
-    hasContract: contractData?.contract ? true : false,
-    abiLength: contractData?.abi?.length || 0
-  });
-  
-  if (isUndefined(contractData)) {
-    console.log("[loadTokenSpaceMetadata] Contract data undefined, returning default props");
-    return {
-      props: {
-        ...defaultContractPageProps,
-        tabName,
-      },
-    };
-  }
-  const { contract, abi } = contractData;
-
-  let pinnedCastId: string | null = "";
-  let owningIdentities: string[] = [];
-  let ownerId: string | null = null;
-  let ownerIdType: OwnerType = "address";
-
-  try {
-    console.log("[loadTokenSpaceMetadata] Fetching token owner from Clanker API for:", contractAddressStr);
-    const tokenOwner = await tokenRequestorFromContractAddress(contractAddressStr);
-    console.log("[loadTokenSpaceMetadata] Clanker API result:", {
-      ownerId: tokenOwner.ownerId,
-      ownerIdType: tokenOwner.ownerIdType,
-      hasClankerData: !!tokenOwner.clankerData,
-      hasEmpireData: !!tokenOwner.empireData
-    });
-    
-    ownerId = tokenOwner.ownerId || null;
-    ownerIdType = tokenOwner.ownerIdType;
-  } catch (error) {
-    console.error("[loadTokenSpaceMetadata] Error fetching token owner:", error);
-  }
-
-  if (isNil(ownerId)) {
-    try {
-      console.log("[loadTokenSpaceMetadata] Falling back to contract owner lookup");
-      const ownerData = await contractOwnerFromContract(
-        contract,
-        abi,
-        contractAddressStr,
-        isString(network) ? network : undefined,
-      );
-      console.log("[loadTokenSpaceMetadata] Contract owner lookup result:", ownerData);
-      
-      ownerId = ownerData.ownerId || null;
-      ownerIdType = ownerData.ownerIdType;
-    } catch (error) {
-      console.error("[loadTokenSpaceMetadata] Error fetching contract owner:", error);
-    }
-  }
-
-  if (isNil(ownerId)) {
-    console.log("[loadTokenSpaceMetadata] No owner found for contract, returning partial props");
-    return {
-      props: {
-        ...defaultContractPageProps,
-        tabName,
-        contractAddressStr,
-        pinnedCastId,
-        owningIdentities,
-      },
-    };
-  }
-  
-  console.log("[loadTokenSpaceMetadata] Owner found:", { ownerId, ownerIdType });
-
-  // Check if the contract has a castHash function
-  const hasCastHash = abi.some(item =>
-    item.type === 'function' &&
-    item.name === 'castHash'
-  );
-
-  if (hasCastHash) {
-    try {
-      pinnedCastId = (await contract.read.castHash()) as string;
-    } catch (error) {
-      console.error("Error reading castHash:", error);
-    }
-  }
-
-  if (ownerIdType === "address") {
-    owningIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
-  } else {
-    owningIdentities = await loadOwnedItentitiesForFid(ownerId);
-  }
-  // console.log("Debug - Contract Address before query:", contractAddressStr);
-  // console.log("Debug - Network:", network);
-
-  console.log("[loadTokenSpaceMetadata] Querying database for space registration:", {
-    contractAddressStr,
+/**
+ * Loads internal platform data for a token space from the database
+ */
+export async function loadInternalSpaceData(
+  contractAddress: string,
+  network: string,
+): Promise<{
+  spaceId?: string;
+  registeredFid?: number;
+  identityPublicKey?: string;
+  spaceName?: string;
+}> {
+  console.log("[loadInternalSpaceData] Querying database for space registration:", {
+    contractAddress,
     network: isString(network) ? network : "any"
   });
   
@@ -181,7 +55,7 @@ export async function loadTokenSpaceMetadata(
     .select(
       "spaceId, spaceName, contractAddress, network, identityPublicKey, fidRegistrations(fid)"
     )
-    .eq("contractAddress", contractAddressStr);
+    .eq("contractAddress", contractAddress);
 
   if (isString(network)) {
     query = query.eq("network", network);
@@ -192,68 +66,135 @@ export async function loadTokenSpaceMetadata(
     .limit(1);
     
   if (error) {
-    console.error("[loadTokenSpaceMetadata] Database query error:", error);
+    console.error("[loadInternalSpaceData] Database query error:", error);
+    return {};
   }
   
-  console.log("[loadTokenSpaceMetadata] Database query results:", {
-    success: !error,
-    resultCount: data?.length || 0,
-    firstResult: data?.[0] ? {
-      spaceId: data[0].spaceId,
-      contractAddress: data[0].contractAddress,
-      network: data[0].network
-    } : null
-  });
-
   const registrationRow = data?.[0];
-  const spaceId = registrationRow?.spaceId || undefined;
-  const registeredFid = Array.isArray(registrationRow?.fidRegistrations)
-    ? registrationRow?.fidRegistrations[0]?.fid
-    : registrationRow?.fidRegistrations?.fid;
-    
-  console.log("[loadTokenSpaceMetadata] Extracted registration data:", {
-    spaceId,
-    registeredFid
-  });
-
-  if (registrationRow?.identityPublicKey) {
-    if (!owningIdentities.includes(registrationRow.identityPublicKey)) {
-      owningIdentities.push(registrationRow.identityPublicKey);
-    }
+  
+  if (!registrationRow) {
+    return {};
   }
 
-  if (!isNil(registeredFid)) {
-    ownerId = String(registeredFid);
-    ownerIdType = "fid";
-  }
+  const spaceId = registrationRow.spaceId;
+  const registeredFid = Array.isArray(registrationRow.fidRegistrations)
+    ? registrationRow.fidRegistrations[0]?.fid
+    : registrationRow.fidRegistrations?.fid;
+  const identityPublicKey = registrationRow.identityPublicKey;
+  const spaceName = registrationRow.spaceName;
 
   return {
-    props: {
-      spaceId,
-      ownerId,
-      ownerIdType,
-      tabName,
-      contractAddress: contractAddressStr,
-      pinnedCastId,
-      owningIdentities,
-    },
+    spaceId,
+    registeredFid,
+    identityPublicKey,
+    spaceName
   };
 }
 
-// Token space specific creator
-export const createTokenSpaceData = (
-  spaceId: string | undefined,
-  spaceName: string,
+/**
+ * Get token ownership information
+ */
+export async function resolveTokenOwnership(
   contractAddress: string,
-  network: EtherScanChainName,
-  ownerId: string | null,
-  ownerIdType: OwnerType,
-  tokenData: MasterToken | undefined,
-  tabName: string
-): Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'> => {
-  const ownerAddress = ownerId && ownerIdType === "address" ? ownerId as Address : "0x0000000000000000000000000000000000000000" as Address;
+  network: string
+): Promise<{
+  ownerId: string | null;
+  ownerIdType: OwnerType;
+  owningIdentities: string[];
+}> {
+  // First try the token requestor which checks Clanker + Empire
+  let tokenOwnership: TokenOwnerLookup | null = null;
+  try {
+    tokenOwnership = await tokenRequestorFromContractAddress(contractAddress);
+  } catch (error) {
+    console.error("[resolveTokenOwnership] Error in token requestor:", error);
+  }
   
-  console.log("[createTokenSpaceData] Creating default config");
+  // If no owner found via APIs, try blockchain fallback
+  let ownerId = tokenOwnership?.ownerId || null;
+  let ownerIdType = tokenOwnership?.ownerIdType || "address";
+  
+  if (isNil(ownerId)) {
+    try {
+      const contractData = await loadViemViewOnlyContract(
+        contractAddress,
+        isString(network) ? network : undefined,
+      );
+      
+      if (!isUndefined(contractData)) {
+        const { contract, abi } = contractData;
+        const ownerData = await contractOwnerFromContract(
+          contract,
+          abi,
+          contractAddress,
+          isString(network) ? network : undefined,
+        );
+        
+        ownerId = ownerData.ownerId || null;
+        ownerIdType = ownerData.ownerIdType;
+      }
+    } catch (error) {
+      console.error("[resolveTokenOwnership] Error in contract ownership fallback:", error);
+    }
+  }
+  
+  // Load identity keys based on resolved owner
+  let owningIdentities: string[] = [];
+  if (!isNil(ownerId)) {
+    if (ownerIdType === "address") {
+      owningIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
+    } else {
+      owningIdentities = await loadOwnedItentitiesForFid(ownerId);
+    }
+  }
+  
+  return {
+    ownerId,
+    ownerIdType,
+    owningIdentities
+  };
+}
+
+/**
+ * Main function to load token space data for page component
+ */
+export const loadTokenSpacePageData = async (
+  contractAddress: string,
+  network: string,
+  tabNameParam?: string
+): Promise<Omit<TokenSpacePageData, 'isEditable' | 'spacePageUrl'> | null> => {
+  noStore();
+
+  if (!validateContractAddress(contractAddress)) {
+    return null;
+  }
+  
+  // Get token data (price, symbol, etc)
+  const tokenData = await loadTokenData(contractAddress as Address, network as EtherScanChainName);
+  
+  // Get ownership information
+  const ownership = await resolveTokenOwnership(contractAddress, network);
+  
+  // Get internal platform data
+  const internalData = await loadInternalSpaceData(contractAddress, network);
+  
+  // Resolve final ownership data using both sources
+  const finalOwnerId = !isNil(internalData.registeredFid) 
+    ? String(internalData.registeredFid) 
+    : ownership.ownerId;
+  
+  const finalOwnerType = !isNil(internalData.registeredFid) 
+    ? "fid" as OwnerType 
+    : ownership.ownerIdType;
+  
+  // Add identityPublicKey to owningIdentities if not already included
+  const finalOwningIdentities = [...ownership.owningIdentities];
+  if (internalData.identityPublicKey && !finalOwningIdentities.includes(internalData.identityPublicKey)) {
+    finalOwningIdentities.push(internalData.identityPublicKey);
+  }
+
+  const tabName = tabNameParam || "Token";
+  const spaceName = internalData.spaceName || `Token ${contractAddress}`;
   
   // Get symbol from tokenData for the config
   const symbol = tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
@@ -261,7 +202,7 @@ export const createTokenSpaceData = (
   const casterFid = String(tokenData?.clankerData?.requestor_fid || "");
   const isClankerToken = !!tokenData?.clankerData;
   
-  // Use the createInitialTokenSpaceConfigForAddress function to create the config
+  // Create space config
   const config = {
     ...createInitialTokenSpaceConfigForAddress(
       contractAddress,
@@ -269,56 +210,29 @@ export const createTokenSpaceData = (
       casterFid,
       symbol,
       isClankerToken,
-      network
+      network as EtherScanChainName
     ),
     timestamp: new Date().toISOString(),
   };
-
+  
+  // Convert ownerId to the appropriate type based on ownerIdType
+  const spaceOwnerFid = finalOwnerType === 'fid' ? Number(finalOwnerId) : undefined;
+  const spaceOwnerAddress = finalOwnerType === 'address' && finalOwnerId ? 
+    finalOwnerId as Address : 
+    "0x0000000000000000000000000000000000000000" as Address;
+    
   return {
-    // Base SpaceData properties
-    id: spaceId,
+    spaceId: internalData.spaceId,
     spaceName,
     spaceType: SPACE_TYPES.TOKEN,
     updatedAt: new Date().toISOString(),
     defaultTab: "Token",
+    currentTab: tabName,
+    spaceOwnerFid,
+    spaceOwnerAddress,
     config,
-    // TokenSpaceData specific properties
     contractAddress,
     network,
-    ownerAddress,
     tokenData,
   };
-};
-
-export const loadTokenSpaceData = async (
-  params: Record<string, string | string[]>,
-  tabNameParam?: string
-): Promise<Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'> | null> => {
-  const spaceMetadata = await loadTokenSpaceMetadata(params);
-  
-  if (!spaceMetadata.props.contractAddress) {
-    return null;
-  }
-
-  const { contractAddress, ownerId, ownerIdType } = spaceMetadata.props;
-  const network = (params.network as string) || "base";
-  const tabName = tabNameParam || spaceMetadata.props.tabName || "Token";
-  const spaceName = `Token ${contractAddress}`;
-
-  // Use spaceId from database if available
-  const spaceId: string | undefined = spaceMetadata.props.spaceId;
-
-  // Load token data
-  const tokenData = await loadTokenData(contractAddress as Address, network as EtherScanChainName);
-
-  return createTokenSpaceData(
-    spaceId, // Use server-side checked spaceId
-    spaceName,
-    contractAddress,
-    network as EtherScanChainName,
-    ownerId,
-    ownerIdType,
-    tokenData,
-    tabName
-  );
 };
