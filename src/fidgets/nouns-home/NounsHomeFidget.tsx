@@ -37,7 +37,7 @@ import { NounsAuctionHouseV3Abi } from "./abis";
 import type { Auction, Settlement } from "./types";
 import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
-import { fetchExecutedProposalsCount, fetchCurrentTokenHolders } from "./subgraph";
+import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction } from "./subgraph";
 import LinkOut from "./LinkOut";
 
 const ConnectControl: React.FC = () => {
@@ -93,6 +93,25 @@ const useAuctionData = () => {
   const fetchAuction = useCallback(async () => {
     try {
       setLoading(true);
+      // Prefer subgraph for resiliency and speed
+      try {
+        const sg = await fetchLatestAuction();
+        if (sg) {
+          const normalized: Auction = {
+            nounId: BigInt(sg.id),
+            amount: BigInt(sg.amount),
+            startTime: BigInt(sg.startTime),
+            endTime: BigInt(sg.endTime),
+            bidder: (sg.bidder?.id ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+            settled: Boolean(sg.settled),
+          };
+          setAuction(normalized);
+          return normalized;
+        }
+      } catch (_) {
+        // fall through to on-chain
+      }
+
       const data = await nounsPublicClient.readContract({
         address: NOUNS_AH_ADDRESS,
         abi: NounsAuctionHouseV3Abi,
@@ -106,14 +125,7 @@ const useAuctionData = () => {
         `0x${string}`,
         boolean,
       ];
-      const normalized: Auction = {
-        nounId,
-        amount,
-        startTime,
-        endTime,
-        bidder,
-        settled,
-      };
+      const normalized: Auction = { nounId, amount, startTime, endTime, bidder, settled };
       setAuction(normalized);
       return normalized;
     } catch (error) {

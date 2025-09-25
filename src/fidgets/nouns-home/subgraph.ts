@@ -48,3 +48,18 @@ export async function fetchCurrentTokenHolders(): Promise<number | undefined> {
   return v ? Number(v) : undefined;
 }
 
+export type SubgraphAuction = {
+  id: string; // nounId
+  amount: string;
+  startTime: string;
+  endTime: string;
+  settled: boolean;
+  bidder?: { id: string } | null;
+};
+
+export async function fetchLatestAuction(): Promise<SubgraphAuction | null> {
+  const data = await gql<{ auctions: SubgraphAuction[] }>(
+    `query LatestAuction { auctions(first: 1, orderBy: startTime, orderDirection: desc) { id amount startTime endTime settled bidder { id } } }`,
+  );
+  return data.auctions?.[0] ?? null;
+}

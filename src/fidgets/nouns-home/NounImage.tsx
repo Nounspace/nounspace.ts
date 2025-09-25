@@ -39,8 +39,9 @@ const resolveTokenUriImage = async (nounId: bigint) => {
 
     return tokenUri;
   } catch (error) {
-    console.error("Failed to load Noun tokenURI", error);
-    return null;
+    console.warn("Failed to load Noun tokenURI, falling back to noun.pics", error);
+    // Fallback to a fast CDN image if on-chain data-uri fails
+    return nounPicsUrl(nounId);
   }
 };
 
