@@ -1,78 +1,74 @@
-import { SpaceConfig } from '@/app/(spaces)/Space';
-import { Address } from 'viem';
-import { MasterToken } from '@/common/providers/TokenProvider';
-import { ProposalData } from '@/app/(spaces)/p/[proposalId]/utils';
+import { Address } from "viem";
+import { MasterToken } from "@/common/providers/TokenProvider";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 
-// Space type definitions - the single source of truth for space types
-export const SPACE_TYPES = {
-  PROFILE: 'profile',
-  TOKEN: 'token', 
-  PROPOSAL: 'proposal',
-} as const;
+export enum SPACE_TYPES {
+  PROFILE = "profile",
+  TOKEN = "token", 
+  PROPOSAL = "proposal",
+  CHANNEL = "channel",
+}
 
-// TypeScript type derived from the constants (for type checking)
-export type SpaceTypeValue = typeof SPACE_TYPES[keyof typeof SPACE_TYPES];
+export type SpaceTypeValue = `${SPACE_TYPES}`;
 
-// Base space interface with common properties
-export interface SpacePageData {
-  // Metadata
-  spaceId: string | undefined;
+// Base space data interface
+export interface SpaceData {
+  spaceId?: string; // Set by PublicSpace through registration
   spaceName: string;
-  spaceType: SpaceTypeValue;
+  spaceType: SPACE_TYPES;
   updatedAt: string;
-  defaultTab: string;
-  currentTab: string;
-  spaceOwnerFid: number | undefined;
-  
-  // URL generation function for this space
   spacePageUrl: (tabName: string) => string;
-  
-  // Each space type implements its own logic for editability
-  isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => boolean;
-  
-  // Configuration - using Omit<SpaceConfig, "isEditable"> since isEditable is determined at runtime
-  config: Omit<SpaceConfig, "isEditable">;
+  isEditable: (currentUserFid?: number, wallets?: { address: Address }[]) => boolean;
+  defaultTab: string; // Default tab name for this space
+  config: SpaceConfig;
 }
 
-// Type-specific space interfaces
-export interface ProfileSpacePageData extends SpacePageData {
-  spaceType: typeof SPACE_TYPES.PROFILE;
-  defaultTab: 'Profile';
-  identityPublicKey?: string;
+// Type-specific space data interfaces
+export interface ProfileSpaceData extends SpaceData {
+  fid: number;
+  spaceOwnerFid?: number;
 }
 
-export interface TokenSpacePageData extends SpacePageData {
-  spaceType: typeof SPACE_TYPES.TOKEN;
-  defaultTab: 'Token';
-  contractAddress: string;
+export interface TokenSpaceData extends SpaceData {
+  contractAddress: Address;
   network: string;
-  spaceOwnerAddress: Address;
-  tokenData?: MasterToken; // Optional to allow for loading states
-  identityPublicKey?: string;
+  ownerAddress: Address;
+  tokenData?: MasterToken;
 }
 
-export interface ProposalSpacePageData extends SpacePageData {
-  spaceType: typeof SPACE_TYPES.PROPOSAL;
-  defaultTab: 'Overview';
+export interface ProposalSpaceData extends SpaceData {
   proposalId: string;
-  spaceOwnerAddress: Address;
-  proposalData?: ProposalData;
-  identityPublicKey?: string;
+  ownerAddress: Address;
 }
 
-// Union type for all spaces
-export type Space = ProfileSpacePageData | TokenSpacePageData | ProposalSpacePageData;
-
-// Type guards (actual TypeScript type guards that narrow types)
-export function isProfileSpace(space: SpacePageData): space is ProfileSpacePageData {
-  return space.spaceType === SPACE_TYPES.PROFILE;
+export interface ChannelSpaceData extends SpaceData {
+  channelName: string;
+  channelId: string;
+  spaceOwnerFid?: number;
 }
 
-export function isTokenSpace(space: SpacePageData): space is TokenSpacePageData {
-  return space.spaceType === SPACE_TYPES.TOKEN;
+// Union type for all space data types
+export type SpacePageData = ProfileSpaceData | TokenSpaceData | ProposalSpaceData | ChannelSpaceData;
+
+// Type guards for space data
+export function isProfileSpace(spaceData: SpacePageData): spaceData is ProfileSpaceData {
+  return spaceData.spaceType === SPACE_TYPES.PROFILE;
 }
 
-export function isProposalSpace(space: SpacePageData): space is ProposalSpacePageData {
-  return space.spaceType === SPACE_TYPES.PROPOSAL;
+export function isTokenSpace(spaceData: SpacePageData): spaceData is TokenSpaceData {
+  return spaceData.spaceType === SPACE_TYPES.TOKEN;
 }
 
+export function isProposalSpace(spaceData: SpacePageData): spaceData is ProposalSpaceData {
+  return spaceData.spaceType === SPACE_TYPES.PROPOSAL;
+}
+
+export function isChannelSpace(spaceData: SpacePageData): spaceData is ChannelSpaceData {
+  return spaceData.spaceType === SPACE_TYPES.CHANNEL;
+}
+
+// Backward compatibility aliases
+export type ProfileSpacePageData = ProfileSpaceData;
+export type TokenSpacePageData = TokenSpaceData;
+export type ProposalSpacePageData = ProposalSpaceData;
+export type ChannelSpacePageData = ChannelSpaceData;

@@ -18,7 +18,7 @@ import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
-import { SpacePageData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/spaceData";
+import { SpacePageData, isProfileSpace, isTokenSpace, isProposalSpace, isChannelSpace } from "@/common/types/spaceData";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -61,6 +61,7 @@ export default function PublicSpace({
     registerSpaceFid,
     registerSpaceContract,
     registerProposalSpace,
+    registerChannelSpace,
   } = useAppStore((state) => ({
     clearLocalSpaces: state.clearLocalSpaces,
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
@@ -84,6 +85,7 @@ export default function PublicSpace({
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
     registerProposalSpace: state.space.registerProposalSpace,
+    registerChannelSpace: state.space.registerChannelSpace,
   }));
 
   const router = useRouter();
@@ -181,6 +183,14 @@ export default function PublicSpace({
       // For proposal spaces, use the providedSpaceId directly if it exists
       if (providedSpaceId) {
         nextSpaceId = providedSpaceId;
+        nextTabName = decodeURIComponent(providedTabName);
+      }
+    } else if (isChannelSpace(spacePageData)) {
+      const existingSpace = Object.values(localSpacesSnapshot).find(
+        (space) => space.channelName === spacePageData.channelName || space.channelId === spacePageData.channelId,
+      );
+      if (existingSpace) {
+        nextSpaceId = existingSpace.id;
         nextTabName = decodeURIComponent(providedTabName);
       }
     }
@@ -442,7 +452,17 @@ export default function PublicSpace({
               setCurrentTabName(spacePageData.defaultTab);
               return;
             }
-          } else if (!isTokenSpace(spacePageData)) {
+          } else if (isChannelSpace(spacePageData)) {
+            const existingSpace = Object.values(localSpaces).find(
+              (space) => space.channelName === spacePageData.channelName || space.channelId === spacePageData.channelId,
+            );
+
+            if (existingSpace) {
+              setCurrentSpaceId(existingSpace.id);
+              setCurrentTabName(spacePageData.defaultTab);
+              return;
+            }
+          } else if (!isTokenSpace(spacePageData) && !isChannelSpace(spacePageData)) {
             const existingSpace = Object.values(localSpaces).find(
               (space) => space.fid === currentUserFid,
             );
@@ -476,6 +496,12 @@ export default function PublicSpace({
 
             const newUrl = getSpacePageUrl(spacePageData.defaultTab);
             router.replace(newUrl);
+          } else if (isChannelSpace(spacePageData)) {
+            newSpaceId = await registerChannelSpace(
+              spacePageData.channelName,
+              spacePageData.channelId,
+              initialConfig,
+            );
           }
 
           if (newSpaceId) {

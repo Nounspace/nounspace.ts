@@ -14,6 +14,7 @@ import {
   SpaceRegistrationContract,
   SpaceRegistrationFid,
   SpaceRegistrationProposer,
+  SpaceRegistrationChannel,
 } from "@/pages/api/space/registry";
 import {
   UnsignedUpdateTabOrderRequest,
@@ -92,6 +93,8 @@ interface CachedSpace {
   contractAddress?: string | null;
   network?: string | null;
   proposalId?: string | null;
+  channelName?: string | null;
+  channelId?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -166,6 +169,11 @@ interface SpaceActions {
   ) => Promise<string | undefined>;
   registerProposalSpace: (
     proposalId: string,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
+  ) => Promise<string | undefined>;
+  registerChannelSpace: (
+    channelName: string,
+    channelId: string,
     initialConfig: Omit<SpaceConfig, "isEditable">,
   ) => Promise<string | undefined>;
   clear: () => void;
@@ -1091,6 +1099,98 @@ export const createSpaceStoreFunc = (
       return newSpaceId;
     } catch (e) {
       console.error("Failed to register proposal space:", e);
+      throw e;
+    }
+  },
+  registerChannelSpace: async (channelName, channelId, initialConfig) => {
+    try {
+      let existingSpaceId: string | undefined;
+
+      // Check if a space already exists for this channel
+      try {
+        const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+            },
+          },
+        );
+
+        if (existingSpaces.value) {
+          const existingSpace = existingSpaces.value.spaces.find(
+            (space) => space.channelName === channelName || space.channelId === channelId
+          );
+          if (existingSpace) {
+            existingSpaceId = existingSpace.spaceId;
+          }
+        }
+      } catch (checkError) {
+        console.error("Error checking for existing channel space:", checkError);
+      }
+
+      if (existingSpaceId) {
+        return existingSpaceId;
+      }
+
+      // Register a new space for the channel
+      const unsignedRegistration: Omit<SpaceRegistrationChannel, "signature"> = {
+        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+        spaceName: channelName,
+        timestamp: moment().toISOString(),
+        channelName,
+        channelId,
+        spaceType: SPACE_TYPES.CHANNEL,
+      };
+      
+      console.log("[registerChannelSpace] unsignedRegistration:", unsignedRegistration);
+      
+      const registration = signSignable(
+        unsignedRegistration,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
+      );
+
+      console.log("[registerChannelSpace] Making API call to /api/space/registry");
+      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+        "/api/space/registry",
+        registration,
+      );
+      console.log("[registerChannelSpace] API response:", data);
+      const newSpaceId = data.value!.spaceId;
+      console.log("[registerChannelSpace] New space ID:", newSpaceId);
+
+      // Initialize the space with proper structure
+      set((draft) => {
+        draft.space.editableSpaces[newSpaceId] = channelName;
+        draft.space.localSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+          channelName,
+          channelId,
+        };
+      });
+      console.log("[registerChannelSpace] Space initialized in store");
+
+      // Create and commit the initial Channel tab
+      console.log("[registerChannelSpace] Creating Channel tab...");
+      try {
+        await get().space.createSpaceTab(
+          newSpaceId,
+          "Channel",
+          initialConfig
+        );
+        console.log("[registerChannelSpace] Channel tab created successfully");
+      } catch (tabError) {
+        console.error("[registerChannelSpace] Tab creation failed:", tabError);
+        throw new Error(`Failed to create Channel tab: ${tabError instanceof Error ? tabError.message : String(tabError)}`);
+      }
+
+      return newSpaceId;
+    } catch (e) {
+      console.error("Failed to register channel space:", e);
       throw e;
     }
   },

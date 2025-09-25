@@ -43,10 +43,18 @@ export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
   proposalId: string;
 }
 
+export interface SpaceRegistrationChannel extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.CHANNEL;
+  channelName: string;
+  channelId: string;
+  spaceOwnerFid?: number;
+}
+
 export type SpaceRegistration =
   | SpaceRegistrationContract
   | SpaceRegistrationFid
-  | SpaceRegistrationProposer;
+  | SpaceRegistrationProposer
+  | SpaceRegistrationChannel;
 
 type SpaceInfo = SpaceRegistrationBase & {
   spaceId: string;
@@ -54,6 +62,8 @@ type SpaceInfo = SpaceRegistrationBase & {
   contractAddress: string | null;
   network: string | null;
   proposalId?: string | null;
+  channelName?: string | null;
+  channelId?: string | null;
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
@@ -91,6 +101,16 @@ function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistration
     isSpaceRegistration(maybe) &&
     maybe["spaceType"] === SPACE_TYPES.PROPOSAL &&
     typeof maybe["proposalId"] === "string"
+  );
+}
+
+// Type guard to handle SpaceRegistrationChannel
+function isSpaceRegistrationChannel(maybe: unknown): maybe is SpaceRegistrationChannel {
+  return (
+    isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.CHANNEL &&
+    typeof maybe["channelName"] === "string" &&
+    typeof maybe["channelId"] === "string"
   );
 }
 
@@ -218,6 +238,9 @@ async function registerNewSpace(
     }
   } else if (isSpaceRegistrationProposer(registration)) {
     // Handle proposer-specific logic if needed
+  } else if (isSpaceRegistrationChannel(registration)) {
+    // Handle channel-specific logic if needed
+    // For now, allow any identity to register channel spaces
   }
 
   if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {
