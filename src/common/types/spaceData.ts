@@ -38,6 +38,7 @@ export interface SpacePageData {
 export interface ProfileSpacePageData extends SpacePageData {
   spaceType: typeof SPACE_TYPES.PROFILE;
   defaultTab: 'Profile';
+  identityPublicKey?: string;
 }
 
 export interface TokenSpacePageData extends SpacePageData {
@@ -47,6 +48,7 @@ export interface TokenSpacePageData extends SpacePageData {
   network: string;
   spaceOwnerAddress: Address;
   tokenData?: MasterToken; // Optional to allow for loading states
+  identityPublicKey?: string;
 }
 
 export interface ProposalSpacePageData extends SpacePageData {
@@ -55,6 +57,7 @@ export interface ProposalSpacePageData extends SpacePageData {
   proposalId: string;
   spaceOwnerAddress: Address;
   proposalData?: ProposalData;
+  identityPublicKey?: string;
 }
 
 // Union type for all spaces

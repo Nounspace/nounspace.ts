@@ -221,6 +221,29 @@ export async function loadProposalSpaceId(proposalId: string): Promise<string | 
   }
 }
 
+export async function loadProposalSpaceRegistration(proposalId: string): Promise<{
+  spaceId?: string;
+  identityPublicKey?: string;
+} | null> {
+  noStore();
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId, identityPublicKey")
+      .eq("proposalId", proposalId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.error("Error fetching proposal space registration:", error);
+      return null;
+    }
+    return data && data.length > 0 ? data[0] : null;
+  } catch (e) {
+    console.error("Exception in loadProposalSpaceRegistration:", e);
+    return null;
+  }
+}
+
 // Proposal space specific creator
 export const createProposalSpaceData = (
   spaceId: string | undefined,
@@ -228,7 +251,8 @@ export const createProposalSpaceData = (
   proposalId: string,
   ownerAddress: Address,
   tabName: string,
-  proposalData?: ProposalData
+  proposalData?: ProposalData,
+  identityPublicKey?: string
 ): Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'> => {
   
   const config = {
@@ -253,6 +277,7 @@ export const createProposalSpaceData = (
     proposalId,
     spaceOwnerAddress: ownerAddress,
     proposalData,
+    identityPublicKey,
   };
 };
 
@@ -271,8 +296,10 @@ export const loadProposalSpaceData = async (
   const spaceName = `Proposal ${proposalId}`;
   const ownerAddress = proposalData.proposer.id as Address;
 
-  // Check if space already exists in database
-  const spaceId: string | undefined = await loadProposalSpaceId(proposalId) || undefined;
+  // Check if space already exists in database and get registration data
+  const registrationData = await loadProposalSpaceRegistration(proposalId);
+  const spaceId = registrationData?.spaceId;
+  const identityPublicKey = registrationData?.identityPublicKey;
 
   return createProposalSpaceData(
     spaceId, // Use existing spaceId if found, otherwise undefined for claiming
@@ -280,6 +307,7 @@ export const loadProposalSpaceData = async (
     proposalId,
     ownerAddress,
     tabName,
-    proposalData
+    proposalData,
+    identityPublicKey
   );
 };

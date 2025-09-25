@@ -31,6 +31,7 @@ import { Address } from "viem";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ProposalSpacePageData } from "@/common/types/spaceData";
 import { useProposal } from "@/common/providers/ProposalProvider";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 
 export interface ProposalSpaceProps {
   spaceData: Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'>;
@@ -41,11 +42,39 @@ export interface ProposalSpaceProps {
 const isProposalSpaceEditable = (
   ownerAddress: Address,
   currentUserFid: number | undefined,
-  wallets?: { address: Address }[]
+  wallets: { address: Address }[],
+  spaceId: string | undefined,
+  spaceIdentityPublicKey?: string,
+  currentUserIdentityPublicKey?: string
 ): boolean => {
-  return wallets?.some(
+  // Require user to be logged in (have an identity key)
+  if (!currentUserIdentityPublicKey) {
+    console.log('[ProposalSpace] User not logged in - not editable');
+    return false;
+  }
+
+  // Check wallet ownership (original logic)
+  const hasWalletOwnership = wallets?.some(
     (w) => w.address.toLowerCase() === ownerAddress.toLowerCase()
   ) || false;
+
+  // Check identity key ownership (only if space is registered)
+  const hasIdentityOwnership = !!(spaceId && spaceIdentityPublicKey && 
+    spaceIdentityPublicKey === currentUserIdentityPublicKey);
+
+  console.log('[ProposalSpace] Editability check details:', {
+    ownerAddress,
+    currentUserFid,
+    walletAddresses: wallets?.map((w) => w.address),
+    spaceId,
+    spaceIdentityPublicKey,
+    currentUserIdentityPublicKey,
+    hasWalletOwnership,
+    hasIdentityOwnership,
+    isEditable: hasWalletOwnership || hasIdentityOwnership
+  });
+
+  return hasWalletOwnership || hasIdentityOwnership;
 };
 
 export default function ProposalSpace({
@@ -53,6 +82,7 @@ export default function ProposalSpace({
   tabName,
 }: ProposalSpaceProps) {
   const { proposalData } = useProposal();
+  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
 
   // Use the passed-in spaceData, but update it with current proposalData from context 
   // and add isEditable and spacePageUrl
@@ -61,8 +91,15 @@ export default function ProposalSpace({
     spacePageUrl: (tabName: string) => `/p/${spaceData.proposalId}/${encodeURIComponent(tabName)}`,
     proposalData: proposalData || spaceData.proposalData,
     isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) =>
-      isProposalSpaceEditable(spaceData.spaceOwnerAddress, currentUserFid, wallets),
-  }), [spaceData, proposalData]);
+      isProposalSpaceEditable(
+        spaceData.spaceOwnerAddress, 
+        currentUserFid, 
+        wallets || [],
+        spaceData.spaceId,
+        spaceData.identityPublicKey,
+        currentUserIdentityPublicKey
+      ),
+  }), [spaceData, proposalData, currentUserIdentityPublicKey]);
 
   return (
     <PublicSpace

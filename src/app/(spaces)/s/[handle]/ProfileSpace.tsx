@@ -27,6 +27,7 @@
 import React, { useMemo } from "react";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ProfileSpacePageData } from "@/common/types/spaceData";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 
 export interface ProfileSpaceProps {
   spacePageData: Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'>;
@@ -36,23 +37,57 @@ export interface ProfileSpaceProps {
 // Helper function to check if profile space is editable
 const isProfileSpaceEditable = (
   fid: number | undefined,
-  currentUserFid: number | undefined
+  currentUserFid: number | undefined,
+  spaceId: string | undefined,
+  spaceIdentityPublicKey?: string,
+  currentUserIdentityPublicKey?: string
 ): boolean => {
-  return currentUserFid !== undefined && fid !== undefined && currentUserFid === fid;
+  // Require user to be logged in (have an identity key)
+  if (!currentUserIdentityPublicKey) {
+    console.log('[ProfileSpace] User not logged in - not editable');
+    return false;
+  }
+
+  // Check FID ownership (original logic)
+  const hasFidOwnership = currentUserFid !== undefined && fid !== undefined && currentUserFid === fid;
+
+  // Check identity key ownership (only if space is registered)
+  const hasIdentityOwnership = !!(spaceId && spaceIdentityPublicKey && 
+    spaceIdentityPublicKey === currentUserIdentityPublicKey);
+
+  console.log('[ProfileSpace] Editability check details:', {
+    fid,
+    currentUserFid,
+    spaceId,
+    spaceIdentityPublicKey,
+    currentUserIdentityPublicKey,
+    hasFidOwnership,
+    hasIdentityOwnership,
+    isEditable: hasFidOwnership || hasIdentityOwnership
+  });
+
+  return hasFidOwnership || hasIdentityOwnership;
 };
 
 export default function ProfileSpace({
   spacePageData: spaceData,
   tabName,
 }: ProfileSpaceProps) {
+  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
 
   // Add isEditable and spacePageUrl logic on the client side
   const spaceDataWithClientSideLogic = useMemo(() => ({
     ...spaceData,
     spacePageUrl: (tabName: string) => `/s/${spaceData.spaceName}/${encodeURIComponent(tabName)}`,
     isEditable: (currentUserFid: number | undefined) => 
-      isProfileSpaceEditable(spaceData.spaceOwnerFid, currentUserFid),
-  }), [spaceData]);
+      isProfileSpaceEditable(
+        spaceData.spaceOwnerFid, 
+        currentUserFid,
+        spaceData.spaceId,
+        spaceData.identityPublicKey,
+        currentUserIdentityPublicKey
+      ),
+  }), [spaceData, currentUserIdentityPublicKey]);
 
   return (
     <PublicSpace

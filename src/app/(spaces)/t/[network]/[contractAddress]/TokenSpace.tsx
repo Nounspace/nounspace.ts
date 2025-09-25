@@ -34,6 +34,7 @@ import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { Address, isAddressEqual } from 'viem';
 import { TokenSpacePageData } from "@/common/types/spaceData";
 import { isNil } from "lodash";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 
 export interface TokenSpaceProps {
   spacePageData: Omit<TokenSpacePageData, 'isEditable' | 'spacePageUrl'>;
@@ -46,13 +47,23 @@ const checkTokenSpaceEditability = (
   spaceOwnerAddress: Address,
   tokenData: any | undefined,
   currentUserFid: number | undefined,
-  wallets: { address: Address }[]
+  wallets: { address: Address }[],
+  spaceId: string | undefined,
+  spaceIdentityPublicKey?: string,
+  currentUserIdentityPublicKey?: string
 ): boolean => {
+  // Require user to be logged in (have an identity key)
+  if (!currentUserIdentityPublicKey) {
+    console.log('[TokenSpace] User not logged in - not editable');
+    return false;
+  }
+
   let isEditable = false;
   const checks = {
     databaseFid: false,
     walletOwnership: false,
-    clankerRequestor: false
+    clankerRequestor: false,
+    identityOwnership: false
   };
 
   // Check if user is the owner by FID (from database registration)
@@ -88,6 +99,17 @@ const checkTokenSpaceEditability = (
     checks.clankerRequestor = true;
   }
 
+  // Check identity key ownership (only if space is registered)
+  if (
+    !isEditable &&
+    spaceId &&
+    spaceIdentityPublicKey &&
+    spaceIdentityPublicKey === currentUserIdentityPublicKey
+  ) {
+    isEditable = true;
+    checks.identityOwnership = true;
+  }
+
   console.log('[TokenSpace] Editability check details:', {
     spaceOwnerFid,
     spaceOwnerAddress,
@@ -96,6 +118,9 @@ const checkTokenSpaceEditability = (
     ownerAddress,
     clankerRequestorFid: tokenData?.clankerData?.requestor_fid,
     empireOwner: tokenData?.empireData?.owner,
+    spaceId,
+    spaceIdentityPublicKey,
+    currentUserIdentityPublicKey,
     checks,
     isEditable,
     tokenData: {
@@ -114,6 +139,7 @@ export default function TokenSpace({
   tabName,
 }: TokenSpaceProps) {
   const { tokenData } = useToken();
+  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
   
   // Use the passed-in spaceData, but update it with current tokenData from context and add isEditable and spacePageUrl
   const updatedSpaceData: TokenSpacePageData = useMemo(() => ({
@@ -126,10 +152,13 @@ export default function TokenSpace({
         spaceData.spaceOwnerAddress, 
         tokenData || spaceData.tokenData, 
         currentUserFid, 
-        wallets || []
+        wallets || [],
+        spaceData.spaceId,
+        spaceData.identityPublicKey,
+        currentUserIdentityPublicKey
       );
     },
-  }), [spaceData, tokenData]);
+  }), [spaceData, tokenData, currentUserIdentityPublicKey]);
 
   return (
     <PublicSpace

@@ -98,7 +98,8 @@ export const createProfileSpaceData = (
   spaceId: string | undefined,
   spaceName: string,
   fid: number,
-  tabName: string
+  tabName: string,
+  identityPublicKey?: string
 ): Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'> => {
   const config = {
     ...createIntialProfileSpaceConfigForFid(fid, spaceName),
@@ -115,8 +116,32 @@ export const createProfileSpaceData = (
     currentTab: tabName,
     config,
     spaceOwnerFid: fid,
+    identityPublicKey,
   };
 };
+
+export async function loadProfileSpaceRegistration(fid: number): Promise<{
+  spaceId?: string;
+  identityPublicKey?: string;
+} | null> {
+  noStore();
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId, identityPublicKey")
+      .eq("fid", fid)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.error("Error fetching profile space registration:", error);
+      return null;
+    }
+    return data && data.length > 0 ? data[0] : null;
+  } catch (e) {
+    console.error("Exception in loadProfileSpaceRegistration:", e);
+    return null;
+  }
+}
 
 export const loadUserSpaceData = async (
   handle: string,
@@ -132,12 +157,10 @@ export const loadUserSpaceData = async (
     return null;
   }
 
-  // Check if space already exists in database
-  let spaceId: string | undefined;
-  const tabList = await getTabList(spaceOwnerFid);
-  if (tabList && tabList.length > 0) {
-    spaceId = tabList[0].spaceId;
-  }
+  // Check if space already exists in database and get registration data
+  const registrationData = await loadProfileSpaceRegistration(spaceOwnerFid);
+  const spaceId = registrationData?.spaceId;
+  const identityPublicKey = registrationData?.identityPublicKey;
 
   const tabName = tabNameParam || spaceOwnerUsername || "Profile";
 
@@ -145,6 +168,7 @@ export const loadUserSpaceData = async (
     spaceId, // This can be undefined if space doesn't exist yet
     spaceOwnerUsername || "Profile",
     spaceOwnerFid,
-    tabName
+    tabName,
+    identityPublicKey
   );
 };
