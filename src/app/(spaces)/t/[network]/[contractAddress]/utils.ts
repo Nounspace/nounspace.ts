@@ -15,7 +15,7 @@ import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { TokenSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import { MasterToken as _MasterToken } from "@/common/providers/TokenProvider";
-import { loadTokenData } from "@/common/data/queries/tokenData";
+import { fetchMasterTokenServer } from "@/common/data/queries/serverTokenData";
 import createInitialTokenSpaceConfigForAddress from "@/constants/initialTokenSpace";
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
@@ -115,11 +115,20 @@ export async function resolveTokenOwnership(
   let ownerIdType = tokenOwnership?.ownerIdType || "address";
   
   if (isNil(ownerId)) {
+    console.log("[resolveTokenOwnership] No owner found from APIs, trying contract fallback...");
     try {
       const contractData = await loadViemViewOnlyContract(
         contractAddress,
         isString(network) ? network : undefined,
       );
+      
+      console.log("[resolveTokenOwnership] Contract data loaded:", {
+        contractAddress,
+        network,
+        hasContract: !!contractData?.contract,
+        hasAbi: !!contractData?.abi,
+        abiLength: contractData?.abi?.length
+      });
       
       if (!isUndefined(contractData)) {
         const { contract, abi } = contractData;
@@ -129,6 +138,8 @@ export async function resolveTokenOwnership(
           contractAddress,
           isString(network) ? network : undefined,
         );
+        
+        console.log("[resolveTokenOwnership] Contract owner data:", ownerData);
         
         ownerId = ownerData.ownerId || null;
         ownerIdType = ownerData.ownerIdType;
@@ -170,13 +181,15 @@ export const loadTokenSpacePageData = async (
   }
   
   // Get token data (price, symbol, etc)
-  const tokenData = await loadTokenData(contractAddress as Address, network as EtherScanChainName);
+  const tokenData = await fetchMasterTokenServer(contractAddress, network as EtherScanChainName);
   
   // Get ownership information
   const ownership = await resolveTokenOwnership(contractAddress, network);
+  console.log('[loadTokenSpacePageData] Ownership resolution result:', ownership);
   
   // Get internal platform data
   const internalData = await loadInternalSpaceData(contractAddress, network);
+  console.log('[loadTokenSpacePageData] Internal data result:', internalData);
   
   // Resolve final ownership data using both sources
   const finalOwnerId = !isNil(internalData.registeredFid) 
@@ -186,6 +199,14 @@ export const loadTokenSpacePageData = async (
   const finalOwnerType = !isNil(internalData.registeredFid) 
     ? "fid" as OwnerType 
     : ownership.ownerIdType;
+    
+  console.log('[loadTokenSpacePageData] Final ownership resolution:', {
+    finalOwnerId,
+    finalOwnerType,
+    internalDataRegisteredFid: internalData.registeredFid,
+    ownershipOwnerId: ownership.ownerId,
+    ownershipOwnerIdType: ownership.ownerIdType
+  });
   
   // Add identityPublicKey to owningIdentities if not already included
   const finalOwningIdentities = [...ownership.owningIdentities];

@@ -42,31 +42,71 @@ export interface TokenSpaceProps {
 
 // Editability logic for token spaces
 const checkTokenSpaceEditability = (
-  ownerAddress: Address,
+  spaceOwnerFid: number | undefined,
+  spaceOwnerAddress: Address,
   tokenData: any | undefined,
   currentUserFid: number | undefined,
   wallets: { address: Address }[]
 ): boolean => {
-  // Check if user is the owner by FID (from tokenData)
+  let isEditable = false;
+  const checks = {
+    databaseFid: false,
+    walletOwnership: false,
+    clankerRequestor: false
+  };
+
+  // Check if user is the owner by FID (from database registration)
   if (
-    tokenData?.clankerData?.requestor_fid && 
-    !isNil(currentUserFid) && 
-    currentUserFid === Number(tokenData.clankerData.requestor_fid)
+    spaceOwnerFid &&
+    !isNil(currentUserFid) &&
+    currentUserFid === spaceOwnerFid
   ) {
-    return true;
+    isEditable = true;
+    checks.databaseFid = true;
   }
 
   // Check if user owns the wallet address - handles both direct contract ownership
   // and Empire token ownership through tokenData.empireData.owner
-  const resolvedOwnerAddress = ownerAddress || (tokenData?.empireData?.owner as Address | undefined);
+  const ownerAddress = spaceOwnerAddress || (tokenData?.empireData?.owner as Address | undefined);
   if (
-    resolvedOwnerAddress &&
-    wallets.some((w) => isAddressEqual(w.address as Address, resolvedOwnerAddress))
+    !isEditable &&
+    ownerAddress &&
+    wallets.some((w) => isAddressEqual(w.address as Address, ownerAddress))
   ) {
-    return true;
+    isEditable = true;
+    checks.walletOwnership = true;
   }
 
-  return false;
+  // Check Clanker requestor status
+  if (
+    !isEditable &&
+    tokenData?.clankerData?.requestor_fid && 
+    !isNil(currentUserFid) && 
+    currentUserFid === Number(tokenData.clankerData.requestor_fid)
+  ) {
+    isEditable = true;
+    checks.clankerRequestor = true;
+  }
+
+  console.log('[TokenSpace] Editability check details:', {
+    spaceOwnerFid,
+    spaceOwnerAddress,
+    currentUserFid,
+    walletAddresses: wallets.map((w) => w.address),
+    ownerAddress,
+    clankerRequestorFid: tokenData?.clankerData?.requestor_fid,
+    empireOwner: tokenData?.empireData?.owner,
+    checks,
+    isEditable,
+    tokenData: {
+      clankerData: tokenData?.clankerData,
+      empireData: tokenData?.empireData,
+      geckoData: tokenData?.geckoData,
+      network: tokenData?.network
+    }
+  });
+
+  return isEditable;
 };
 
 export default function TokenSpace({
@@ -82,6 +122,7 @@ export default function TokenSpace({
     tokenData: tokenData || spaceData.tokenData,
     isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => {
       return checkTokenSpaceEditability(
+        spaceData.spaceOwnerFid,
         spaceData.spaceOwnerAddress, 
         tokenData || spaceData.tokenData, 
         currentUserFid, 

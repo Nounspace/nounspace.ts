@@ -130,10 +130,25 @@ export default function PublicSpace({
 
   // Use isEditable logic from spaceData
   const isEditable = useMemo(() => {
-    return spacePageData.isEditable(
+    const result = spacePageData.isEditable(
       currentUserFid || undefined, 
       wallets.map((w) => ({ address: w.address as Address }))
     );
+    
+    console.log('[PublicSpace] Editability check:', {
+      spaceType: spacePageData.spaceType,
+      currentUserFid,
+      walletAddresses: wallets.map((w) => w.address),
+      isEditable: result,
+      spacePageData: {
+        spaceOwnerFid: 'spaceOwnerFid' in spacePageData ? spacePageData.spaceOwnerFid : undefined,
+        spaceOwnerAddress: 'spaceOwnerAddress' in spacePageData ? spacePageData.spaceOwnerAddress : undefined,
+        contractAddress: 'contractAddress' in spacePageData ? spacePageData.contractAddress : undefined,
+        network: 'network' in spacePageData ? spacePageData.network : undefined,
+      }
+    });
+    
+    return result;
   }, [spacePageData, currentUserFid, wallets]);
 
   // Determine the page type if not explicitly provided

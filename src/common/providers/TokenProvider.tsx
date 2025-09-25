@@ -50,7 +50,11 @@ export const fetchMasterToken = async (
     );
 
     const [clankerResponse, empireResponse] = await Promise.all([
-      fetch(`/api/clanker/ca?address=${address}`).then((res) => res.json()),
+      // Only fetch Clanker data for Base network tokens (optimization)
+      // Use API endpoint for client-side calls
+      network === "base" 
+        ? fetch(`/api/clanker/ca?address=${address}`).then((res) => res.json())
+        : Promise.resolve(null),
       fetchEmpireByAddress(address as Address),
     ]);
 

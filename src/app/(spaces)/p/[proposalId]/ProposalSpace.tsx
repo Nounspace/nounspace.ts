@@ -66,7 +66,7 @@ export default function ProposalSpace({
 
   return (
     <PublicSpace
-      spaceData={updatedSpaceData}
+      spacePageData={updatedSpaceData}
       tabName={tabName}
     />
   );

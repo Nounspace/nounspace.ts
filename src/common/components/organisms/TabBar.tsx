@@ -92,6 +92,24 @@ function TabBar({
   const defaultTab = spaceData ? spaceData.defaultTab : "Profile";
   const tabList = tabListParam || [defaultTab];
 
+  console.log('[TabBar] Props and derived values:', {
+    isEditable,
+    spaceData: spaceData ? {
+      spaceType: spaceData.spaceType,
+      spaceOwnerFid: 'spaceOwnerFid' in spaceData ? spaceData.spaceOwnerFid : undefined,
+      spaceOwnerAddress: 'spaceOwnerAddress' in spaceData ? spaceData.spaceOwnerAddress : undefined,
+      contractAddress: 'contractAddress' in spaceData ? spaceData.contractAddress : undefined,
+      network: 'network' in spaceData ? spaceData.network : undefined,
+    } : null,
+    derivedIsTokenPage,
+    derivedContractAddress,
+    derivedPageType,
+    derivedSpaceId,
+    inEditMode,
+    currentTab,
+    tabList
+  });
+
   function generateNewTabName(): string {
     const endIndex = tabList.length + 1;
     const base = `Tab ${endIndex}`;
@@ -300,6 +318,15 @@ function TabBar({
           </div>
 
           {/* Action Buttons - pushed to right side */}
+          {(() => {
+            console.log('[TabBar] Edit button render check:', {
+              isEditable,
+              inEditMode,
+              willShowEditButton: isEditable && !inEditMode,
+              willShowAddTabButton: isEditable && inEditMode
+            });
+            return null;
+          })()}
           {(isEditable) && (
             <div className="flex items-center gap-2 px-2 flex-shrink-0">
               {!inEditMode && (

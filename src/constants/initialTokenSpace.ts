@@ -85,6 +85,9 @@ export const createInitialTokenSpaceConfigForAddress = (
           fidgetShadow: "var(--user-theme-fidget-shadow)",
           chain: getNetworkWithId(network),
           token: address,
+          dataSource: "geckoterminal",
+          theme: "light",
+          size: 1,
         },
       },
 
