@@ -246,6 +246,8 @@ export const createProposalSpaceData = (
     spaceType: SPACE_TYPES.PROPOSAL,
     updatedAt: new Date().toISOString(),
     defaultTab: "Overview",
+    currentTab: tabName,
+    spaceOwnerFid: undefined, // FID not available for proposal spaces
     config,
     // ProposalSpaceData specific properties
     proposalId,
