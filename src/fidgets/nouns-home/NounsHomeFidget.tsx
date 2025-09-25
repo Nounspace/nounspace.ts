@@ -258,6 +258,7 @@ const NounsHomeInner: React.FC = () => {
   const { settlements, isLoading: settlementsLoading, hasMore, loadNext, refresh } =
     useSettlements(auction);
   const { isConnected, address, chainId } = useAccount();
+  const { connectAsync, connectors } = useConnect();
   const { writeContractAsync } = useWriteContract();
   const [countdown, setCountdown] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
@@ -433,7 +434,14 @@ const NounsHomeInner: React.FC = () => {
   const handleOpenBid = useCallback(() => {
     setActionMessage(null);
     if (!isConnected) {
-      setActionError("Connect a wallet to place a bid.");
+      const preferred = connectors?.[0];
+      if (preferred) {
+        connectAsync({ connector: preferred, chainId: REQUIRED_CHAIN_ID }).catch(() => {
+          setActionError("Please connect a wallet to bid.");
+        });
+      } else {
+        setActionError("Please connect a wallet to bid.");
+      }
       return;
     }
     if (chainId !== REQUIRED_CHAIN_ID) {

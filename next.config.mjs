@@ -39,6 +39,7 @@ const cspHeader = `
       https://api.segment.io
       https://api.imgbb.com
       https://api.goldsky.com
+      https://api.reservoir.tools
       https://base-mainnet.g.alchemy.com
       https://eth-mainnet.g.alchemy.com
       https://cloudflare-eth.com
