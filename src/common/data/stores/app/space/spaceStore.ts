@@ -1036,15 +1036,20 @@ export const createSpaceStoreFunc = (
         proposalId,
         spaceType: SPACE_TYPES.PROPOSAL,
       };
+      
+      console.log("[registerProposalSpace] unsignedRegistration:", unsignedRegistration);
+      
       const registration = signSignable(
         unsignedRegistration,
         get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
 
+      console.log("[registerProposalSpace] Making API call to /api/space/registry");
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
+      console.log("[registerProposalSpace] API response:", data);
       const newSpaceId = data.value!.spaceId;
 
       // Initialize the space with proper structure

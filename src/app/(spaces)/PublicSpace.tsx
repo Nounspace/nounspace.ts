@@ -131,6 +131,7 @@ export default function PublicSpace({
         spaceOwnerAddress: 'spaceOwnerAddress' in spacePageData ? spacePageData.spaceOwnerAddress : undefined,
         contractAddress: 'contractAddress' in spacePageData ? spacePageData.contractAddress : undefined,
         network: 'network' in spacePageData ? spacePageData.network : undefined,
+        proposalId: 'proposalId' in spacePageData ? spacePageData.proposalId : undefined,
       }
     });
     
@@ -408,6 +409,16 @@ export default function PublicSpace({
 
       const registerSpace = async () => {
         console.log("[PublicSpace] Starting space registration");
+        console.log("[PublicSpace] Registration debug info:", {
+          isEditable,
+          currentSpaceId,
+          currentUserFid,
+          loading,
+          spaceType: spacePageData.spaceType,
+          proposalId: isProposalSpace(spacePageData) ? spacePageData.proposalId : undefined,
+          isSignedIntoFarcaster,
+          authManagerLastUpdatedAt
+        });
         try {
           let newSpaceId: string | undefined;
 
@@ -456,7 +467,7 @@ export default function PublicSpace({
               spacePageData.proposalId,
               initialConfig,
             );
-          } else if (!isTokenSpace(spacePageData)) {
+          } else if (isProfileSpace(spacePageData)) {
             newSpaceId = await registerSpaceFid(
               currentUserFid,
               spacePageData.defaultTab,
@@ -494,6 +505,12 @@ export default function PublicSpace({
           }
         } catch (error) {
           console.error("Error during space registration:", error);
+          console.error("Registration error details:", {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            spaceType: spacePageData.spaceType,
+            proposalId: isProposalSpace(spacePageData) ? spacePageData.proposalId : undefined,
+          });
         }
       };
 
