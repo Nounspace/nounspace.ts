@@ -98,7 +98,6 @@ export default function PublicSpace({
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
   const { editMode } = useSidebarContext();
-  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
   
   // Clear cache only when switching to a different space
   useEffect(() => {
