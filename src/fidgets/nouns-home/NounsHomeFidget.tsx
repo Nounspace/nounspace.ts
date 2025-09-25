@@ -33,7 +33,7 @@ import {
 } from "./components/Sections";
 import { nounsWagmiConfig, REQUIRED_CHAIN_ID } from "./wagmiConfig";
 import { nounsPublicClient, NOUNS_AH_ADDRESS } from "./config";
-import { NounsAuctionHouseV3Abi } from "./abis";
+import { NounsAuctionHouseV3Abi, NounsAuctionHouseExtraAbi } from "./abis";
 import type { Auction, Settlement } from "./types";
 import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
@@ -266,6 +266,8 @@ const NounsHomeInner: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSettling, setIsSettling] = useState(false);
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
+  const [reservePrice, setReservePrice] = useState<bigint | null>(null);
+  const [minIncrementPct, setMinIncrementPct] = useState<number | null>(null);
 
   useEffect(() => {
     if (!auction) return;
@@ -277,6 +279,36 @@ const NounsHomeInner: React.FC = () => {
     const timer = setInterval(updateCountdown, 1_000);
     return () => clearInterval(timer);
   }, [auction]);
+
+  // Fetch precise bidding parameters when the component mounts
+  useEffect(() => {
+    (async () => {
+      try {
+        const [minPct, reserve] = await Promise.all([
+          nounsPublicClient
+            .readContract({ address: NOUNS_AH_ADDRESS, abi: NounsAuctionHouseExtraAbi, functionName: "minBidIncrementPercentage" })
+            .catch(() => null),
+          nounsPublicClient
+            .readContract({ address: NOUNS_AH_ADDRESS, abi: NounsAuctionHouseExtraAbi, functionName: "reservePrice" })
+            .catch(() => null),
+        ]);
+        if (typeof minPct === "number") setMinIncrementPct(minPct);
+        if (typeof reserve === "bigint") setReservePrice(reserve);
+      } catch (_) {
+        // optional getters; ignore failures
+      }
+    })();
+  }, []);
+
+  const minRequiredWei = useMemo(() => {
+    if (!auction) return undefined;
+    const pct = minIncrementPct ?? 5;
+    if (auction.amount === 0n) {
+      return (reservePrice ?? 0n) || undefined;
+    }
+    const increment = (auction.amount * BigInt(pct) + 99n) / 100n; // round up
+    return auction.amount + increment;
+  }, [auction, minIncrementPct, reservePrice]);
 
   const { data: bidderEns } = useEnsName({
     address: auction?.bidder,
@@ -592,6 +624,7 @@ const NounsHomeInner: React.FC = () => {
           isOpen={bidModalOpen}
           nounId={auction.nounId}
           currentAmount={auction.amount}
+          minRequiredWei={minRequiredWei}
           onDismiss={() => {
             setBidModalOpen(false);
             setActionError(null);

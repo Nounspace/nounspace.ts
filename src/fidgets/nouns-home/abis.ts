@@ -66,6 +66,23 @@ export const NounsAuctionHouseV3Abi = [
   },
 ] as const;
 
+export const NounsAuctionHouseExtraAbi = [
+  {
+    type: "function",
+    stateMutability: "view",
+    name: "minBidIncrementPercentage",
+    inputs: [],
+    outputs: [{ name: "", type: "uint8" }],
+  },
+  {
+    type: "function",
+    stateMutability: "view",
+    name: "reservePrice",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
+
 export const NounsTokenAbi = [
   {
     type: "function",

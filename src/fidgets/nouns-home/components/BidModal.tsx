@@ -8,6 +8,7 @@ interface BidModalProps {
   isOpen: boolean;
   nounId: bigint;
   currentAmount: bigint;
+  minRequiredWei?: bigint;
   onDismiss: () => void;
   onConfirm: (valueWei: bigint) => void;
   isSubmitting: boolean;
@@ -18,6 +19,7 @@ const BidModal: React.FC<BidModalProps> = ({
   isOpen,
   nounId,
   currentAmount,
+  minRequiredWei,
   onDismiss,
   onConfirm,
   isSubmitting,
@@ -27,12 +29,13 @@ const BidModal: React.FC<BidModalProps> = ({
   const [inputError, setInputError] = useState<string | null>(null);
 
   const minSuggested = useMemo(() => {
+    if (minRequiredWei && minRequiredWei > 0n) return formatEther(minRequiredWei);
     if (currentAmount === 0n) {
       return "0.1";
     }
-    const fivePct = (currentAmount * 105n) / 100n;
+    const fivePct = (currentAmount * 105n + 99n) / 100n; // round up
     return formatEther(fivePct);
-  }, [currentAmount]);
+  }, [currentAmount, minRequiredWei]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -53,8 +56,9 @@ const BidModal: React.FC<BidModalProps> = ({
         return;
       }
       const parsed = parseEther(value as `${number}`);
-      if (parsed <= currentAmount) {
-        setInputError("Bid must exceed the current amount");
+      const minimum = minRequiredWei ?? (currentAmount === 0n ? 0n : (currentAmount * 105n + 99n) / 100n);
+      if (parsed < minimum) {
+        setInputError(`Bid must be at least ${formatEther(minimum)} ETH`);
         return;
       }
       setInputError(null);
