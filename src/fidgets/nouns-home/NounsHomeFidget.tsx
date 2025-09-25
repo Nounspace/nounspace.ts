@@ -36,6 +36,7 @@ import { nounsPublicClient, NOUNS_AH_ADDRESS } from "./config";
 import { NounsAuctionHouseV3Abi } from "./abis";
 import type { Auction, Settlement } from "./types";
 import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
+import { useEthUsdPrice, formatUsd } from "./price";
 import LinkOut from "./LinkOut";
 
 const ConnectControl: React.FC = () => {
@@ -297,9 +298,17 @@ const NounsHomeInner: React.FC = () => {
 
   const treasuryRaisedLabel = useMemo(() => {
     if (!settlements?.length) return undefined;
-    const total = settlements.reduce((acc, item) => acc + item.amount, 0n);
-    return formatEth(total);
+    const totalEth = settlements.reduce((acc, item) => acc + item.amount, 0n);
+    return formatEth(totalEth);
   }, [settlements]);
+  const ethUsd = useEthUsdPrice();
+  const treasuryRaisedUsdLabel = useMemo(() => {
+    if (!settlements?.length || !ethUsd) return undefined;
+    const totalEth = settlements.reduce((acc, item) => acc + item.amount, 0n);
+    const asEth = Number(formatEth(totalEth).split(' ')[0].replace(/,/g, ''));
+    if (!Number.isFinite(asEth)) return undefined;
+    return formatUsd(asEth * ethUsd);
+  }, [settlements, ethUsd]);
 
   const status = getAuctionStatus(auction);
 
@@ -453,7 +462,7 @@ const NounsHomeInner: React.FC = () => {
   }, [auction, attemptSettle, chainId, isConnected, refetch, refresh]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex h-full flex-col gap-6 overflow-y-auto">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Nouns Auction House</h1>
@@ -525,8 +534,8 @@ const NounsHomeInner: React.FC = () => {
       <StatsRow
         totalSettled={totalSettled}
         nounHolderCount={nounHolderCount}
-        ideasFundedLabel="Hundreds"
-        treasuryRaisedLabel={treasuryRaisedLabel}
+        ideasFundedLabel="Hundreds+"
+        treasuryRaisedLabel={treasuryRaisedUsdLabel ?? treasuryRaisedLabel}
       />
 
       <div className={INNER_PADDING}>
