@@ -37,6 +37,7 @@ import { NounsAuctionHouseV3Abi } from "./abis";
 import type { Auction, Settlement } from "./types";
 import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
+import { fetchExecutedProposalsCount, fetchCurrentTokenHolders } from "./subgraph";
 import LinkOut from "./LinkOut";
 
 const ConnectControl: React.FC = () => {
@@ -296,6 +297,30 @@ const NounsHomeInner: React.FC = () => {
     return holders.size || undefined;
   }, [settlements, auction]);
 
+  // Fetch precise counts from public subgraph
+  const [executedCount, setExecutedCount] = useState<number | undefined>();
+  const [holdersFromSubgraph, setHoldersFromSubgraph] = useState<number | undefined>();
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [exec, holders] = await Promise.all([
+          fetchExecutedProposalsCount().catch(() => undefined),
+          fetchCurrentTokenHolders().catch(() => undefined),
+        ]);
+        if (!cancelled) {
+          setExecutedCount(exec);
+          setHoldersFromSubgraph(holders);
+        }
+      } catch (_) {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const treasuryRaisedLabel = useMemo(() => {
     if (!settlements?.length) return undefined;
     const totalEth = settlements.reduce((acc, item) => acc + item.amount, 0n);
@@ -533,15 +558,15 @@ const NounsHomeInner: React.FC = () => {
 
       <StatsRow
         totalSettled={totalSettled}
-        nounHolderCount={nounHolderCount}
-        ideasFundedLabel="Hundreds+"
+        nounHolderCount={holdersFromSubgraph ?? nounHolderCount}
+        ideasFundedLabel={(executedCount ?? undefined)?.toLocaleString() || "Hundreds+"}
         treasuryRaisedLabel={treasuryRaisedUsdLabel ?? treasuryRaisedLabel}
       />
 
       <div className={INNER_PADDING}>
         <ThisIsNounsSection />
         <NounsFundsIdeasSection />
-        <GovernedByYouSection nounHolderCount={nounHolderCount} />
+        <GovernedByYouSection nounHolderCount={holdersFromSubgraph ?? nounHolderCount} />
         <TheseAreNounsStrip />
         <GetANounSection />
         <AlreadyOwnSection />

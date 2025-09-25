@@ -39,7 +39,10 @@ const cspHeader = `
       https://api.segment.io
       https://api.imgbb.com
       https://api.goldsky.com
-      https://base-mainnet.g.alchemy.com;
+      https://base-mainnet.g.alchemy.com
+      https://eth-mainnet.g.alchemy.com
+      https://cloudflare-eth.com
+      https://api.coingecko.com;
 
     upgrade-insecure-requests;
 `;
