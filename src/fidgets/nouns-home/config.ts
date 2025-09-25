@@ -38,10 +38,11 @@ export const NOUNS_TOKEN_ADDRESS =
 
 export type NounsImageSource = "tokenURI" | "noun.pics" | "cloudnouns";
 
+// Prefer noun.pics by default for fast, reliable loads
 export const NOUNS_IMAGE_SOURCE = (
   (getEnv("NOUNS_IMAGE_SOURCE") ||
     getEnv("NEXT_PUBLIC_NOUNS_IMAGE_SOURCE") ||
-    "tokenURI") as NounsImageSource
+    "noun.pics") as NounsImageSource
 ).toLowerCase() as NounsImageSource;
 
 const nounsTransport: Transport = http(rpcUrl, { timeout: 15_000 });
