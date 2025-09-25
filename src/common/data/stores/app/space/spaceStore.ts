@@ -945,7 +945,7 @@ export const createSpaceStoreFunc = (
           "/api/space/registry",
           registration,
         );
-        // console.log("Nounspace registration response:", data);
+        console.log("Nounspace registration response:", data);
         const newSpaceId = data.value!.spaceId;
         
         // Initialize both local and remote spaces with proper structure
@@ -1051,6 +1051,7 @@ export const createSpaceStoreFunc = (
       );
       console.log("[registerProposalSpace] API response:", data);
       const newSpaceId = data.value!.spaceId;
+      console.log("[registerProposalSpace] New space ID:", newSpaceId);
 
       // Initialize the space with proper structure
       set((draft) => {
@@ -1064,13 +1065,21 @@ export const createSpaceStoreFunc = (
           proposalId,
         };
       });
+      console.log("[registerProposalSpace] Space initialized in store");
 
       // Create and commit the initial Overview tab
-      await get().space.createSpaceTab(
-        newSpaceId,
-        "Overview",
-        initialConfig
-      );
+      console.log("[registerProposalSpace] Creating Overview tab...");
+      try {
+        await get().space.createSpaceTab(
+          newSpaceId,
+          "Overview",
+          initialConfig
+        );
+        console.log("[registerProposalSpace] Overview tab created successfully");
+      } catch (tabError) {
+        console.error("[registerProposalSpace] Tab creation failed:", tabError);
+        throw new Error(`Failed to create Overview tab: ${tabError instanceof Error ? tabError.message : String(tabError)}`);
+      }
 
 
       // TODO: Install analytics again after proposal space is working 
