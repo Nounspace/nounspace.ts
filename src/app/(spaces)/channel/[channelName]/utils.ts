@@ -36,7 +36,10 @@ export const createChannelSpaceData = (
   spaceOwnerFid?: number,
   tabName?: string,
 ): Omit<ChannelSpaceData, 'isEditable' | 'spacePageUrl'> => {
-  const config = createInitialChannelSpaceConfigForName(channelName);
+  const config = {
+    ...createInitialChannelSpaceConfigForName(channelName),
+    timestamp: new Date().toISOString(),
+  };
   
   return {
     spaceId,
