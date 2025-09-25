@@ -225,7 +225,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   ]);
 
   useEffect(() => {
-    if (ready && authenticated) {
+    if (ready && authenticated && user && user.wallet) {
       if (
         currentStep === SetupStep.NOT_SIGNED_IN ||
         currentStep === SetupStep.UNINITIALIZED
@@ -252,11 +252,12 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     } else if (
       ready &&
       !authenticated &&
-      currentStep !== SetupStep.NOT_SIGNED_IN
+      currentStep !== SetupStep.NOT_SIGNED_IN &&
+      (!user || !user.wallet)
     ) {
       setCurrentStep(SetupStep.NOT_SIGNED_IN);
     }
-  }, [currentStep, walletsReady, ready, authenticated]);
+  }, [currentStep, walletsReady, ready, authenticated, user]);
 
   async function isHoldingNogs(address): Promise<boolean> {
     if (process.env.NODE_ENV === "development") {
