@@ -68,11 +68,6 @@ const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
     get().checkpoints.clearCheckpoints();
     get().chat.clearMessages();
     localStorage.removeItem(LOCAL_STORAGE_LOCATION);
-    
-    // Clear auth cookies
-    if (typeof document !== 'undefined') {
-      document.cookie = 'identity-public-key=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
-    }
   },
   clearLocalSpaces: () => {
     // remove only the space slice while keeping the rest of the persisted data
