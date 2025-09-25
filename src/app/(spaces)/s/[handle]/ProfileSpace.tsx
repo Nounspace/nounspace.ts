@@ -35,10 +35,10 @@ export interface ProfileSpaceProps {
 
 // Helper function to check if profile space is editable
 const isProfileSpaceEditable = (
-  fid: number,
+  fid: number | undefined,
   currentUserFid: number | undefined
 ): boolean => {
-  return currentUserFid !== undefined && currentUserFid === fid;
+  return currentUserFid !== undefined && fid !== undefined && currentUserFid === fid;
 };
 
 export default function ProfileSpace({
@@ -51,7 +51,7 @@ export default function ProfileSpace({
     ...spaceData,
     spacePageUrl: (tabName: string) => `/s/${spaceData.spaceName}/${encodeURIComponent(tabName)}`,
     isEditable: (currentUserFid: number | undefined) => 
-      isProfileSpaceEditable(spaceData.fid, currentUserFid),
+      isProfileSpaceEditable(spaceData.spaceOwnerFid, currentUserFid),
   }), [spaceData]);
 
   return (

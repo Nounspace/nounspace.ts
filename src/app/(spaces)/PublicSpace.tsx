@@ -18,11 +18,8 @@ import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
-import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 import { SpacePageData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/spaceData";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
-
-export type SpacePageType = "profile" | "token" | "proposal";
 
 interface PublicSpaceProps {
   spacePageData: SpacePageData;

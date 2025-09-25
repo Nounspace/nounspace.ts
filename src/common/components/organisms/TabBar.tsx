@@ -75,7 +75,6 @@ function TabBar({
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
-
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
@@ -91,24 +90,6 @@ function TabBar({
   const derivedSpaceId = spaceData ? spaceData.spaceId : spaceId;
   const defaultTab = spaceData ? spaceData.defaultTab : "Profile";
   const tabList = tabListParam || [defaultTab];
-
-  console.log('[TabBar] Props and derived values:', {
-    isEditable,
-    spaceData: spaceData ? {
-      spaceType: spaceData.spaceType,
-      spaceOwnerFid: 'spaceOwnerFid' in spaceData ? spaceData.spaceOwnerFid : undefined,
-      spaceOwnerAddress: 'spaceOwnerAddress' in spaceData ? spaceData.spaceOwnerAddress : undefined,
-      contractAddress: 'contractAddress' in spaceData ? spaceData.contractAddress : undefined,
-      network: 'network' in spaceData ? spaceData.network : undefined,
-    } : null,
-    derivedIsTokenPage,
-    derivedContractAddress,
-    derivedPageType,
-    derivedSpaceId,
-    inEditMode,
-    currentTab,
-    tabList
-  });
 
   function generateNewTabName(): string {
     const endIndex = tabList.length + 1;
