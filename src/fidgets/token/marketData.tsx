@@ -127,6 +127,15 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
 
   const scaleValue = size;
 
+  // Don't render iframe with empty URL
+  if (!url || url.trim() === "") {
+    return (
+      <div className="h-[calc(100dvh-220px)] md:h-full flex items-center justify-center">
+        <p className="text-muted-foreground">Loading market data...</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
       <iframe

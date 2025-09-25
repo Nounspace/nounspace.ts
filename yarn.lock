@@ -1456,10 +1456,10 @@
   dependencies:
     browser-headers "^0.4.1"
 
-"@internationalized/date@^3.5.4", "@internationalized/date@^3.8.2":
-  version "3.8.2"
-  resolved "https://registry.npmjs.org/@internationalized/date/-/date-3.8.2.tgz"
-  integrity sha512-/wENk7CbvLbkUvX1tu0mwq49CVkkWpkXubGel6birjRPyo6uQ4nQpnq5xZu823zRCwwn82zgHrvgF1vZyvmVgA==
+"@internationalized/date@^3.8.2", "@internationalized/date@^3.9.0":
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.9.0.tgz#cf241989b5dd07a2a9f1c91aabd2ad93968a0cc3"
+  integrity sha512-yaN3brAnHRD+4KyyOsJyk49XUvj2wtbNACSqg0bz3u8t2VuzhC8Q5dfRnrSxjnnbDb+ienBnkn1TzQfE154vyg==
   dependencies:
     "@swc/helpers" "^0.5.0"
 
@@ -12733,10 +12733,10 @@ react-grid-layout@^1.4.4:
     react-resizable "^3.0.5"
     resize-observer-polyfill "^1.5.1"
 
-react-hook-form@^7.51.0:
-  version "7.59.0"
-  resolved "https://registry.npmjs.org/react-hook-form/-/react-hook-form-7.59.0.tgz"
-  integrity sha512-kmkek2/8grqarTJExFNjy+RXDIP8yM+QTl3QL6m6Q8b2bih4ltmiXxH7T9n+yXNK477xPh5yZT/6vD8sYGzJTA==
+react-hook-form@^7.62.0:
+  version "7.62.0"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.62.0.tgz#2d81e13c2c6b6d636548e440818341ca753218d0"
+  integrity sha512-7KWFejc98xqG/F4bAxpL41NB3o1nnvQO1RWZT3TqRZYL8RryQETGfEdVnJN2fy1crCiBLLjkRBVK05j24FxJGA==
 
 react-icons@^5.0.1:
   version "5.5.0"

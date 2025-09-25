@@ -14,7 +14,7 @@ export async function loadOwnedItentitiesForWalletAddress(
   return map(data, "identityPublicKey");
 }
 
-export async function loadIdentitiesOwningContractSpace(
+export async function loadIdentitiesOwningTokenSpace(
   contractAddress: string,
   network: string,
 ) {

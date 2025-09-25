@@ -10,7 +10,7 @@ import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { SpacePageType } from "@/app/(spaces)/PublicSpace";
+import { SpaceTypeValue, SpacePageData, isTokenSpace } from "@/common/types/spaceData";
 import { useSidebarContext } from "./Sidebar";
 import { Button } from "../atoms/button";
 
@@ -28,14 +28,20 @@ interface TabBarProps {
   renameTab: (tabName: string, newName: string) => void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
+  isEditable?: boolean;
+  // New spaceData prop - can derive other props from this
+  spaceData?: SpacePageData;
+  // Legacy props for backward compatibility (can be derived from spaceData)
   isTokenPage?: boolean;
   contractAddress?: Address;
-  pageType?: SpacePageType | undefined;
-  isEditable?: boolean;
+  pageType?: SpaceTypeValue | undefined;
+  spaceId?: string | null;
 }
 
-const PERMANENT_TABS = ["Feed", "Profile"];
-const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
+const isEditableTab = (tabName: string, spaceData?: SpacePageData) => {
+  const permanentTabs = ["Feed", spaceData?.defaultTab || "Profile"];
+  return !permanentTabs.includes(tabName);
+};
 
 // Add validation function
 const validateTabName = (tabName: string): string | null => {
@@ -50,7 +56,7 @@ const TabBar = React.memo(function TabBar({
   inHomebase,
   inEditMode,
   currentTab,
-  tabList = ["Profile"],
+  tabList: tabListParam,
   switchTabTo,
   updateTabOrder,
   commitTabOrder,
@@ -59,19 +65,31 @@ const TabBar = React.memo(function TabBar({
   renameTab,
   commitTab,
   getSpacePageUrl,
+  isEditable,
+  spaceData,
+  // Legacy props for backward compatibility
   isTokenPage,
   contractAddress,
   pageType,
-  isEditable
+  spaceId
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
-
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
+
+  // Derive values from spaceData when available
+  const derivedIsTokenPage = spaceData ? isTokenSpace(spaceData) : isTokenPage;
+  const derivedContractAddress = spaceData && isTokenSpace(spaceData) 
+    ? spaceData.contractAddress as Address 
+    : contractAddress;
+  const derivedPageType = spaceData ? spaceData.spaceType : pageType;
+  const derivedSpaceId = spaceData ? spaceData.spaceId : spaceId;
+  const defaultTab = spaceData ? spaceData.defaultTab : "Profile";
+  const tabList = tabListParam || [defaultTab];
 
   function generateNewTabName(): string {
     const endIndex = tabList.length + 1;
@@ -140,8 +158,8 @@ const TabBar = React.memo(function TabBar({
   }
 
   async function handleDeleteTab(tabName: string) {
-    // Só permite deletar tabs editáveis e se houver mais de uma tab
-    if (!isEditableTab(tabName) || tabList.length <= 1) {
+    // Simple and safe delete function
+    if (!isEditableTab(tabName, spaceData) || tabList.length <= 1) {
       return;
     }
 
@@ -221,8 +239,8 @@ const TabBar = React.memo(function TabBar({
       // If no other tabs, go to Feed
       return "Feed";
     } else {
-      // If no other tabs in profile space, go to Profile
-      return "Profile";
+      // If no other tabs, go to default tab for this space type
+      return defaultTab;
     }
   }
 
@@ -249,7 +267,7 @@ const TabBar = React.memo(function TabBar({
   return (
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full"> 
-        {isTokenPage && contractAddress && (
+        {derivedIsTokenPage && derivedContractAddress && (
           <div className="flex flex-row justify-start h-16 w-full md:w-fit z-20 bg-white">
             <TokenDataHeader />
           </div>
@@ -275,9 +293,9 @@ const TabBar = React.memo(function TabBar({
                       inEditMode={inEditMode}
                       isSelected={currentTab === tabName}
                       onClick={() => handleTabClick(tabName)}
-                      removeable={isEditableTab(tabName)}
+                      removeable={isEditableTab(tabName, spaceData)}
                       draggable={inEditMode}
-                      renameable={isEditableTab(tabName)}
+                      renameable={isEditableTab(tabName, spaceData)}
                       onRemove={() => handleDeleteTab(tabName)}
                       renameTab={handleRenameTab}
                     />
@@ -288,6 +306,15 @@ const TabBar = React.memo(function TabBar({
           </div>
 
           {/* Action Buttons - pushed to right side */}
+          {(() => {
+            console.log('[TabBar] Edit button render check:', {
+              isEditable,
+              inEditMode,
+              willShowEditButton: isEditable && !inEditMode,
+              willShowAddTabButton: isEditable && inEditMode
+            });
+            return null;
+          })()}
           {(isEditable) && (
             <div className="flex items-center gap-2 px-2 flex-shrink-0">
               {!inEditMode && (
@@ -311,8 +338,11 @@ const TabBar = React.memo(function TabBar({
             </div>
           )}
         </div>
-        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
-          <ClaimButtonWithModal contractAddress={contractAddress} />
+        {((derivedIsTokenPage || (derivedPageType === 'proposal' && !derivedSpaceId)) &&
+          !getIsInitializing() &&
+          !isLoggedIn &&
+          !isMobile) && (
+          <ClaimButtonWithModal contractAddress={derivedContractAddress} />
         )}
       </div>
     </TooltipProvider>

@@ -1,11 +1,10 @@
 import { WEBSITE_URL } from "@/constants/app";
 import { Metadata } from "next/types";
 import React from "react";
-import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { getTokenMetadataStructure } from "@/common/lib/utils/tokenMetadata";
 import { defaultFrame } from "@/constants/metadata";
-import { fetchClankerByAddress } from "@/common/data/queries/clanker";
-import { Address } from "viem";
+import { fetchMasterTokenServer } from "@/common/data/queries/serverTokenData";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 // Default metadata (used as fallback)
 const defaultMetadata = {
@@ -32,31 +31,25 @@ export async function generateMetadata({
   let priceChange = "";
   
   try {
-    // Replace Promise.all with Promise.allSettled for more resilient error handling
-    const [tokenResult, clankerResult] = await Promise.allSettled([
-      fetchTokenData(contractAddress, null, network as string),
-      fetchClankerByAddress(contractAddress as Address),
-    ]);
+    // Use fetchMasterToken to get all token data in one consolidated call
+    const masterToken = await fetchMasterTokenServer(contractAddress, network as EtherScanChainName);
     
-    const tokenData = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
-    const clankerData = clankerResult.status === 'fulfilled' ? clankerResult.value : null;
-
-    symbol = clankerData?.symbol || tokenData?.symbol || "";
-    name = clankerData?.name || tokenData?.name || "";
+    symbol = masterToken.clankerData?.symbol || masterToken.geckoData?.symbol || "";
+    name = masterToken.clankerData?.name || masterToken.geckoData?.name || "";
     imageUrl =
-      clankerData?.img_url ||
-      (tokenData?.image_url !== "missing.png" ? tokenData?.image_url || "" : "");
-    marketCap = tokenData?.market_cap_usd || "";
-    priceChange = tokenData?.priceChange || "";
+      masterToken.clankerData?.img_url ||
+      (masterToken.geckoData?.image_url !== "missing.png" ? masterToken.geckoData?.image_url || "" : "");
+    marketCap = masterToken.geckoData?.market_cap_usd || "";
+    priceChange = masterToken.geckoData?.priceChange || "";
 
-    if (tokenData?.price_usd && Number(tokenData.price_usd) !== 0) {
-      const priceNumber = Number(tokenData.price_usd);
+    if (masterToken.geckoData?.price_usd && Number(masterToken.geckoData.price_usd) !== 0) {
+      const priceNumber = Number(masterToken.geckoData.price_usd);
       const formatted = priceNumber.toLocaleString(undefined, {
         minimumFractionDigits: priceNumber < 0.01 ? 4 : 2,
         maximumFractionDigits: priceNumber < 0.01 ? 6 : 2,
       });
       price = `$${formatted}`;
-    } else if (tokenData?.price_usd === "0" || Number(tokenData?.price_usd) === 0) {
+    } else if (masterToken.geckoData?.price_usd === "0" || Number(masterToken.geckoData?.price_usd) === 0) {
       price = "TBD ";
     } else {
       price = "";
@@ -127,10 +120,7 @@ export async function generateMetadata({
   return metadataWithFrame;
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
+
