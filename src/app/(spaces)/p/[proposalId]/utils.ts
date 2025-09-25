@@ -3,16 +3,16 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
 import { ProposalSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
-import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
+import { createInitalProposalSpaceConfigForProposalId } from "@/constants/initialProposalSpace";
 
 export interface ProposalData {
   id: string;
   title: string;
   proposer: {
-    id: string; // API returns string addresses
+    id: Address; // API returns string addresses but we cast to Address for type-safety
   };
   signers?: {
-    id: string; // API returns string addresses
+    id: Address; // API returns string addresses but we cast to Address for type-safety
   }[];
   createdTimestamp?: string;
   forVotes?: string;

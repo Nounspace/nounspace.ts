@@ -1,4 +1,4 @@
-import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
+import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import neynar from "@/common/data/api/neynar";
 import { unstable_noStore as noStore } from "next/cache";

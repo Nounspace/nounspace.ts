@@ -6,12 +6,13 @@ import React, {
   useState,
   ReactNode,
   useEffect,
+  useCallback,
 } from "react";
 import { ProposalData } from "@/app/(spaces)/p/[proposalId]/utils";
 
 interface ProposalContextProps {
   proposalData: ProposalData | null;
-  fetchProposalInfo: (proposalId: string) => void;
+  fetchProposalInfo: (proposalId: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -47,7 +48,7 @@ export const ProposalProvider: React.FC<ProposalProviderProps> = ({
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchProposalInfo = async (proposalId: string) => {
+  const fetchProposalInfo = useCallback(async (proposalId: string): Promise<void> => {
     setIsLoading(true);
     try {
       const data = await fetchProposalData(proposalId);
@@ -57,14 +58,14 @@ export const ProposalProvider: React.FC<ProposalProviderProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Loads if defaultProposalData is not provided
   useEffect(() => {
     if (!defaultProposalData) {
       fetchProposalInfo(proposalId);
     }
-  }, [proposalId]);
+  }, [proposalId, fetchProposalInfo]);
 
   return (
     <ProposalContext.Provider value={{ proposalData, fetchProposalInfo, isLoading }}>

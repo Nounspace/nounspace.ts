@@ -4,7 +4,6 @@ import React from "react";
 import { getTokenMetadataStructure } from "@/common/lib/utils/tokenMetadata";
 import { defaultFrame } from "@/constants/metadata";
 import { fetchMasterTokenServer } from "@/common/data/queries/serverTokenData";
-import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 // Default metadata (used as fallback)

@@ -348,7 +348,15 @@ if (isProposalSpace(spaceData)) {
 
 // Space registration
 if (!existingSpace) {
-  const newSpaceId = await registerProposalSpace(proposalId, ownerAddress);
+  const initialConfig = {
+    fidgetInstanceDatums: {},
+    layoutID: "default-layout",
+    layoutDetails: { /* layout configuration */ },
+    fidgetTrayContents: [],
+    theme: { /* theme configuration */ },
+    timestamp: new Date().toISOString(),
+  };
+  const newSpaceId = await registerProposalSpace(proposalId, initialConfig);
   setCurrentSpaceId(newSpaceId);
 }
 

@@ -16,7 +16,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { TokenSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import { MasterToken as _MasterToken } from "@/common/providers/TokenProvider";
 import { fetchMasterTokenServer } from "@/common/data/queries/serverTokenData";
-import createInitialTokenSpaceConfigForAddress from "@/constants/initialTokenSpace";
+import { createInitialTokenSpaceConfigForAddress } from "@/constants/initialTokenSpace";
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 

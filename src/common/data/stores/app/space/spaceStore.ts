@@ -1007,7 +1007,6 @@ export const createSpaceStoreFunc = (
           {
             params: {
               identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-              proposalId,
             },
           },
         );

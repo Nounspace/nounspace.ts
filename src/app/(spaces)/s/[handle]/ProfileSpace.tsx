@@ -36,7 +36,7 @@ export interface ProfileSpaceProps {
 
 // Helper function to check if profile space is editable
 const isProfileSpaceEditable = (
-  fid: number | undefined,
+  spaceOwnerFid: number | undefined,
   currentUserFid: number | undefined,
   spaceId: string | undefined,
   spaceIdentityPublicKey?: string,
@@ -49,14 +49,17 @@ const isProfileSpaceEditable = (
   }
 
   // Check FID ownership (original logic)
-  const hasFidOwnership = currentUserFid !== undefined && fid !== undefined && currentUserFid === fid;
+  const hasFidOwnership = 
+    currentUserFid !== undefined && 
+    spaceOwnerFid !== undefined && 
+    currentUserFid === spaceOwnerFid;
 
   // Check identity key ownership (only if space is registered)
   const hasIdentityOwnership = !!(spaceId && spaceIdentityPublicKey && 
     spaceIdentityPublicKey === currentUserIdentityPublicKey);
 
   console.log('[ProfileSpace] Editability check details:', {
-    fid,
+    spaceOwnerFid,
     currentUserFid,
     spaceId,
     spaceIdentityPublicKey,
