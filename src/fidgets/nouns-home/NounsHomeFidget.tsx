@@ -18,7 +18,6 @@ import { mainnet } from "wagmi/chains";
 import { simulateContract, waitForTransactionReceipt } from "wagmi/actions";
 import AuctionHero from "./components/AuctionHero";
 import BidModal from "./components/BidModal";
-import PastAuctions from "./components/PastAuctions";
 import StatsRow from "./components/StatsRow";
 import {
   AlreadyOwnSection,
@@ -272,6 +271,8 @@ const NounsHomeInner: React.FC = () => {
   const [viewNounId, setViewNounId] = useState<number | null>(null);
   const [displayAuction, setDisplayAuction] = useState<Auction | undefined>();
   const [bgHex, setBgHex] = useState<string | undefined>(undefined);
+  const [floorNative, setFloorNative] = useState<number | undefined>(undefined);
+  const [topOfferNative, setTopOfferNative] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (!auction) return;
@@ -310,6 +311,33 @@ const NounsHomeInner: React.FC = () => {
       }
     })();
   }, [viewNounId]);
+
+  // Fetch collection floor / top offer (Reservoir)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          "https://api.reservoir.tools/collections/v7?collections=0x9c8ff314c9bc7f6e59a9d9225fb22946427edc03",
+          { cache: 'no-store' }
+        );
+        if (!res.ok) return;
+        const json = await res.json();
+        const col = json?.collections?.[0];
+        const floor = Number(col?.floorAsk?.price?.native);
+        const top = Number(col?.topBid?.price?.native);
+        if (!cancelled) {
+          if (Number.isFinite(floor)) setFloorNative(floor);
+          if (Number.isFinite(top)) setTopOfferNative(top);
+        }
+      } catch (_) {
+        // ignore; non-blocking
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Fetch precise bidding parameters when the component mounts
   useEffect(() => {
@@ -605,9 +633,6 @@ const NounsHomeInner: React.FC = () => {
 
   return (
     <div className="flex h-full flex-col gap-6 overflow-y-auto p-4 md:p-6">
-      <div className="flex items-start justify-end">
-        <ConnectControl />
-      </div>
 
       <AuctionHero
         auction={activeAuction}
@@ -625,49 +650,11 @@ const NounsHomeInner: React.FC = () => {
         backgroundHex={bgHex}
         minRequiredWei={minRequiredWei}
         onPlaceBid={canBid ? handleBidSubmit : undefined}
+        floorPriceNative={floorNative}
+        topOfferNative={topOfferNative}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <section className="space-y-6">
-          <PastAuctions
-            settlements={settlements}
-            isLoading={settlementsLoading}
-            hasMore={hasMore}
-            onLoadMore={loadNext}
-          />
-        </section>
-        <aside className="space-y-4 rounded-3xl bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">Auction details</h2>
-          <dl className="space-y-3 text-sm">
-            <div>
-              <dt className="text-muted-foreground">Status</dt>
-              <dd className="font-medium capitalize">{status}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Current bid</dt>
-              <dd className="font-medium">
-                {activeAuction ? formatEth(activeAuction.amount) : "Loading"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Ends in</dt>
-              <dd className="font-medium">{formatCountdown(countdown)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Bidder</dt>
-              <dd className="font-medium">{bidderEns || (activeAuction?.bidder ? shortAddress(activeAuction.bidder) : "-")}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Auction contract</dt>
-              <dd className="font-mono text-xs">
-                <LinkOut href={`https://etherscan.io/address/${NOUNS_AH_ADDRESS}`}>
-                  {shortAddress(NOUNS_AH_ADDRESS)}
-                </LinkOut>
-              </dd>
-            </div>
-          </dl>
-        </aside>
-      </div>
+      {/* Past auctions and details temporarily removed for hero parity */}
 
       <StatsRow
         totalSettled={totalSettled}
