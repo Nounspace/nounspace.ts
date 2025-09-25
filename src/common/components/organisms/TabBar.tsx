@@ -1,19 +1,19 @@
 "use client";
-import React from "react";
-import { FaPlus, FaPaintbrush } from "react-icons/fa6";
-import { debounce, map } from "lodash";
-import { Reorder } from "framer-motion";
-import { Tab } from "../atoms/reorderable-tab";
-import { Address } from "viem";
-import { useAppStore } from "@/common/data/stores/app";
-import { TooltipProvider } from "../atoms/tooltip";
-import TokenDataHeader from "./TokenDataHeader";
-import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
-import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
-import { useSidebarContext } from "./Sidebar";
-import { Button } from "../atoms/button";
+import { useAppStore } from "@/common/data/stores/app";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { Reorder } from "framer-motion";
+import { debounce, map } from "lodash";
+import React from "react";
+import { FaPaintbrush, FaPlus } from "react-icons/fa6";
 import { toast } from "sonner";
+import { Address } from "viem";
+import { Button } from "../atoms/button";
+import { Tab } from "../atoms/reorderable-tab";
+import { TooltipProvider } from "../atoms/tooltip";
+import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
+import { useSidebarContext } from "./Sidebar";
+import TokenDataHeader from "./TokenDataHeader";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -294,15 +294,31 @@ function TabBar({
     }
   }
 
-  // Effect to navigate safely after tab deletion
-  React.useEffect(() => {
-    if (!pendingTabSwitch || !tabList.includes(pendingTabSwitch)) {
+  // Defensive wrapper for switchTabTo: never navigate to null/undefined
+  const safeSwitchTabTo = React.useCallback((tabName: string, shouldSave?: boolean) => {
+    if (!tabName || typeof tabName !== 'string' || !tabList.includes(tabName)) {
+      console.warn('Attempted navigation to invalid tab:', tabName);
       return;
     }
-    
+    switchTabTo(tabName, shouldSave);
+  }, [switchTabTo, tabList]);
+
+  // Effect to safely navigate after deleting a tab
+  React.useEffect(() => {
+    if (!pendingTabSwitch) return;
+    if (!tabList.includes(pendingTabSwitch)) {
+      const fallbackTab = tabList[0] || (inHomebase ? "Feed" : "Profile");
+      if (fallbackTab) {
+        console.warn("Target tab no longer exists. Redirecting to:", fallbackTab);
+        safeSwitchTabTo(fallbackTab);
+      } else {
+        console.error("No available tab for navigation after deletion.");
+      }
+      setPendingTabSwitch(null);
+      return;
+    }
     const timeoutId = setTimeout(() => {
       try {
-        // Update URL when navigating after tab deletion
         try {
           if (typeof getSpacePageUrl === 'function') {
             const url = getSpacePageUrl(encodeURIComponent(pendingTabSwitch));
@@ -311,19 +327,16 @@ function TabBar({
             }
           }
         } catch (urlError) {
-          // Continue with navigation even if URL update fails
+          // Ignore error when updating URL after tab deletion
         }
-        
-        switchTabTo(pendingTabSwitch);
+        safeSwitchTabTo(pendingTabSwitch);
         setPendingTabSwitch(null);
       } catch (error) {
-        // Silent fallback - just clear the pending switch
         setPendingTabSwitch(null);
       }
     }, 50);
-    
     return () => clearTimeout(timeoutId);
-  }, [tabList, pendingTabSwitch, switchTabTo, getSpacePageUrl]);
+  }, [tabList, pendingTabSwitch, safeSwitchTabTo, getSpacePageUrl, inHomebase]);
 
   // Releases the ref whenever the tab actually changes
   React.useEffect(() => {
