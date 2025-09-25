@@ -20,6 +20,7 @@ import Portfolio from "./token/Portfolio";
 import chat from "./ui/chat";
 import MobileStack from "./layout/tabFullScreen";
 import FramesFidget from "./framesV2/components/FramesFidget";
+import NounsAuction from "./nounsAuction";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -40,6 +41,7 @@ export const CompleteFidgets = {
   iframe: IFrame,
   // Nouns
   governance: NounishGovernance,
+  nounsAuction: NounsAuction,
   links: Links,
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
