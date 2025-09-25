@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { format } from "date-fns";
 import { Address } from "viem";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
+import { ProposalData } from "@/app/(spaces)/p/[proposalId]/utils";
 
 const AddressDisplay = ({ address }: { address: Address }) => {
   const { data: ensName } = useEnsName({
@@ -27,8 +27,11 @@ const AddressDisplay = ({ address }: { address: Address }) => {
   );
 };
 
-const ProposalDataHeader: React.FC = () => {
-  const { proposalData } = useProposalContext();
+interface ProposalDataHeaderProps {
+  proposalData: ProposalData;
+}
+
+const ProposalDataHeader: React.FC<ProposalDataHeaderProps> = ({ proposalData }) => {
   console.log("DEBUG: proposalData", proposalData);
   
   if (!proposalData) {
@@ -62,14 +65,14 @@ const ProposalDataHeader: React.FC = () => {
       <div className="flex flex-col">
         <h1 className="text-xl font-bold text-black">⌐◨-◨ - Proposal {id}</h1>
         <div className="text-sm text-gray-500">
-          Proposed by <AddressDisplay address={proposer} /> at {formattedDate}
+          Proposed by <AddressDisplay address={proposer as Address} /> at {formattedDate}
           {signers && signers.length > 0 && (
             <>
               , sponsored by{" "}
               {signers.map((signer, index) => (
                 <React.Fragment key={signer.id}>
                   {index > 0 && ", "}
-                  <AddressDisplay address={signer.id} />
+                  <AddressDisplay address={signer.id as Address} />
                 </React.Fragment>
               ))}
             </>

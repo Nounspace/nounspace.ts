@@ -12,7 +12,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./tabs/[tabId]";
 import stringify from "fast-json-stable-stringify";
 import {
-  loadIdentitiesOwningContractSpace,
+  loadIdentitiesOwningTokenSpace,
   loadOwnedItentitiesForSpaceByFid,
 } from "@/common/data/database/supabase/serverHelpers";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
@@ -137,7 +137,7 @@ export async function identitiesCanModifySpace(
   const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
-    .select("contractAddress, network")
+    .select("contractAddress, network, fid, identityPublicKey")
     .eq("spaceId", spaceId);
   if (spaceRegistrationData === null || spaceRegistrationData.length === 0)
     return [];
@@ -146,7 +146,7 @@ export async function identitiesCanModifySpace(
   if (!isNull(contractAddress)) {
     const effectiveNetwork = network || registration.network;
     if (effectiveNetwork) {
-      return await loadIdentitiesOwningContractSpace(
+      return await loadIdentitiesOwningTokenSpace(
         contractAddress,
         effectiveNetwork,
       );
@@ -156,8 +156,12 @@ export async function identitiesCanModifySpace(
       );
       return [];
     }
-  } else {
+  } else if (!isNull(registration.fid)) {
     return await loadOwnedItentitiesForSpaceByFid(spaceId);
+  } else if (!isNull(registration.identityPublicKey)) {
+    return [registration.identityPublicKey];
+  } else {
+    return [];
   }
 }
 

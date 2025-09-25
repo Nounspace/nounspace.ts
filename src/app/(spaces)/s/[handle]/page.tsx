@@ -1,70 +1,47 @@
 import React from "react";
-import { getTabList, getUserMetadata, type Tab } from "./utils";
-import ProfileSpace, { UserDefinedSpacePageProps } from "./ProfileSpace";
+import { loadUserSpaceData } from "./utils";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
-import { unstable_noStore as noStore } from "next/cache";
+import ProfileSpace from "./ProfileSpace";
+// ProfileSpaceData imported but not used
+// import { ProfileSpaceData } from "@/common/types/spaceData";
 
+interface ProfileSpacePageProps {
+  params: Promise<{
+    handle: string;
+    tabName?: string;
+  }>;
+}
 
-const loadUserSpaceData = async (
-  handle: string,
-  tabNameParam?: string
-): Promise<UserDefinedSpacePageProps> => {
-  noStore(); 
-
-  const userMetadata = await getUserMetadata(handle);
-  const spaceOwnerFid = userMetadata?.fid || null;
-  const spaceOwnerUsername = userMetadata?.username || null;
-
-  if (!spaceOwnerFid) {
-    return {
-      spaceOwnerFid: null,
-      spaceOwnerUsername: null,
-      spaceId: undefined,
-      tabName: null,
-    };
-  }
-
-  const tabList = await getTabList(spaceOwnerFid);
-
-  if (!tabList || tabList.length === 0) {
-    return { spaceOwnerFid, spaceOwnerUsername, spaceId: undefined, tabName: null };
-  }
-
-  const defaultTab: Tab = tabList[0];
-
-  const spaceId = defaultTab.spaceId;
-  const tabName = tabNameParam || defaultTab.spaceName;
-
-  return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
-};
-
-const ProfileSpacePage = async ({
-  params,
-}: {
-  params: Promise<{ handle: string; tabName?: string }>
-}) => {
+const ProfileSpacePage = async ({ params }: ProfileSpacePageProps) => {
   const { handle, tabName: tabNameParam } = await params;
 
   if (!handle) {
     return <SpaceNotFound />;
   }
 
-  let decodedTabNameParam = tabNameParam;
-  if (tabNameParam) {
-    decodedTabNameParam = decodeURIComponent(tabNameParam);
+  try {
+    let decodedTabNameParam = tabNameParam;
+    if (tabNameParam) {
+      decodedTabNameParam = decodeURIComponent(tabNameParam);
+    }
+
+    const profileSpacePageData = await loadUserSpaceData(handle, decodedTabNameParam);
+
+    if (!profileSpacePageData) {
+      return <SpaceNotFound />;
+    }
+
+
+    return (
+      <ProfileSpace
+        spacePageData={profileSpacePageData}
+        tabName={decodedTabNameParam || profileSpacePageData.defaultTab}
+      />
+    );
+  } catch (err) {
+    console.error("Error loading profile space data:", err);
+    return <SpaceNotFound />;
   }
-
-  const { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName } =
-    await loadUserSpaceData(handle, decodedTabNameParam);
-
-  return (
-    <ProfileSpace
-      spaceOwnerFid={spaceOwnerFid}
-      spaceOwnerUsername={spaceOwnerUsername}
-      spaceId={spaceId}
-      tabName={tabName}
-    />
-  );
 };
 
 export default ProfileSpacePage;

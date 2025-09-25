@@ -1,13 +1,13 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import { cloneDeep } from "lodash";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialSpaceConfig";
 import { getNetworkWithId } from "@/common/lib/utils/networks";
 import { EtherScanChainName } from "./etherscanChainIds";
 import { getGeckoUrl } from "@/common/lib/utils/links";
 import { Address } from "viem";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 
-export const createInitialContractSpaceConfigForAddress = (
+export const createInitialTokenSpaceConfigForAddress = (
   address: string,
   castHash: string | null,
   casterFid: string | null,
@@ -85,6 +85,9 @@ export const createInitialContractSpaceConfigForAddress = (
           fidgetShadow: "var(--user-theme-fidget-shadow)",
           chain: getNetworkWithId(network),
           token: address,
+          dataSource: "geckoterminal",
+          theme: "light",
+          size: 1,
         },
       },
 
@@ -439,4 +442,4 @@ export const createInitialContractSpaceConfigForAddress = (
   return config;
 };
 
-export default createInitialContractSpaceConfigForAddress;
+export default createInitialTokenSpaceConfigForAddress;

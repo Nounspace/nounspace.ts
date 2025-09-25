@@ -1,14 +1,18 @@
 import { Address } from "viem";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
+import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
+import { ProposalSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
+import { createInitalProposalSpaceConfigForProposalId } from "@/constants/initialProposalSpace";
 
 export interface ProposalData {
   id: string;
   title: string;
   proposer: {
-    id: Address;
+    id: Address; // API returns string addresses but we cast to Address for type-safety
   };
   signers?: {
-    id: Address;
+    id: Address; // API returns string addresses but we cast to Address for type-safety
   }[];
   createdTimestamp?: string;
   forVotes?: string;
@@ -17,6 +21,10 @@ export interface ProposalData {
   quorumVotes?: string;
   endBlock?: string;
   status?: string;
+}
+
+interface ProposalSpaceRow {
+  spaceId: string;
 }
 
 // Helper function to create timeout signal compatible with Edge runtime
@@ -192,3 +200,114 @@ export async function generateProposalThumbnailUrl(proposalData: ProposalData, s
   
   return url;
 }
+
+export async function loadProposalSpaceId(proposalId: string): Promise<string | null> {
+  noStore();
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("proposalId", proposalId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.error("Error fetching proposal space id:", error);
+      return null;
+    }
+    return data && data.length > 0 ? (data as ProposalSpaceRow[])[0].spaceId : null;
+  } catch (e) {
+    console.error("Exception in loadProposalSpaceId:", e);
+    return null;
+  }
+}
+
+export async function loadProposalSpaceRegistration(proposalId: string): Promise<{
+  spaceId?: string;
+  identityPublicKey?: string;
+} | null> {
+  noStore();
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId, identityPublicKey")
+      .eq("proposalId", proposalId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.error("Error fetching proposal space registration:", error);
+      return null;
+    }
+    return data && data.length > 0 ? data[0] : null;
+  } catch (e) {
+    console.error("Exception in loadProposalSpaceRegistration:", e);
+    return null;
+  }
+}
+
+// Proposal space specific creator
+export const createProposalSpaceData = (
+  spaceId: string | undefined,
+  spaceName: string,
+  proposalId: string,
+  ownerAddress: Address,
+  tabName: string,
+  proposalData?: ProposalData,
+  identityPublicKey?: string
+): Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'> => {
+  
+  const config = {
+    ...createInitalProposalSpaceConfigForProposalId(
+      proposalId,
+      ownerAddress
+    ),
+    timestamp: new Date().toISOString(),
+  };
+
+  return {
+    // Base SpaceData properties
+    spaceId: spaceId,
+    spaceName,
+    spaceType: SPACE_TYPES.PROPOSAL,
+    updatedAt: new Date().toISOString(),
+    defaultTab: "Overview",
+    currentTab: tabName,
+    spaceOwnerFid: undefined, // FID not available for proposal spaces
+    config,
+    // ProposalSpaceData specific properties
+    proposalId,
+    spaceOwnerAddress: ownerAddress,
+    proposalData,
+    identityPublicKey,
+  };
+};
+
+export const loadProposalSpaceData = async (
+  proposalId: string,
+  tabNameParam?: string
+): Promise<Omit<ProposalSpacePageData, 'isEditable' | 'spacePageUrl'> | null> => {
+  const proposalData = await loadProposalData(proposalId || "0");
+  
+  // Check if proposal data is valid (not the fallback with 0x0 address)
+  if (!proposalData?.proposer?.id || proposalData.proposer.id === "0x0" || proposalData.proposer.id === "0x0000000000000000000000000000000000000000") {
+    return null;
+  }
+
+  const tabName = tabNameParam || "Overview";
+  const spaceName = `Proposal ${proposalId}`;
+  const ownerAddress = proposalData.proposer.id as Address;
+
+  // Check if space already exists in database and get registration data
+  const registrationData = await loadProposalSpaceRegistration(proposalId);
+  const spaceId = registrationData?.spaceId;
+  const identityPublicKey = registrationData?.identityPublicKey;
+
+  return createProposalSpaceData(
+    spaceId, // Use existing spaceId if found, otherwise undefined for claiming
+    spaceName,
+    proposalId,
+    ownerAddress,
+    tabName,
+    proposalData,
+    identityPublicKey
+  );
+};
