@@ -12,7 +12,7 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com https://cdn.segment.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
-    media-src 'self' blob: data: https://stream.warpcast.com https://stream.farcaster.xyz https:;
+    media-src 'self' blob: data: https://stream.warpcast.com https://stream.farcaster.xyz https://res.cloudinary.com/;
     img-src 'self' blob: data: https:;
     font-src 'self' https: data: blob: https://fonts.googleapis.com https://fonts.gstatic.com;
     object-src 'none';
@@ -43,8 +43,7 @@ const cspHeader = `
       https://base-mainnet.g.alchemy.com
       https://stream.warpcast.com
       https://stream.farcaster.xyz
-      https:
-      wss:;
+      https://res.cloudinary.com/;
 
     upgrade-insecure-requests;
 `;
