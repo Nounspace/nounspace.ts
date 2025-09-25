@@ -416,17 +416,35 @@ const NounsHomeInner: React.FC = () => {
         setBidSubmitting(true);
         setActionError(null);
         setActionMessage("Waiting for wallet signature...");
-        const simulation = await simulateContract(nounsWagmiConfig, {
-          address: NOUNS_AH_ADDRESS,
-          abi: NounsAuctionHouseV3Abi,
-          functionName: "createBid",
-          args: [auction.nounId],
-          chainId: REQUIRED_CHAIN_ID,
-          account: address!,
-          value: valueWei,
-        });
-        setActionMessage("Transaction submitted. Waiting for confirmation...");
-        const hash = await writeContractAsync(simulation.request);
+        let hash: `0x${string}` | undefined;
+        try {
+          const simulation = await simulateContract(nounsWagmiConfig, {
+            address: NOUNS_AH_ADDRESS,
+            abi: NounsAuctionHouseV3Abi,
+            functionName: "createBid",
+            args: [auction.nounId],
+            chainId: REQUIRED_CHAIN_ID,
+            account: address!,
+            value: valueWei,
+          });
+          setActionMessage("Transaction submitted. Waiting for confirmation...");
+          hash = await writeContractAsync(simulation.request);
+        } catch (simErr) {
+          // Some RPCs occasionally fail simulate with opaque internal errors.
+          // Fallback to a direct write; the chain will enforce validity.
+          console.warn("Simulation failed; attempting direct write", simErr);
+          setActionMessage("Submitting transaction...");
+          hash = await writeContractAsync({
+            address: NOUNS_AH_ADDRESS,
+            abi: NounsAuctionHouseV3Abi,
+            functionName: "createBid",
+            args: [auction.nounId],
+            chainId: REQUIRED_CHAIN_ID,
+            // account optional for injected; wagmi picks signer from connector
+            value: valueWei,
+          } as any);
+        }
+        if (!hash) throw new Error("No transaction hash");
         setTxHash(hash);
         const receipt = await waitForTransactionReceipt(nounsWagmiConfig, {
           hash,

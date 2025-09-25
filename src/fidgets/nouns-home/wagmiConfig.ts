@@ -20,10 +20,17 @@ const connectors = [
     : []),
 ];
 
+const alchemyKey =
+  process.env.NOUNS_ALCHEMY_API_KEY || process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+const alchemyRpc = alchemyKey
+  ? `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}`
+  : undefined;
+
 const transports = {
   [mainnet.id]: http(
     process.env.NOUNS_RPC_URL ||
       process.env.NEXT_PUBLIC_NOUNS_RPC_URL ||
+      alchemyRpc ||
       "https://cloudflare-eth.com",
   ),
 };
