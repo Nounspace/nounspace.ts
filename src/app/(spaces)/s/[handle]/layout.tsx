@@ -12,8 +12,12 @@ const defaultMetadata = {
   },
 };
 
-export async function generateMetadata({ params }): Promise<Metadata> {
-  const { handle, tabName: tabNameParam } = params;
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ handle: string; tabName?: string }> 
+}): Promise<Metadata> {
+  const { handle, tabName: tabNameParam } = await params;
   
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle

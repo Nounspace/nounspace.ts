@@ -1,9 +1,9 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useRef, useEffect } from "react";
 import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 export type SpacePageArgs = {
-  config: SpaceConfig;
+  config: SpaceConfig | undefined;
   saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
@@ -24,6 +24,37 @@ export default function SpacePage({
   feed,
   showFeedOnMobile,
 }: SpacePageArgs) {
+  
+  // Create a stable deferred promise that won't change across renders
+  const deferredRef = useRef<{
+    promise: Promise<void>;
+    resolve: () => void;
+  } | null>(null);
+
+  // Initialize the deferred promise once
+  if (!deferredRef.current) {
+    let resolve: () => void;
+    const promise = new Promise<void>((res) => {
+      resolve = res;
+    });
+    deferredRef.current = {
+      promise,
+      resolve: resolve!,
+    };
+  }
+
+  // Watch for config becoming defined and resolve the deferred
+  useEffect(() => {
+    if (config && deferredRef.current) {
+      deferredRef.current.resolve();
+    }
+  }, [config]);
+
+  // If config is undefined, throw the stable promise to trigger Suspense fallback
+  if (!config) {
+    throw deferredRef.current.promise;
+  }
+  
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
 

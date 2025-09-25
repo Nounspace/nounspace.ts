@@ -24,8 +24,10 @@ const DesktopView: React.FC<DesktopViewProps> = ({
   layoutFidgetKey, 
   ...layoutProps 
 }) => {
+
   // Get the right layout component
   const LayoutFidget = useLayoutFidgetSelector(layoutFidgetKey);
+
 
   return <LayoutFidget {...layoutProps} />;
 };

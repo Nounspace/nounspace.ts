@@ -12,7 +12,7 @@ import {
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./[tabId]";
 import stringify from "fast-json-stable-stringify";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import moment from "moment";
 import { isNull } from "lodash";
 

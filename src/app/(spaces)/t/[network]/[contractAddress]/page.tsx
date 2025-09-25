@@ -1,50 +1,48 @@
-import { OwnerType } from "@/common/data/api/etherscan";
-import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
+import { loadTokenSpacePageData} from "./utils";
 import React from "react";
-import { MasterToken, TokenProvider } from "@/common/providers/TokenProvider";
+import { TokenProvider } from "@/common/providers/TokenProvider";
+import TokenSpace from "./TokenSpace";
+import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import ContractPrimarySpaceContent from "../ContractPrimarySpaceContent";
 
-export interface ContractSpacePageProps {
-  spaceId: string | null;
-  tabName: string | null;
-  contractAddress: string | null;
-  ownerIdType: OwnerType;
-  pinnedCastId?: string;
-  owningIdentities: string[];
-  ownerId: string | null;
-  tokenData?: MasterToken;
-  network: EtherScanChainName;
-}
+export default async function TokenSpacePage({ 
+  params 
+}: {
+  params: Promise<{ network: string; contractAddress: string; tabName?: string }>
+}) {
+  const { network: networkParam, contractAddress: contractAddressParam, tabName: tabNameParam } = await params;
+  const resolvedParams = { network: networkParam, contractAddress: contractAddressParam };
+  
+  // Handle tabName parameter (decode if needed)
+  let decodedTabNameParam = tabNameParam;
+  if (tabNameParam) {
+    decodedTabNameParam = decodeURIComponent(tabNameParam);
+  }
 
-export default async function ContractPrimarySpace({ params }) {
-  const resolvedParams = await params;
-  const {
-    props: {
-      spaceId,
-      tabName,
-      ownerId,
-      ownerIdType,
-      contractAddress,
-      owningIdentities,
-    },
-  } = await loadContractData(resolvedParams || {});
-  const network = resolvedParams?.network as EtherScanChainName;
+  // Load token space data
+  const tokenSpacePageData = await loadTokenSpacePageData(
+    resolvedParams.contractAddress, 
+    resolvedParams.network, 
+    decodedTabNameParam
+  );
+
+  // Guard against null/undefined tokenSpaceData
+  if (!tokenSpacePageData) {
+    return (
+      <SpaceNotFound />
+    );
+  }
 
   return (
     <TokenProvider
-      contractAddress={contractAddress as Address}
-      network={network}
+      contractAddress={tokenSpacePageData.contractAddress as Address}
+      network={tokenSpacePageData.network as EtherScanChainName}
+      defaultTokenData={tokenSpacePageData.tokenData}
     >
-      <ContractPrimarySpaceContent
-        spaceId={spaceId}
-        tabName={tabName}
-        ownerId={ownerId}
-        ownerIdType={ownerIdType}
-        contractAddress={contractAddress}
-        owningIdentities={owningIdentities}
-        network={network}
+      <TokenSpace
+        spacePageData={tokenSpacePageData}
+        tabName={decodedTabNameParam || tokenSpacePageData.defaultTab}
       />
     </TokenProvider>
   );
