@@ -1,7 +1,3 @@
--- Add the proposalId column first
-ALTER TABLE "spaceRegistrations" 
-    ADD COLUMN "proposalId" TEXT;
-
 -- Add the spaceType column with a default value
 ALTER TABLE "spaceRegistrations" 
     ADD COLUMN "spaceType" VARCHAR NOT NULL DEFAULT 'profile';
