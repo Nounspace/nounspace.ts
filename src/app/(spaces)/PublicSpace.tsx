@@ -11,7 +11,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
 import { useWallets } from "@privy-io/react-auth";
-import { indexOf, isNil, mapValues, noop } from "lodash";
+import { indexOf, isNil, mapValues, noop, debounce } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
@@ -97,7 +97,8 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
-
+  const { editMode } = useSidebarContext();
+  
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
@@ -584,49 +585,88 @@ export default function PublicSpace({
     saveLocalSpaceTab(currentSpaceId, currentTabName, configToSave);
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
 
-  // Common tab management
-  async function switchTabTo(tabName: string, shouldSave: boolean = true) {
+  // Tab switching function with proper memoization
+  const switchTabTo = useCallback(async (tabName: string, shouldSave: boolean = true) => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    // Update the store immediately for better responsiveness
+    // Protect against fast navigation: ignore if there is no space or tab
+    if (!currentSpaceId || !tabName) return;
+
+    // Update tab name and navigate instantly
     setCurrentTabName(tabName);
-    
-    // Check if we already have the tab in cache
-    const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
-    
-    if (currentSpaceId && !tabExists) {
-      // Show skeleton when loading a tab from the database
-      setLoading(true);
-      // Mark as loaded to avoid loading again
-      if (loadedTabsRef.current[currentSpaceId]) {
-        loadedTabsRef.current[currentSpaceId].add(tabName);
-      } else {
-        loadedTabsRef.current[currentSpaceId] = new Set([tabName]);
-      }
-
-      // Load the tab showing the skeleton for better UX
-      loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined)
-        .catch(error => console.error(`Error loading tab ${tabName}:`, error));
-    } else if (currentSpaceId && tabExists) {
-      // Tab already in cache - no need to show skeleton
-      if (!loadedTabsRef.current[currentSpaceId]) {
-        loadedTabsRef.current[currentSpaceId] = new Set();
-      }
-      loadedTabsRef.current[currentSpaceId].add(tabName);
-      setLoading(false);
-    }
-
-    if (currentSpaceId && shouldSave) {
-      const resolvedConfig = await config;
-      await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
-      await commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
-    }
-    // Update the URL without triggering a full navigation
     router.push(getSpacePageUrl(tabName));
-  }
 
-  const { editMode } = useSidebarContext();
+    // Save and commit in background if needed
+    if (shouldSave) {
+      try {
+        const resolvedConfig = await config;
+        await Promise.all([
+          saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
+          commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network)
+        ]);
+      } catch (err) {
+        console.error("Error saving/committing tab:", err);
+      }
+    }
+
+    // Check if tab exists and if it is already loaded
+    const tabExists = localSpaces[currentSpaceId]?.tabs?.[tabName];
+    const tabLoaded = loadedTabsRef.current[currentSpaceId]?.has(tabName) ?? false;
+
+    // Protect against race condition: only execute if component is mounted
+    let isMounted = true;
+    setLoading(true);
+    try {
+      if (!tabExists) {
+        if (!loadedTabsRef.current[currentSpaceId]) {
+          loadedTabsRef.current[currentSpaceId] = new Set();
+        }
+        loadedTabsRef.current[currentSpaceId].add(tabName);
+        await loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined);
+      } else if (tabExists && !tabLoaded) {
+        if (!loadedTabsRef.current[currentSpaceId]) {
+          loadedTabsRef.current[currentSpaceId] = new Set();
+        }
+        loadedTabsRef.current[currentSpaceId].add(tabName);
+      }
+    } catch (err) {
+      if (isMounted) {
+        console.error("Error loading tab:", err);
+      }
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+    // Clear flag on unmount
+    return () => { isMounted = false; };
+  }, [
+    getCurrentSpaceId,
+    getCurrentTabName,
+    getSpacePageUrl,
+    router,
+    saveLocalSpaceTab,
+    commitSpaceTab,
+    tokenData?.network,
+    localSpaces,
+    loadSpaceTab,
+    currentUserFid,
+    config,
+    setCurrentTabName,
+    setLoading
+  ]);
+
+  // Debounce tab switching to prevent rapid clicks
+  const debouncedSwitchTabTo = useMemo(
+    () => debounce((tabName: string, shouldSave: boolean = true) => {
+      switchTabTo(tabName, shouldSave);
+    }, 150),
+    [switchTabTo]
+  );
+
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => debouncedSwitchTabTo.cancel();
+  }, [debouncedSwitchTabTo]);
 
   const tabBar = (
     <TabBar
@@ -640,7 +680,7 @@ export default function PublicSpace({
           : [spacePageData.defaultTab]
       }
       contractAddress={isTokenSpace(spacePageData) ? spacePageData.contractAddress as Address : undefined}
-      switchTabTo={switchTabTo}
+      switchTabTo={debouncedSwitchTabTo}
       updateTabOrder={async (newOrder) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId

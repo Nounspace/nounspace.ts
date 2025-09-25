@@ -51,7 +51,7 @@ const validateTabName = (tabName: string): string | null => {
   return null;
 };
 
-function TabBar({
+const TabBar = React.memo(function TabBar({
   inHome,
   inHomebase,
   inEditMode,
@@ -145,10 +145,12 @@ function TabBar({
         switchTabTo(tabName);
       }
       
+
+
       // Commit in background
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         commitTabOrder();
-      }, 100);
+      });
       
     } catch (error) {
       console.error("Error in handleCreateTab:", error);
@@ -157,19 +159,24 @@ function TabBar({
 
   async function handleDeleteTab(tabName: string) {
     // Simple and safe delete function
-    if (!isEditableTab(tabName, spaceData)) {
+    if (!isEditableTab(tabName, spaceData) || tabList.length <= 1) {
       return;
     }
 
-    if (tabList.length <= 1) {
-      return;
+    // Remove the tab from the tabList locally
+    const updatedTabList = tabList.filter((name) => name !== tabName);
+    updateTabOrder(updatedTabList);
+
+    // Decide which tab to activate after deletion
+    let nextTab = nextClosestTab(tabName);
+    if (!updatedTabList.includes(nextTab)) {
+      // If the next tab no longer exists, take the first available one
+      nextTab = updatedTabList[0] || "Profile";
     }
 
-    const nextTab = nextClosestTab(tabName);
-    
-    // Switch to next tab first
+    // Navigate to the next valid tab
     switchTabTo(nextTab);
-    
+
     // Delete the tab
     deleteTab(tabName);
   }
@@ -207,12 +214,12 @@ function TabBar({
       
       // Switch to the new tab name
       switchTabTo(uniqueName);
-      
+
       // Commit in background
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         commitTab(uniqueName);
         commitTabOrder();
-      }, 100);
+      });
       
     } catch (error) {
       console.error("Error in handleRenameTab:", error);
@@ -340,6 +347,8 @@ function TabBar({
       </div>
     </TooltipProvider>
   );
-}
+});
+
+TabBar.displayName = 'TabBar';
 
 export default TabBar;
