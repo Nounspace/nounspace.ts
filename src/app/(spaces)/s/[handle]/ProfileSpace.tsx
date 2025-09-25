@@ -47,7 +47,7 @@ export default function ProfileSpace({
 }: ProfileSpaceProps) {
 
   // Add isEditable and spacePageUrl logic on the client side
-  const spaceDataWithEditability = useMemo(() => ({
+  const spaceDataWithClientSideLogic = useMemo(() => ({
     ...spaceData,
     spacePageUrl: (tabName: string) => `/s/${spaceData.spaceName}/${encodeURIComponent(tabName)}`,
     isEditable: (currentUserFid: number | undefined) => 
@@ -56,7 +56,7 @@ export default function ProfileSpace({
 
   return (
     <PublicSpace
-      spaceData={spaceDataWithEditability}
+      spacePageData={spaceDataWithClientSideLogic}
       tabName={tabName}
     />
   );
