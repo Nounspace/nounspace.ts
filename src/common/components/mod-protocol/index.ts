@@ -1,8 +1,7 @@
 // Migrated mod-protocol components
-// Re-export all migrated components from our internal implementation
-
-// Components
+// Re-export all migrated mod-protocol components
 export { CastLengthUIIndicator } from "./components/CastLengthUIIndicator";
+export { ChannelList } from "./components/ChannelList";
 
 // Hooks
 export { useTextLength } from "./hooks/useTextLength";
