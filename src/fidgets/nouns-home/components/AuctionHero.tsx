@@ -1,6 +1,7 @@
 'use client';
 
 import React from "react";
+import { parseEther } from "viem";
 import NounImage from "../NounImage";
 import LinkOut from "../LinkOut";
 import { formatCountdown, formatEth, getAuctionStatus } from "../utils";
@@ -14,6 +15,14 @@ interface AuctionHeroProps {
   onSettle: () => void;
   isSettling: boolean;
   isConnected: boolean;
+  headingFontClassName?: string;
+  dateLabel?: string;
+  onPrev?: () => void;
+  onNext?: () => void;
+  canGoNext?: boolean;
+  backgroundHex?: string;
+  minRequiredWei?: bigint;
+  onPlaceBid?: (valueWei: bigint) => void;
 }
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -26,6 +35,14 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   onSettle,
   isSettling,
   isConnected,
+  headingFontClassName,
+  dateLabel,
+  onPrev,
+  onNext,
+  canGoNext,
+  backgroundHex,
+  minRequiredWei,
+  onPlaceBid,
 }) => {
   const status = getAuctionStatus(auction);
   const nounId = auction ? Number(auction.nounId) : undefined;
@@ -41,16 +58,23 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
     ? !auction || auction.settled || isSettling
     : status === "pending";
 
-  const primaryLabel = isEnded && auction && !auction.settled
-    ? isSettling
-      ? "Settling..."
-      : "Settle auction"
-    : !isConnected
-      ? "Connect wallet"
-      : "Place bid";
+  const [bidInput, setBidInput] = React.useState("");
+  const handleBidClick = () => {
+    if (!onPlaceBid) return onOpenBid();
+    try {
+      const wei = parseEther((bidInput || "0") as `${number}`);
+      onPlaceBid(wei);
+    } catch {
+      // fall back to modal if parse fails
+      onOpenBid();
+    }
+  };
 
   return (
-    <section className="rounded-3xl bg-[#f0f0ff] p-6 text-[#17171d] shadow-sm md:p-10">
+    <section
+      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10"
+      style={{ backgroundColor: backgroundHex ?? "#f0f0ff" }}
+    >
       <div className="grid gap-6 md:grid-cols-[minmax(0,320px)_1fr] md:gap-12">
         <div className="flex items-center justify-center">
           {nounId !== undefined ? (
@@ -68,10 +92,31 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
         <div className="flex flex-col justify-between gap-8">
           <div className="flex flex-col gap-4">
-            <p className="text-sm uppercase tracking-[0.2em] text-[#8c8ca1]">
-              Daily auction
-            </p>
-            <h1 className="text-4xl font-semibold md:text-5xl">
+            <div className="flex items-center gap-3 text-sm text-[#8c8ca1]">
+              {onPrev && (
+                <button
+                  type="button"
+                  onClick={onPrev}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow"
+                  aria-label="Previous auction"
+                >
+                  ←
+                </button>
+              )}
+              {dateLabel && <span>{dateLabel}</span>}
+              {onNext && (
+                <button
+                  type="button"
+                  onClick={onNext}
+                  disabled={!canGoNext}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow disabled:opacity-40"
+                  aria-label="Next auction"
+                >
+                  →
+                </button>
+              )}
+            </div>
+            <h1 className={`text-4xl font-semibold md:text-6xl ${headingFontClassName ?? ""}`}>
               {nounId !== undefined ? `Noun ${nounId}` : "Loading"}
             </h1>
             <div className="space-y-3">
@@ -101,19 +146,36 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           </div>
 
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <button
-              type="button"
-              onClick={
-                status === "ended" && auction && !auction.settled
-                  ? onSettle
-                  : onOpenBid
-              }
-              disabled={buttonDisabled}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
-              aria-live="polite"
-            >
-              {primaryLabel}
-            </button>
+            {status === "ended" && auction && !auction.settled ? (
+              <button
+                type="button"
+                onClick={onSettle}
+                disabled={buttonDisabled}
+                className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
+              >
+                {isSettling ? "Settling..." : "Settle auction"}
+              </button>
+            ) : (
+              <div className="flex w-full max-w-md items-center gap-2">
+                <input
+                  className="flex-1 rounded-xl border border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black"
+                  placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : "0.1"}
+                  inputMode="decimal"
+                  value={bidInput}
+                  onChange={(e) => setBidInput(e.target.value)}
+                  disabled={!isConnected || isEnded}
+                  aria-label="Bid amount in ETH"
+                />
+                <button
+                  type="button"
+                  onClick={handleBidClick}
+                  disabled={!isConnected || isEnded || buttonDisabled}
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-base font-semibold text-white transition hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
+                >
+                  Place Bid
+                </button>
+              </div>
+            )}
             <div className="flex flex-wrap gap-3">
               {nounId !== undefined && (
                 <LinkOut

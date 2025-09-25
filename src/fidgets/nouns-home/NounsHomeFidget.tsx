@@ -37,7 +37,7 @@ import { NounsAuctionHouseV3Abi, NounsAuctionHouseExtraAbi } from "./abis";
 import type { Auction, Settlement } from "./types";
 import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
-import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction } from "./subgraph";
+import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX } from "./subgraph";
 import LinkOut from "./LinkOut";
 
 const ConnectControl: React.FC = () => {
@@ -268,9 +268,14 @@ const NounsHomeInner: React.FC = () => {
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [reservePrice, setReservePrice] = useState<bigint | null>(null);
   const [minIncrementPct, setMinIncrementPct] = useState<number | null>(null);
+  const [viewNounId, setViewNounId] = useState<number | null>(null);
+  const [displayAuction, setDisplayAuction] = useState<Auction | undefined>();
+  const [bgHex, setBgHex] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!auction) return;
+    setViewNounId(Number(auction.nounId));
+    setDisplayAuction(auction);
     const updateCountdown = () => {
       const remaining = Number(auction.endTime) * 1000 - Date.now();
       setCountdown(Math.max(0, remaining));
@@ -279,6 +284,31 @@ const NounsHomeInner: React.FC = () => {
     const timer = setInterval(updateCountdown, 1_000);
     return () => clearInterval(timer);
   }, [auction]);
+
+  useEffect(() => {
+    (async () => {
+      if (viewNounId == null) return;
+      try {
+        const sg = await fetchAuctionById(viewNounId);
+        if (sg) {
+          setDisplayAuction({
+            nounId: BigInt(sg.id),
+            amount: BigInt(sg.amount),
+            startTime: BigInt(sg.startTime),
+            endTime: BigInt(sg.endTime),
+            bidder: (sg.bidder?.id ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+            settled: Boolean(sg.settled),
+          });
+          const endMs = Number(sg.endTime) * 1000;
+          setCountdown(Math.max(0, endMs - Date.now()));
+        }
+        const bgIdx = await fetchNounSeedBackground(viewNounId);
+        if (bgIdx !== undefined) setBgHex(NOUNS_BG_HEX[bgIdx as 0 | 1] ?? NOUNS_BG_HEX[0]);
+      } catch (e) {
+        console.warn('Failed loading display auction or background', e);
+      }
+    })();
+  }, [viewNounId]);
 
   // Fetch precise bidding parameters when the component mounts
   useEffect(() => {
@@ -300,31 +330,33 @@ const NounsHomeInner: React.FC = () => {
     })();
   }, []);
 
+  const activeAuction = displayAuction ?? auction;
+
   const minRequiredWei = useMemo(() => {
-    if (!auction) return undefined;
+    if (!activeAuction) return undefined;
     const pct = minIncrementPct ?? 5;
-    if (auction.amount === 0n) {
+    if (activeAuction.amount === 0n) {
       return (reservePrice ?? 0n) || undefined;
     }
-    const increment = (auction.amount * BigInt(pct) + 99n) / 100n; // round up
-    return auction.amount + increment;
-  }, [auction, minIncrementPct, reservePrice]);
+    const increment = (activeAuction.amount * BigInt(pct) + 99n) / 100n; // round up
+    return activeAuction.amount + increment;
+  }, [activeAuction, minIncrementPct, reservePrice]);
 
   const { data: bidderEns } = useEnsName({
-    address: auction?.bidder,
+    address: activeAuction?.bidder,
     chainId: mainnet.id,
     query: {
       enabled:
-        Boolean(auction?.bidder) &&
-        auction?.bidder !== "0x0000000000000000000000000000000000000000",
+        Boolean(activeAuction?.bidder) &&
+        activeAuction?.bidder !== "0x0000000000000000000000000000000000000000",
     },
   });
 
   const totalSettled = useMemo(() => {
-    if (!auction) return 0;
-    const base = Number(auction.nounId);
-    return auction.settled ? base + 1 : base;
-  }, [auction]);
+    if (!activeAuction) return 0;
+    const base = Number(activeAuction.nounId);
+    return activeAuction.settled ? base + 1 : base;
+  }, [activeAuction]);
 
   const nounHolderCount = useMemo(() => {
     if (!settlements?.length) return undefined;
@@ -379,9 +411,24 @@ const NounsHomeInner: React.FC = () => {
     return formatUsd(asEth * ethUsd);
   }, [settlements, ethUsd]);
 
-  const status = getAuctionStatus(auction);
+  const status = getAuctionStatus(activeAuction);
+  const dateLabel = useMemo(() => {
+    const start = activeAuction ? Number(activeAuction.startTime) * 1000 : undefined;
+    return start ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(start)) : undefined;
+  }, [activeAuction]);
 
-  const canBid = isConnected && chainId === REQUIRED_CHAIN_ID && status === "active";
+  const handlePrev = () => {
+    if (viewNounId == null) return;
+    setViewNounId(Math.max(0, viewNounId - 1));
+  };
+  const handleNext = () => {
+    if (viewNounId == null || !auction) return;
+    if (viewNounId >= Number(auction.nounId)) return;
+    setViewNounId(viewNounId + 1);
+  };
+  const canGoNext = auction ? (viewNounId ?? 0) < Number(auction.nounId) : false;
+
+  const canBid = isConnected && chainId === REQUIRED_CHAIN_ID && status === "active" && viewNounId === (auction ? Number(auction.nounId) : undefined);
 
   const handleOpenBid = useCallback(() => {
     setActionMessage(null);
@@ -549,26 +596,27 @@ const NounsHomeInner: React.FC = () => {
   }, [auction, attemptSettle, chainId, isConnected, refetch, refresh]);
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-y-auto">
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Nouns Auction House</h1>
-          <p className="max-w-xl text-base text-muted-foreground">
-            Track the live auction, place a bid, settle the previous Noun, and
-            dive deeper into the Nouns DAO universe without leaving nounspace.
-          </p>
-        </div>
+    <div className="flex h-full flex-col gap-6 overflow-y-auto p-4 md:p-6">
+      <div className="flex items-start justify-end">
         <ConnectControl />
       </div>
 
       <AuctionHero
-        auction={auction}
+        auction={activeAuction}
         ensName={bidderEns}
         countdownMs={countdown}
         onOpenBid={handleOpenBid}
         onSettle={handleSettle}
         isSettling={isSettling}
         isConnected={isConnected}
+        headingFontClassName="user-theme-headings-font"
+        dateLabel={dateLabel}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        canGoNext={canGoNext}
+        backgroundHex={bgHex}
+        minRequiredWei={minRequiredWei}
+        onPlaceBid={canBid ? handleBidSubmit : undefined}
       />
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -590,7 +638,7 @@ const NounsHomeInner: React.FC = () => {
             <div>
               <dt className="text-muted-foreground">Current bid</dt>
               <dd className="font-medium">
-                {auction ? formatEth(auction.amount) : "Loading"}
+                {activeAuction ? formatEth(activeAuction.amount) : "Loading"}
               </dd>
             </div>
             <div>
@@ -599,12 +647,7 @@ const NounsHomeInner: React.FC = () => {
             </div>
             <div>
               <dt className="text-muted-foreground">Bidder</dt>
-              <dd className="font-medium">
-                {bidderEns ||
-                  (auction?.bidder
-                    ? shortAddress(auction.bidder)
-                    : "-")}
-              </dd>
+              <dd className="font-medium">{bidderEns || (activeAuction?.bidder ? shortAddress(activeAuction.bidder) : "-")}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Auction contract</dt>

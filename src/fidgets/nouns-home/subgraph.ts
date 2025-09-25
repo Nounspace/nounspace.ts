@@ -63,3 +63,25 @@ export async function fetchLatestAuction(): Promise<SubgraphAuction | null> {
   );
   return data.auctions?.[0] ?? null;
 }
+
+export async function fetchAuctionById(nounId: bigint | number | string): Promise<SubgraphAuction | null> {
+  const id = typeof nounId === 'string' ? nounId : String(nounId);
+  const data = await gql<{ auctions: SubgraphAuction[] }>(
+    `query AuctionById($id: ID!) { auctions(where: { id: $id }) { id amount startTime endTime settled bidder { id } } }`,
+    { id },
+  );
+  return data.auctions?.[0] ?? null;
+}
+
+export async function fetchNounSeedBackground(nounId: bigint | number | string): Promise<number | undefined> {
+  const id = typeof nounId === 'string' ? nounId : String(nounId);
+  const data = await gql<{ nouns: { seed?: { background: string } | null }[] }>(
+    `query NounSeed($id: ID!) { nouns(where: { id: $id }) { seed { background } } }`,
+    { id },
+  );
+  const bg = data.nouns?.[0]?.seed?.background;
+  return bg ? Number(bg) : undefined;
+}
+
+// Minimal background palette from nouns.com image data (cool, warm)
+export const NOUNS_BG_HEX = ["#d5d7e1", "#e1d7d5"] as const;
