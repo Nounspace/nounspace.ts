@@ -970,10 +970,10 @@ export const createSpaceStoreFunc = (
           };
         }, "registerSpace");
 
-        // Create and commit the initial Profile tab
+        // Create and commit the initial Token tab
         await get().space.createSpaceTab(
           newSpaceId,
-          "Profile",
+          "Token",
           initialConfig,
           network,
         );
@@ -981,7 +981,7 @@ export const createSpaceStoreFunc = (
         analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
         type: "token",
         spaceId: newSpaceId,
-        path: `/t/${network}/${address}/Profile`,
+        path: `/t/${network}/${address}/Token`,
       });
       return newSpaceId;
       } catch (e) {
@@ -1065,10 +1065,10 @@ export const createSpaceStoreFunc = (
         };
       });
 
-      // Create and commit the initial Profile tab
+      // Create and commit the initial Overview tab
       await get().space.createSpaceTab(
         newSpaceId,
-        "Profile",
+        "Overview",
         initialConfig
       );
 
