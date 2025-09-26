@@ -669,7 +669,7 @@ const NounsHomeInner: React.FC = () => {
         isSettling={isSettling}
         isConnected={isConnected}
         headingFontClassName="user-theme-headings-font"
-        headingFontFamilyCss={headingsFontFamily}
+        headingFontFamilyCss="var(--user-theme-headings-font)"
         dateLabel={dateLabel}
         onPrev={handlePrev}
         onNext={handleNext}
