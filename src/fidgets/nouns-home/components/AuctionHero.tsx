@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseEther } from 'viem';
 import NounImage from '../NounImage';
 import { formatCountdown, formatEth, getAuctionStatus } from '../utils';
@@ -15,6 +16,7 @@ interface AuctionHeroProps {
   isSettling: boolean;
   isConnected: boolean;
   headingFontClassName?: string;
+  headingFontFamilyCss?: string;
   dateLabel?: string;
   onPrev?: () => void;
   onNext?: () => void;
@@ -37,6 +39,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   isSettling,
   isConnected,
   headingFontClassName,
+  headingFontFamilyCss,
   dateLabel,
   onPrev,
   onNext,
@@ -71,15 +74,15 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
   return (
     <section
-      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[440px]"
+      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[420px] overflow-hidden"
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
       <div className="mx-auto grid max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
-        <div className="flex items-end justify-center pb-2 md:justify-start">
+        <div className="flex items-end justify-center pb-4 md:justify-start">
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}
-              className="h-[360px] w-auto max-w-full object-contain md:h-[420px]"
+              className="h-[340px] w-auto max-w-full object-contain md:h-[400px]"
               priority
             />
           ) : (
@@ -96,10 +99,10 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 <button
                   type="button"
                   onClick={onPrev}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black"
                   aria-label="Previous auction"
                 >
-                  ←
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
               )}
               {onNext && (
@@ -107,15 +110,18 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                   type="button"
                   onClick={onNext}
                   disabled={!canGoNext}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow disabled:opacity-40"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black disabled:opacity-40"
                   aria-label="Next auction"
                 >
-                  →
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               )}
               {dateLabel && <span className="ml-1 font-semibold">{dateLabel}</span>}
             </div>
-            <h1 className={`text-3xl font-semibold md:text-5xl ${headingFontClassName ?? ''}`}>
+            <h1
+              className={`text-3xl font-semibold md:text-5xl ${headingFontClassName ?? ''}`}
+              style={headingFontFamilyCss ? { fontFamily: headingFontFamilyCss } : undefined}
+            >
               {nounId !== undefined ? `Noun ${nounId}` : 'Loading'}
             </h1>
             <div className="space-y-3">
@@ -166,9 +172,9 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
               </button>
             ) : (
               <>
-                <div className="flex w-full max-w-md items-center gap-2">
-                  <input
-                    className="flex-1 rounded-[12px] border border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black"
+              <div className="flex w-full max-w-md items-center gap-2">
+                <input
+                    className="flex-1 rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black"
                     placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : '0.1'}
                     inputMode="decimal"
                     value={bidInput}

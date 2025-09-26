@@ -12,6 +12,7 @@ import {
   useConnect,
   useDisconnect,
   useEnsName,
+  useSwitchChain,
   useWriteContract,
 } from "wagmi";
 import { mainnet } from "wagmi/chains";
@@ -258,6 +259,7 @@ const NounsHomeInner: React.FC = () => {
     useSettlements(auction);
   const { isConnected, address, chainId } = useAccount();
   const { connectAsync, connectors } = useConnect();
+  const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
   const [countdown, setCountdown] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
@@ -324,16 +326,18 @@ const NounsHomeInner: React.FC = () => {
         if (!res.ok) return;
         const json = await res.json();
         const col = json?.collections?.[0];
-        const parseNative = (obj: any): number | undefined => {
+        const extractEth = (obj: any): number | undefined => {
           if (!obj) return undefined;
-          // Common reservoir shapes
-          if (typeof obj?.price?.native === 'number') return obj.price.native;
-          if (typeof obj?.price?.amount?.native === 'number') return obj.price.amount.native;
-          if (typeof obj?.amount?.native === 'number') return obj.amount.native;
+          // Prefer decimal (ETH) values from amount
+          if (obj?.price?.amount?.decimal != null) return Number(obj.price.amount.decimal);
+          if (obj?.amount?.decimal != null) return Number(obj.amount.decimal);
+          // Fallbacks if present
+          if (obj?.price?.native != null) return Number(obj.price.native);
+          if (obj?.amount?.native != null) return Number(obj.amount.native);
           return undefined;
         };
-        const floor = parseNative(col?.floorAsk);
-        const top = parseNative(col?.topBid);
+        const floor = extractEth(col?.floorAsk);
+        const top = extractEth(col?.topBid);
         if (!cancelled) {
           if (Number.isFinite(floor)) setFloorNative(floor);
           if (Number.isFinite(top)) setTopOfferNative(top);
@@ -481,7 +485,10 @@ const NounsHomeInner: React.FC = () => {
       return;
     }
     if (chainId !== REQUIRED_CHAIN_ID) {
-      setActionError("Switch to Ethereum mainnet to bid.");
+      // Try to switch network automatically
+      switchChainAsync({ chainId: REQUIRED_CHAIN_ID }).catch(() => {
+        setActionError("Switch to Ethereum mainnet to bid.");
+      });
       return;
     }
     if (!canBid) {
@@ -500,8 +507,13 @@ const NounsHomeInner: React.FC = () => {
         return;
       }
       if (chainId !== REQUIRED_CHAIN_ID) {
-        setActionError("Switch to Ethereum mainnet to bid.");
-        return;
+        try {
+          setActionMessage("Switching to Ethereum mainnet...");
+          await switchChainAsync({ chainId: REQUIRED_CHAIN_ID });
+        } catch {
+          setActionError("Switch to Ethereum mainnet to bid.");
+          return;
+        }
       }
       try {
         setBidSubmitting(true);
@@ -567,6 +579,7 @@ const NounsHomeInner: React.FC = () => {
       refetch,
       refresh,
       writeContractAsync,
+      switchChainAsync,
     ],
   );
 
@@ -596,8 +609,13 @@ const NounsHomeInner: React.FC = () => {
       return;
     }
     if (chainId !== REQUIRED_CHAIN_ID) {
-      setActionError("Switch to Ethereum mainnet to settle.");
-      return;
+      try {
+        setActionMessage("Switching to Ethereum mainnet...");
+        await switchChainAsync({ chainId: REQUIRED_CHAIN_ID });
+      } catch {
+        setActionError("Switch to Ethereum mainnet to settle.");
+        return;
+      }
     }
     try {
       setIsSettling(true);
@@ -651,6 +669,7 @@ const NounsHomeInner: React.FC = () => {
         isSettling={isSettling}
         isConnected={isConnected}
         headingFontClassName="user-theme-headings-font"
+        headingFontFamilyCss={headingsFontFamily}
         dateLabel={dateLabel}
         onPrev={handlePrev}
         onNext={handleNext}
