@@ -653,16 +653,6 @@ const NounsHomeInner: React.FC = () => {
         floorPriceNative={floorNative}
         topOfferNative={topOfferNative}
       />
-
-      {/* Past auctions and details temporarily removed for hero parity */}
-
-      <StatsRow
-        totalSettled={totalSettled}
-        nounHolderCount={holdersFromSubgraph ?? nounHolderCount}
-        ideasFundedLabel={(executedCount ?? undefined)?.toLocaleString() || "Hundreds+"}
-        treasuryRaisedLabel={treasuryRaisedUsdLabel ?? treasuryRaisedLabel}
-      />
-
       <div className={INNER_PADDING}>
         <ThisIsNounsSection />
         <NounsFundsIdeasSection />
@@ -670,6 +660,12 @@ const NounsHomeInner: React.FC = () => {
         <TheseAreNounsStrip />
         <GetANounSection />
         <AlreadyOwnSection />
+        <StatsRow
+          totalSettled={totalSettled}
+          nounHolderCount={holdersFromSubgraph ?? nounHolderCount}
+          ideasFundedLabel={(executedCount ?? undefined)?.toLocaleString() || "Hundreds+"}
+          treasuryRaisedLabel={treasuryRaisedUsdLabel ?? treasuryRaisedLabel}
+        />
         <JourneySection />
         <LearnSection />
         <FaqAccordion settlements={settlements} />

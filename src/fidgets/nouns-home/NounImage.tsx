@@ -72,26 +72,15 @@ const NounImage: React.FC<Props> = ({ nounId, className, priority }) => {
 
   const alt = `Noun ${nounIdBigInt.toString()}`;
 
-  if (isLoading && NOUNS_IMAGE_SOURCE === "tokenURI") {
+  if (isLoading || !tokenImage) {
     return (
-      <div
-        className={`flex items-center justify-center bg-muted/40 ${className ?? ""}`}
-        aria-busy="true"
-        aria-label="Loading noun artwork"
-      >
-        <span className="text-xs text-muted-foreground">Loading...</span>
-      </div>
-    );
-  }
-
-  if (!tokenImage) {
-    return (
-      <div
-        className={`flex items-center justify-center bg-muted/40 ${className ?? ""}`}
-        aria-label="Artwork unavailable"
-      >
-        <span className="text-xs text-muted-foreground">Artwork unavailable</span>
-      </div>
+      <img
+        src="/noun-loading-skull.gif"
+        alt="Loading Noun artwork"
+        className={className}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+      />
     );
   }
 

@@ -71,7 +71,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
   return (
     <section
-      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[560px]"
+      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[500px]"
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
       <div className="mx-auto grid max-w-[1200px] gap-6 md:grid-cols-[minmax(0,560px)_minmax(0,560px)] md:gap-12">
@@ -79,7 +79,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}
-              className="h-[420px] w-auto max-w-full object-contain md:h-[520px]"
+              className="h-[420px] w-auto max-w-full object-contain md:h-[500px]"
               priority
             />
           ) : (
@@ -89,7 +89,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col justify-start gap-6">
+        <div className="flex flex-col justify-start gap-5 pl-4 pr-4 md:pl-10 md:pr-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-sm text-[#5a5a70]">
               {onPrev && (
@@ -113,20 +113,20 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                   →
                 </button>
               )}
-              {dateLabel && <span className="ml-1">{dateLabel}</span>}
+              {dateLabel && <span className="ml-1 font-semibold">{dateLabel}</span>}
             </div>
-            <h1 className={`text-4xl font-semibold md:text-6xl ${headingFontClassName ?? ''}`}>
+            <h1 className={`text-3xl font-semibold md:text-5xl ${headingFontClassName ?? ''}`}>
               {nounId !== undefined ? `Noun ${nounId}` : 'Loading'}
             </h1>
             <div className="space-y-3">
               <div className="flex flex-wrap gap-10">
                 <div>
                   <div className="text-sm font-semibold text-[#5a5a70]">Current bid</div>
-                  <div className="text-4xl font-semibold md:text-5xl">{etherLabel}</div>
+                  <div className="text-3xl font-semibold md:text-4xl">{etherLabel}</div>
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-[#5a5a70]">Time left</div>
-                  <div className="text-4xl font-semibold md:text-5xl">{status === 'ended' ? '00:00' : countdownLabel}</div>
+                  <div className="text-3xl font-semibold md:text-4xl">{status === 'ended' ? '00:00' : countdownLabel}</div>
                 </div>
               </div>
               <div className="text-sm font-semibold text-[#6b6b80]">
@@ -154,7 +154,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4 md:mt-2">
+          <div className="flex flex-col gap-2 md:gap-3 md:mt-1">
             {status === 'ended' && auction && !auction.settled ? (
               <button
                 type="button"
@@ -165,27 +165,29 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 {isSettling ? 'Settling...' : 'Settle auction'}
               </button>
             ) : (
-              <div className="flex w-full max-w-md items-center gap-2">
-                <input
-                  className="flex-1 rounded-[12px] border border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black"
-                  placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : '0.1'}
-                  inputMode="decimal"
-                  value={bidInput}
-                  onChange={(e) => setBidInput(e.target.value)}
-                  disabled={isEnded}
-                  aria-label="Bid amount in ETH"
-                />
-                <button
-                  type="button"
-                  onClick={handleBidClick}
-                  disabled={isEnded || buttonDisabled}
-                  className="inline-flex h-12 items-center justify-center rounded-[12px] bg-black px-6 text-base font-semibold text-white transition hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
-                >
-                  Place Bid
-                </button>
-              </div>
+              <>
+                <div className="flex w-full max-w-md items-center gap-2">
+                  <input
+                    className="flex-1 rounded-[12px] border border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black"
+                    placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : '0.1'}
+                    inputMode="decimal"
+                    value={bidInput}
+                    onChange={(e) => setBidInput(e.target.value)}
+                    disabled={isEnded}
+                    aria-label="Bid amount in ETH"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleBidClick}
+                    disabled={isEnded || buttonDisabled}
+                    className="inline-flex h-12 items-center justify-center rounded-[12px] bg-black px-6 text-base font-semibold text-white transition hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
+                  >
+                    Place Bid
+                  </button>
+                </div>
+                <div className="text-sm font-semibold text-[#5a5a70]">Highest bidder {bidderLabel}</div>
+              </>
             )}
-            <div className="text-sm font-semibold text-[#5a5a70]">Highest bidder {bidderLabel}</div>
           </div>
         </div>
       </div>
