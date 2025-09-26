@@ -57,6 +57,9 @@ export const NOUNS_TAB_CONFIG = {
           showOnMobile: true,
           // Ensure content can scroll inside the fidget container
           isScrollable: true,
+          // Fonts: make headings Londrina by default, allow override via settings UI
+          headingsFontFamily: "'Londrina Solid', 'Londrina Solid Fallback'",
+          fontFamily: "Theme Font",
         },
       },
       fidgetType: "nounsHome",

@@ -71,10 +71,10 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
   return (
     <section
-      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10"
+      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[560px]"
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
-      <div className="grid gap-6 md:grid-cols-[minmax(0,520px)_1fr] md:gap-12">
+      <div className="mx-auto grid max-w-[1200px] gap-6 md:grid-cols-[minmax(0,560px)_minmax(0,560px)] md:gap-12">
         <div className="flex items-end justify-center md:justify-start">
           {nounId !== undefined ? (
             <NounImage
@@ -89,7 +89,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col justify-between gap-8">
+        <div className="flex flex-col justify-start gap-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-sm text-[#5a5a70]">
               {onPrev && (
@@ -118,7 +118,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             <h1 className={`text-4xl font-semibold md:text-6xl ${headingFontClassName ?? ''}`}>
               {nounId !== undefined ? `Noun ${nounId}` : 'Loading'}
             </h1>
-            <div className="space-y-5">
+            <div className="space-y-3">
               <div className="flex flex-wrap gap-10">
                 <div>
                   <div className="text-sm font-semibold text-[#5a5a70]">Current bid</div>
@@ -126,10 +126,10 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-[#5a5a70]">Time left</div>
-                  <div className="text-2xl font-semibold">{status === 'ended' ? '00:00' : countdownLabel}</div>
+                  <div className="text-4xl font-semibold md:text-5xl">{status === 'ended' ? '00:00' : countdownLabel}</div>
                 </div>
               </div>
-              <div className="text-sm text-[#6b6b80]">
+              <div className="text-sm font-semibold text-[#6b6b80]">
                 <span className="mr-2">ℹ️</span>
                 <a
                   href="https://www.nouns.com/explore"
@@ -154,7 +154,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4 md:mt-2">
             {status === 'ended' && auction && !auction.settled ? (
               <button
                 type="button"
@@ -185,7 +185,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </button>
               </div>
             )}
-            <div className="text-sm text-[#5a5a70]">Highest bidder {bidderLabel}</div>
+            <div className="text-sm font-semibold text-[#5a5a70]">Highest bidder {bidderLabel}</div>
           </div>
         </div>
       </div>

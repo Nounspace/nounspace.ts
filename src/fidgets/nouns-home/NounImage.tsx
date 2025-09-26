@@ -45,9 +45,8 @@ const resolveTokenUriImage = async (nounId: bigint) => {
   }
 };
 
-// noun.pics serves images at several paths. The base `/<id>` works reliably
-// and supports content-negotiated formats (svg/png/jpg).
-const nounPicsUrl = (nounId: bigint) => `https://noun.pics/${nounId.toString()}`;
+// Use SVG from noun.pics for crisp pixel art at any size.
+const nounPicsUrl = (nounId: bigint) => `https://noun.pics/${nounId.toString()}.svg`;
 
 const cloudNounsUrl = (nounId: bigint) =>
   `https://api.cloudnouns.com/v1/pfp?seed=${nounId.toString()}&background=0`;
