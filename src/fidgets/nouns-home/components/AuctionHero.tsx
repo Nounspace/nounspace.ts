@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { parseEther } from 'viem';
 import NounImage from '../NounImage';
 import { formatCountdown, formatEth, getAuctionStatus } from '../utils';
@@ -74,7 +74,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
   return (
     <section
-      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[420px] overflow-hidden"
+      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[420px] overflow-visible md:overflow-hidden"
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
       <div className="mx-auto grid max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
@@ -82,7 +82,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}
-              className="h-[340px] w-auto max-w-full object-contain md:h-[400px]"
+              className="h-[200px] w-auto max-w-full object-contain sm:h-[260px] md:h-[400px]"
               priority
             />
           ) : (
@@ -92,7 +92,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col justify-center gap-4 pl-4 pr-4 md:pl-10 md:pr-6">
+        <div className="flex flex-col justify-center gap-4 pl-4 pr-4 md:pl-10 md:pr-6 self-center bg-white border border-black/10 rounded-2xl p-4 md:bg-transparent md:border-0 md:rounded-none md:p-0">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-sm text-[#5a5a70]">
               {onPrev && (
@@ -127,16 +127,16 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             <div className="space-y-3">
               <div className="flex flex-wrap gap-10">
                 <div>
-                  <div className="text-sm font-semibold text-[#5a5a70]">Current bid</div>
-                  <div className="text-3xl font-semibold md:text-4xl">{etherLabel}</div>
+                  <div className="text-sm font-medium text-[#5a5a70]">Current bid</div>
+                  <div className="text-3xl font-medium md:text-4xl">{etherLabel}</div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#5a5a70]">Time left</div>
-                  <div className="text-3xl font-semibold md:text-4xl">{status === 'ended' ? '00:00' : countdownLabel}</div>
+                  <div className="text-sm font-medium text-[#5a5a70]">Time left</div>
+                  <div className="text-3xl font-medium md:text-4xl">{status === 'ended' ? '00:00' : countdownLabel}</div>
                 </div>
               </div>
-              <div className="text-sm font-semibold text-[#6b6b80]">
-                <span className="mr-2">ℹ️</span>
+              <div className="text-sm font-medium text-[#6b6b80]">
+                <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-black/10 bg-white text-[#5a5a70]"><Info className="h-4 w-4" /></span>
                 <a
                   href="https://www.nouns.com/explore"
                   target="_blank"
@@ -174,7 +174,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
               <>
               <div className="flex w-full max-w-md items-center gap-2">
                 <input
-                    className="flex-1 rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black"
+                    className="flex-1 rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black placeholder:font-semibold"
                     placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : '0.1'}
                     inputMode="decimal"
                     value={bidInput}
@@ -182,6 +182,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                     disabled={isEnded}
                     aria-label="Bid amount in ETH"
                   />
+                  <span className="rounded-[10px] border-2 border-black/10 bg-white px-3 py-2 text-sm font-medium text-[#5a5a70]">ETH</span>
                   <button
                     type="button"
                     onClick={handleBidClick}
@@ -191,7 +192,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                     Place Bid
                   </button>
                 </div>
-                <div className="text-sm font-semibold text-[#5a5a70]">
+                <div className="text-sm font-medium text-[#5a5a70]">
                   Highest bidder{' '}
                   {auction && auction.bidder !== ZERO_ADDRESS ? (
                     <a
