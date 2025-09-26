@@ -3,7 +3,6 @@ import requestHandler from "@/common/data/api/requestHandler";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
 import {
   NotificationType,
-  NotificationTypeEnum,
   NotificationsResponse,
 } from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";

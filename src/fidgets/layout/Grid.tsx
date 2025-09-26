@@ -88,7 +88,6 @@ const makeGridDetails = (
   borderRadius,
 });
 
-type GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
@@ -190,6 +189,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       theme?.properties?.fidgetBorderRadius,
     ],
   );
+
 
   // Consolidated collision detection utility
   const isSpaceAvailable = useCallback((
@@ -516,7 +516,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const newTrayContents = fidgetTrayContents.filter(
       (fidget) => fidget.id !== fidgetId,
     );
-    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
+    const { [fidgetId]: _removed, ...newFidgetInstanceDatums } =
       fidgetInstanceDatums;
 
     // Only save if we have fidgets left or if we're removing the last one
@@ -925,6 +925,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               const fidgetModule = fidgetDatum
                 ? CompleteFidgets[fidgetDatum.fidgetType]
                 : null;
+              
+              
               if (!fidgetModule) return null;
 
               return (

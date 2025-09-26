@@ -5,9 +5,9 @@ import {
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import createIntialPersonSpaceConfigForFid, {
-  INITIAL_SPACE_CONFIG_EMPTY,
-} from "@/constants/initialPersonSpace";
+import { SPACE_TYPES } from "@/common/types/spaceData";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
+import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -31,7 +31,6 @@ import {
   debounce,
   filter,
   fromPairs,
-  includes,
   isArray,
   isNil,
   isUndefined,
@@ -92,6 +91,7 @@ interface CachedSpace {
   orderUpdatedAt?: string;
   contractAddress?: string | null;
   network?: string | null;
+  proposalId?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -113,14 +113,6 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
-  addProposalEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
-  addContractEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
   commitSpaceTabToDatabase: (
     spaceId: string,
     tabName: string,
@@ -174,6 +166,7 @@ interface SpaceActions {
   ) => Promise<string | undefined>;
   registerProposalSpace: (
     proposalId: string,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -235,30 +228,6 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreprofiles,
-  addProposalEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
-      set((draft) => {
-        draft.space.editableSpaces[spaceId] = spaceId;
-      }, "addProposalEditableSpaces");
-    }
-  },
-  addContractEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
-      set((draft) => {
-        draft.space.editableSpaces[spaceId] = spaceId;
-      }, "addContractEditableSpaces");
-    }
-  },
   commitSpaceTabToDatabase: async (spaceId: string, tabName: string, network?: string, isInitialCommit = false) => {
     const localCopy = cloneDeep(
       get().space.localSpaces[spaceId].tabs[tabName],
@@ -307,7 +276,7 @@ export const createSpaceStoreFunc = (
       return; // Exit safely instead of throwing
     }
 
-    console.log("NewConfig", config);
+    // console.log("NewConfig", config);
     let localCopy;
     const newTimestamp = moment().toISOString();
 
@@ -328,10 +297,21 @@ export const createSpaceStoreFunc = (
         }
       });
       localCopy.timestamp = newTimestamp;
-      console.log("localCopy", localCopy);
+      // console.log("localCopy", localCopy);
     }
 
     set((draft) => {
+      // Create space entry if it doesn't exist
+      if (!draft.space.localSpaces[spaceId]) {
+        draft.space.localSpaces[spaceId] = {
+          id: spaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+        };
+      }
+      
       if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
         draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
         draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
@@ -562,7 +542,7 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceOrderToDatabase: debounce(
     async (spaceId, network?: EtherScanChainName) => {
-      console.debug("debug", "Commiting space order to database");
+      // console.debug("debug", "Commiting space order to database");
       const timestamp = moment().toISOString();
 
       const unsignedReq: UnsignedUpdateTabOrderRequest = {
@@ -733,15 +713,15 @@ export const createSpaceStoreFunc = (
         ? moment(localSpace.orderUpdatedAt)
         : moment(0);
       const remoteIsNew = remoteTimestamp.isAfter(localTimestamp);
-      const diff = moment.duration(remoteTimestamp.diff(localTimestamp));
-      console.debug("debug", {
-        remoteIsNew,
-        remote: remoteTimestamp.toISOString(),
-        remoteTabs: tabOrderReq.tabOrder,
-        local: localTimestamp.toISOString(),
-        localTabs: localSpace?.order,
-        diff: diff.asSeconds(),
-      });
+      const _diff = moment.duration(remoteTimestamp.diff(localTimestamp));
+      // console.debug("debug", {
+      //   remoteIsNew,
+      //   remote: remoteTimestamp.toISOString(),
+      //   remoteTabs: tabOrderReq.tabOrder,
+      //   local: localTimestamp.toISOString(),
+      //   localTabs: localSpace?.order,
+      //   diff: diff.asSeconds(),
+      // });
 
       if (remoteIsNew) {
         // Remote data is newer, update the store
@@ -811,6 +791,7 @@ export const createSpaceStoreFunc = (
       spaceName: name,
       timestamp: moment().toISOString(),
       fid,
+      spaceType: SPACE_TYPES.PROFILE,
     };
     const registration = signSignable(
       unsignedRegistration,
@@ -841,7 +822,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        createIntialPersonSpaceConfigForFid(fid),
+        createIntialProfileSpaceConfigForFid(fid),
       );
       analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
         type: "user",
@@ -880,16 +861,40 @@ export const createSpaceStoreFunc = (
       // Check if a space already exists for this contract that the current
       // identity can modify. We query all modifiable spaces for the identity
       // and then search for one matching the contract address and network.
-      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
-        "/api/space/registry",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-          },
-        },
-      );
       
-      if (existingSpaces.value) {
+      // Guard against missing currentSpaceIdentityPublicKey
+      const currentIdentityKey = get().account.currentSpaceIdentityPublicKey;
+      if (!currentIdentityKey) {
+        console.error("No current space identity public key available");
+        return undefined;
+      }
+      
+      let existingSpaces: ModifiableSpacesResponse | undefined;
+      try {
+        const { data } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: currentIdentityKey,
+            },
+            timeout: 5000, // 5 second timeout
+          },
+        );
+        existingSpaces = data;
+        // console.debug("Nounspace existing spaces response:", existingSpaces);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error(
+            "Nounspace existing spaces error:",
+            error.response?.status,
+            error.response?.data,
+          );
+        } else {
+          console.error("Nounspace existing spaces error:", error);
+        }
+      }
+
+      if (existingSpaces?.value) {
         const existingSpace = existingSpaces.value.spaces.find(
           space => space.contractAddress === address && space.network === network
         );
@@ -928,6 +933,7 @@ export const createSpaceStoreFunc = (
         contractAddress: address,
         tokenOwnerFid,
         network: network as EtherScanChainName,
+        spaceType: SPACE_TYPES.TOKEN,
       };
       const registration = signSignable(
         unsignedRegistration,
@@ -939,6 +945,7 @@ export const createSpaceStoreFunc = (
           "/api/space/registry",
           registration,
         );
+        console.log("Nounspace registration response:", data);
         const newSpaceId = data.value!.spaceId;
         
         // Initialize both local and remote spaces with proper structure
@@ -963,10 +970,10 @@ export const createSpaceStoreFunc = (
           };
         }, "registerSpace");
 
-        // Create and commit the initial Profile tab
+        // Create and commit the initial Token tab
         await get().space.createSpaceTab(
           newSpaceId,
-          "Profile",
+          "Token",
           initialConfig,
           network,
         );
@@ -974,11 +981,14 @@ export const createSpaceStoreFunc = (
         analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
         type: "token",
         spaceId: newSpaceId,
-        path: `/t/${network}/${address}/Profile`,
+        path: `/t/${network}/${address}/Token`,
       });
       return newSpaceId;
       } catch (e) {
         console.error("Failed to register contract space:", e);
+        if (axios.isAxiosError(e)) {
+          console.error("Nounspace error response:", e.response?.data);
+        }
         throw e;
       }
     } catch (e) {
@@ -986,45 +996,61 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
-  registerProposalSpace: async (proposalId) => {
+  registerProposalSpace: async (proposalId, initialConfig) => {
     try {
-      // Check if a space already exists for this proposal
-      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
-        "/api/space/registry",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-            proposalId,
-          },
-        },
-      );
+      let existingSpaceId: string | undefined;
 
-      if (existingSpaces.value) {
-        const existingSpace = existingSpaces.value.spaces.find(
-          (space) => space.proposalId === proposalId
+      // Check if a space already exists for this proposal
+      try {
+        const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+            },
+          },
         );
-        if (existingSpace) {
-          return existingSpace.spaceId;
+
+        if (existingSpaces.value) {
+          const existingSpace = existingSpaces.value.spaces.find(
+            (space) => space.proposalId === proposalId
+          );
+          if (existingSpace) {
+            existingSpaceId = existingSpace.spaceId;
+          }
         }
+      } catch (checkError) {
+        console.error("Error checking for existing proposal space:", checkError);
+      }
+
+      if (existingSpaceId) {
+        return existingSpaceId;
       }
 
       // Register a new space for the proposal
       const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        spaceName: `Proposal-${proposalId}`,
+        spaceName: `Nouns-Prop-${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
+        spaceType: SPACE_TYPES.PROPOSAL,
       };
+      
+      console.log("[registerProposalSpace] unsignedRegistration:", unsignedRegistration);
+      
       const registration = signSignable(
         unsignedRegistration,
         get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
 
+      console.log("[registerProposalSpace] Making API call to /api/space/registry");
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
+      console.log("[registerProposalSpace] API response:", data);
       const newSpaceId = data.value!.spaceId;
+      console.log("[registerProposalSpace] New space ID:", newSpaceId);
 
       // Initialize the space with proper structure
       set((draft) => {
@@ -1035,15 +1061,24 @@ export const createSpaceStoreFunc = (
           tabs: {},
           order: [],
           changedNames: {},
+          proposalId,
         };
       });
+      console.log("[registerProposalSpace] Space initialized in store");
 
-      // Create and commit the initial "Overview" tab
-      await get().space.createSpaceTab(
-        newSpaceId,
-        "Overview",
-        INITIAL_SPACE_CONFIG_EMPTY
-      );
+      // Create and commit the initial Overview tab
+      console.log("[registerProposalSpace] Creating Overview tab...");
+      try {
+        await get().space.createSpaceTab(
+          newSpaceId,
+          "Overview",
+          initialConfig
+        );
+        console.log("[registerProposalSpace] Overview tab created successfully");
+      } catch (tabError) {
+        console.error("[registerProposalSpace] Tab creation failed:", tabError);
+        throw new Error(`Failed to create Overview tab: ${tabError instanceof Error ? tabError.message : String(tabError)}`);
+      }
 
 
       // TODO: Install analytics again after proposal space is working 
@@ -1094,6 +1129,7 @@ export const createSpaceStoreFunc = (
                   contractAddress: spaceInfo.contractAddress,
                   network: spaceInfo.network,
                   fid: spaceInfo.fid,
+                  proposalId: spaceInfo.proposalId,
                 };
               }
             });

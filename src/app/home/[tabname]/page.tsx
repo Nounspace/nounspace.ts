@@ -16,7 +16,7 @@ import {
   FUNDED_WORKS_TAB_CONFIG,
   PLACES_TAB_CONFIG,
 } from "./homePageTabsConfig";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 
 const getTabConfig = (tabName: string) => {
   switch (tabName) {
