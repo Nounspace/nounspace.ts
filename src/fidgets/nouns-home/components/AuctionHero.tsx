@@ -136,7 +136,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </div>
               </div>
               <div className="text-sm font-medium text-[#6b6b80]">
-                <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-black/10 bg-white text-[#5a5a70]"><Info className="h-4 w-4" /></span>
+                <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#d9dbe8] text-[#5a5a70]"><Info className="h-4 w-4" /></span>
                 <a
                   href="https://www.nouns.com/explore"
                   target="_blank"
@@ -173,8 +173,9 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             ) : (
               <>
               <div className="flex w-full max-w-md items-center gap-2">
-                <input
-                    className="flex-1 rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 text-base outline-none focus:border-black placeholder:font-semibold"
+                <div className="relative flex-1">
+                  <input
+                    className="w-full rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 pr-16 text-base outline-none focus:border-black placeholder:font-semibold"
                     placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : '0.1'}
                     inputMode="decimal"
                     value={bidInput}
@@ -182,7 +183,8 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                     disabled={isEnded}
                     aria-label="Bid amount in ETH"
                   />
-                  <span className="rounded-[10px] border-2 border-black/10 bg-white px-3 py-2 text-sm font-medium text-[#5a5a70]">ETH</span>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-[8px] border border-black/10 bg-white px-2 py-1 text-xs font-semibold text-[#5a5a70]">ETH</span>
+                </div>
                   <button
                     type="button"
                     onClick={handleBidClick}
