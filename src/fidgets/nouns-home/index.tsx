@@ -1,6 +1,7 @@
 import React from "react";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import {
   FidgetArgs,
   FidgetModule,
@@ -26,7 +27,7 @@ const nounsHomeProperties: FidgetProperties = {
       displayName: "Font Family",
       displayNameHint:
         "Body font for the fidget. Set to Theme Font to inherit your Space settings.",
-      default: "var(--user-theme-font)",
+      default: "Poppins",
       required: false,
       inputSelector: (props) => <FontSelector {...props} />,
       group: "style",
@@ -52,7 +53,7 @@ const nounsHomeProperties: FidgetProperties = {
       displayName: "Headings Font Family",
       displayNameHint:
         "Font for titles like ‘Noun ####’. Choose Londrina Solid for nouns.com style, or inherit Theme Headings Font.",
-      default: "var(--user-theme-headings-font)",
+      default: "Londrina Solid",
       required: false,
       inputSelector: (props) => <FontSelector {...props} />,
       group: "style",
@@ -83,10 +84,18 @@ const nounsHomeProperties: FidgetProperties = {
   },
 };
 
+const resolveFont = (value: string | undefined, themeVar: string) => {
+  if (!value) return themeVar;
+  const cfg = FONT_FAMILY_OPTIONS_BY_NAME[value as keyof typeof FONT_FAMILY_OPTIONS_BY_NAME];
+  // If it's a known font name, use its Next/font variable font-family
+  if (cfg?.config?.style?.fontFamily) return cfg.config.style.fontFamily as string;
+  return value; // already a CSS var or concrete font-family
+};
+
 const NounsHomeFidget: React.FC<FidgetArgs<NounsHomeFidgetSettings>> = ({ settings }) => {
-  const headingsFontFamily = settings?.headingsFontFamily || "var(--user-theme-headings-font)";
+  const headingsFontFamily = resolveFont(settings?.headingsFontFamily, "var(--user-theme-headings-font)");
   const headingsFontColor = settings?.headingsFontColor || "var(--user-theme-headings-font-color)";
-  const bodyFontFamily = settings?.fontFamily || "var(--user-theme-font)";
+  const bodyFontFamily = resolveFont(settings?.fontFamily, "var(--user-theme-font)");
   const bodyFontColor = settings?.fontColor || "var(--user-theme-font-color)";
 
   return (

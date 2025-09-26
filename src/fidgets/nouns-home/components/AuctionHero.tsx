@@ -71,15 +71,15 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
   return (
     <section
-      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[500px]"
+      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[440px]"
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
-      <div className="mx-auto grid max-w-[1200px] gap-6 md:grid-cols-[minmax(0,560px)_minmax(0,560px)] md:gap-12">
-        <div className="flex items-end justify-center md:justify-start">
+      <div className="mx-auto grid max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
+        <div className="flex items-end justify-center pb-2 md:justify-start">
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}
-              className="h-[420px] w-auto max-w-full object-contain md:h-[500px]"
+              className="h-[360px] w-auto max-w-full object-contain md:h-[420px]"
               priority
             />
           ) : (
@@ -89,7 +89,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col justify-start gap-5 pl-4 pr-4 md:pl-10 md:pr-6">
+        <div className="flex flex-col justify-center gap-4 pl-4 pr-4 md:pl-10 md:pr-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-sm text-[#5a5a70]">
               {onPrev && (
@@ -154,7 +154,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 md:gap-3 md:mt-1">
+          <div className="flex flex-col gap-2 md:gap-2 md:mt-1">
             {status === 'ended' && auction && !auction.settled ? (
               <button
                 type="button"
@@ -185,7 +185,21 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                     Place Bid
                   </button>
                 </div>
-                <div className="text-sm font-semibold text-[#5a5a70]">Highest bidder {bidderLabel}</div>
+                <div className="text-sm font-semibold text-[#5a5a70]">
+                  Highest bidder{' '}
+                  {auction && auction.bidder !== ZERO_ADDRESS ? (
+                    <a
+                      href={`https://etherscan.io/address/${auction.bidder}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      {bidderLabel}
+                    </a>
+                  ) : (
+                    bidderLabel
+                  )}
+                </div>
               </>
             )}
           </div>

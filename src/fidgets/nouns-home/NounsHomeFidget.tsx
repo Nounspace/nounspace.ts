@@ -324,8 +324,16 @@ const NounsHomeInner: React.FC = () => {
         if (!res.ok) return;
         const json = await res.json();
         const col = json?.collections?.[0];
-        const floor = Number(col?.floorAsk?.price?.native);
-        const top = Number(col?.topBid?.price?.native);
+        const parseNative = (obj: any): number | undefined => {
+          if (!obj) return undefined;
+          // Common reservoir shapes
+          if (typeof obj?.price?.native === 'number') return obj.price.native;
+          if (typeof obj?.price?.amount?.native === 'number') return obj.price.amount.native;
+          if (typeof obj?.amount?.native === 'number') return obj.amount.native;
+          return undefined;
+        };
+        const floor = parseNative(col?.floorAsk);
+        const top = parseNative(col?.topBid);
         if (!cancelled) {
           if (Number.isFinite(floor)) setFloorNative(floor);
           if (Number.isFinite(top)) setTopOfferNative(top);
