@@ -43,7 +43,7 @@ const VideoEmbed = ({ url }: { url: string }) => {
       height="auto"
       playerRef={playerRef}
       onClick={onClick}
-      className="object-contain size-full"
+      className="object-contain w-full h-auto"
     />
   );
 };
