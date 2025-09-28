@@ -24,7 +24,7 @@ const LoginModal = ({
 
   const { authenticated, ready } = usePrivy();
   const { login } = useLogin({
-    onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {
+    onComplete: ({ isNewUser, wasAlreadyAuthenticated }) => {
       if (!wasAlreadyAuthenticated) {
         if (isNewUser) {
           // redirect to the new user tutorial?

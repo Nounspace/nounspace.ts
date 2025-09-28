@@ -44,7 +44,10 @@ export function useSignMessage() {
     message: string,
   ) {
     if (wallet.walletClientType === "privy") {
-      return signPrivyWalletMessage(message);
+      const { signature } = await signPrivyWalletMessage({
+        message,
+      });
+      return signature;
     } else {
       const connectedWallet = find(
         wallets,
