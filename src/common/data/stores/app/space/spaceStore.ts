@@ -101,6 +101,7 @@ interface LocalSpace extends CachedSpace {
     [newName: string]: string;
   };
   fid?: number | null;
+  channelId?: string | null;
 }
 
 interface SpaceState {
