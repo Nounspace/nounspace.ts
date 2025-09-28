@@ -8,12 +8,14 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
+import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
   SpaceRegistrationContract,
   SpaceRegistrationFid,
   SpaceRegistrationProposer,
+  SpaceRegistrationChannel,
 } from "@/pages/api/space/registry";
 import {
   UnsignedUpdateTabOrderRequest,
@@ -167,6 +169,13 @@ interface SpaceActions {
   registerProposalSpace: (
     proposalId: string,
     initialConfig: Omit<SpaceConfig, "isEditable">,
+  ) => Promise<string | undefined>;
+  registerChannelSpace: (
+    channelId: string,
+    channelName: string,
+    moderatorFid: number,
+    path: string,
+    moderatorFids?: number[],
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -836,6 +845,119 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
+  registerChannelSpace: async (
+    channelId,
+    channelName,
+    moderatorFid,
+    path,
+    moderatorFids,
+  ) => {
+    try {
+      const existingLocalSpace = Object.values(get().space.localSpaces).find(
+        (space) => space.channelId === channelId,
+      );
+
+      if (existingLocalSpace) {
+        return existingLocalSpace.id;
+      }
+
+      try {
+        const { data } = await axiosBackend.get(
+          "/api/space/registry",
+          {
+            params: { channelId },
+          },
+        );
+
+        const existingSpaceId = data?.value?.spaceId;
+
+        if (existingSpaceId) {
+          return existingSpaceId;
+        }
+      } catch (lookupError: any) {
+        if (lookupError?.response?.status !== 404) {
+          console.error("Error checking existing channel space:", lookupError);
+        }
+      }
+
+      const { data: modifiableSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+        "/api/space/registry",
+        {
+          params: {
+            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+          },
+        },
+      );
+
+      if (modifiableSpaces.value) {
+        const existingSpace = modifiableSpaces.value.spaces.find(
+          (space) => space.channelId === channelId,
+        );
+
+        if (existingSpace) {
+          return existingSpace.spaceId;
+        }
+      }
+
+      if (moderatorFids && !moderatorFids.includes(moderatorFid)) {
+        console.warn(
+          "Attempted to register channel space with moderator FID not in moderators list",
+          { channelId, moderatorFid },
+        );
+      }
+
+      const unsignedRegistration: Omit<SpaceRegistrationChannel, "signature"> = {
+        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+        spaceName: channelName || channelId,
+        timestamp: moment().toISOString(),
+        fid: moderatorFid,
+        channelId,
+        spaceType: SPACE_TYPES.CHANNEL,
+      };
+
+      const registration = signSignable(
+        unsignedRegistration,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
+      );
+
+      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+        "/api/space/registry",
+        registration,
+      );
+
+      const newSpaceId = data.value!.spaceId;
+
+      set((draft) => {
+        draft.space.editableSpaces[newSpaceId] = channelName || channelId;
+        draft.space.localSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+          fid: moderatorFid,
+          channelId,
+        };
+      });
+
+      await get().space.createSpaceTab(
+        newSpaceId,
+        "Channel",
+        createInitialChannelSpaceConfig(channelId),
+      );
+
+      analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "channel",
+        spaceId: newSpaceId,
+        path,
+      });
+
+      return newSpaceId;
+    } catch (error) {
+      console.error("Failed to register channel space:", error);
+      throw error;
+    }
+  },
   registerSpaceContract: async (
     address,
     name,
@@ -1120,20 +1242,21 @@ export const createSpaceStoreFunc = (
               // Only create entry if it doesn't exist or if it's missing contract metadata
               if (!draft.space.localSpaces[spaceInfo.spaceId] || 
                   (!draft.space.localSpaces[spaceInfo.spaceId].contractAddress && spaceInfo.contractAddress)) {
-                draft.space.localSpaces[spaceInfo.spaceId] = {
-                  id: spaceInfo.spaceId,
-                  updatedAt: moment().toISOString(),
-                  tabs: draft.space.localSpaces[spaceInfo.spaceId]?.tabs || {},
-                  order: draft.space.localSpaces[spaceInfo.spaceId]?.order || [],
-                  changedNames: draft.space.localSpaces[spaceInfo.spaceId]?.changedNames || {},
-                  contractAddress: spaceInfo.contractAddress,
-                  network: spaceInfo.network,
-                  fid: spaceInfo.fid,
-                  proposalId: spaceInfo.proposalId,
-                };
-              }
-            });
-          }
+              draft.space.localSpaces[spaceInfo.spaceId] = {
+                id: spaceInfo.spaceId,
+                updatedAt: moment().toISOString(),
+                tabs: draft.space.localSpaces[spaceInfo.spaceId]?.tabs || {},
+                order: draft.space.localSpaces[spaceInfo.spaceId]?.order || [],
+                changedNames: draft.space.localSpaces[spaceInfo.spaceId]?.changedNames || {},
+                contractAddress: spaceInfo.contractAddress,
+                network: spaceInfo.network,
+                fid: spaceInfo.fid,
+                proposalId: spaceInfo.proposalId,
+                channelId: spaceInfo.channelId,
+              };
+            }
+          });
+        }
         }, "loadEditableSpaces");
         return editableSpaces;
       }

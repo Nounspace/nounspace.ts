@@ -38,6 +38,12 @@ export interface SpaceRegistrationFid extends SpaceRegistrationBase {
   fid: number;
 }
 
+export interface SpaceRegistrationChannel extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.CHANNEL;
+  channelId: string;
+  fid: number;
+}
+
 export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
   spaceType: typeof SPACE_TYPES.PROPOSAL;
   proposalId: string;
@@ -46,7 +52,8 @@ export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
 export type SpaceRegistration =
   | SpaceRegistrationContract
   | SpaceRegistrationFid
-  | SpaceRegistrationProposer;
+  | SpaceRegistrationProposer
+  | SpaceRegistrationChannel;
 
 type SpaceInfo = SpaceRegistrationBase & {
   spaceId: string;
@@ -54,6 +61,7 @@ type SpaceInfo = SpaceRegistrationBase & {
   contractAddress: string | null;
   network: string | null;
   proposalId?: string | null;
+  channelId?: string | null;
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
@@ -91,6 +99,15 @@ function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistration
     isSpaceRegistration(maybe) &&
     maybe["spaceType"] === SPACE_TYPES.PROPOSAL &&
     typeof maybe["proposalId"] === "string"
+  );
+}
+
+function isSpaceRegistrationChannel(maybe: unknown): maybe is SpaceRegistrationChannel {
+  return (
+    isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.CHANNEL &&
+    typeof maybe["channelId"] === "string" &&
+    (typeof maybe["fid"] === "number" || typeof maybe["fid"] === "string")
   );
 }
 
@@ -218,6 +235,28 @@ async function registerNewSpace(
     }
   } else if (isSpaceRegistrationProposer(registration)) {
     // Handle proposer-specific logic if needed
+  } else if (isSpaceRegistrationChannel(registration)) {
+    const fid = typeof registration.fid === "string"
+      ? parseInt(registration.fid, 10)
+      : registration.fid;
+
+    if (
+      !(await identityCanRegisterForFid(
+        registration.identityPublicKey,
+        fid,
+      ))
+    ) {
+      console.error(
+        `Identity ${registration.identityPublicKey} cannot manage spaces for channel moderator fid ${fid}`,
+      );
+      res.status(400).json({
+        result: "error",
+        error: {
+          message: `Identity ${registration.identityPublicKey} cannot manage spaces for channel moderator fid ${fid}`,
+        },
+      });
+      return;
+    }
   }
 
   if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {
@@ -256,6 +295,7 @@ async function handleGetRequest(
     network: networkQuery,
     identityPublicKey,
     proposalId: proposalIdQuery,
+    channelId: channelIdQuery,
   } = req.query;
 
   // Handle contract lookup case
@@ -277,6 +317,34 @@ async function handleGetRequest(
       .select("spaceId")
       .eq("contractAddress", contractAddress)
       .eq("network", network);
+
+    if (error) {
+      return res
+        .status(500)
+        .json({ result: "error", error: { message: error.message } });
+    }
+
+    const space = first(data);
+
+    if (space) {
+      return res.status(200).json({ result: "success", value: space });
+    } else {
+      return res.status(404).json({ result: "error", error: { message: "Space not found" } });
+    }
+  }
+
+  if (channelIdQuery) {
+    const channelId = Array.isArray(channelIdQuery)
+      ? channelIdQuery[0]
+      : channelIdQuery;
+
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("channelId", channelId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
 
     if (error) {
       return res
