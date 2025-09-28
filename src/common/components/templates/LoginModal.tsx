@@ -7,8 +7,8 @@ import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
-import { MiniKit } from "@worldcoin/minikit-js";
 import WorldLoginButton from "@/common/auth/WorldLoginButton";
+import { useMiniKit } from "@worldcoin/minikit-js/minikit-provider";
 const LoginModal = ({
   open,
   setOpen,
@@ -40,16 +40,9 @@ const LoginModal = ({
     },
   });
   const [errored, setErrored] = useState(false);
-  const [isWorldMiniApp, setIsWorldMiniApp] = useState(false);
+  const { isInstalled: worldMiniKitInstalled } = useMiniKit();
   const { CurrentInitializerComponent } = useAuthenticatorManager();
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      setIsWorldMiniApp(false);
-      return;
-    }
-    setIsWorldMiniApp(MiniKit.isInstalled());
-  }, []);
+  const isWorldMiniApp = worldMiniKitInstalled === true;
 
   useEffect(() => {
     if (
@@ -57,11 +50,11 @@ const LoginModal = ({
       !authenticated &&
       ready &&
       open &&
-      !isWorldMiniApp
+      worldMiniKitInstalled === false
     ) {
       login();
     }
-  }, [currentStep, open, ready, authenticated, isWorldMiniApp, login]);
+  }, [currentStep, open, ready, authenticated, worldMiniKitInstalled, login]);
 
   const shouldShowModal = useMemo(
     () =>

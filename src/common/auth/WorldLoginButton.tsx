@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { MiniKit } from "@worldcoin/minikit-js";
+import React, { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/common/components/atoms/button";
 import { useWorldMiniAppAuth } from "./useWorldMiniAppAuth";
+import { useMiniKit } from "@worldcoin/minikit-js/minikit-provider";
 
 type WorldLoginButtonProps = {
   className?: string;
@@ -22,15 +22,7 @@ export function WorldLoginButton({
 }: WorldLoginButtonProps) {
   const { signInWithWorld } = useWorldMiniAppAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [isInstalled, setIsInstalled] = useState<boolean | undefined>(undefined);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      setIsInstalled(false);
-      return;
-    }
-    setIsInstalled(MiniKit.isInstalled());
-  }, []);
+  const { isInstalled } = useMiniKit();
 
   const buttonLabel = useMemo(
     () => (isSigningIn ? "Connecting to World App..." : "Continue with World App"),
@@ -53,7 +45,7 @@ export function WorldLoginButton({
     }
   }, [signInWithWorld, onError, onStart, onSuccess]);
 
-  if (!isInstalled) {
+  if (isInstalled !== true) {
     return null;
   }
 
