@@ -62,7 +62,7 @@ export function WorldLoginButton({
     } finally {
       setIsSigningIn(false);
     }
-  }, [signInWithWorld, onError, onStart, onSuccess]);
+  }, [isReadyForWorldLogin, signInWithWorld, onError, onStart, onSuccess]);
 
   if (!isInstalled) {
     return null;
