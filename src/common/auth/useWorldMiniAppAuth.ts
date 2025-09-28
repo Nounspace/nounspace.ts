@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { MiniKit, type MiniAppWalletAuthPayload } from "@worldcoin/minikit-js";
+import { MiniKit } from "@worldcoin/minikit-js";
 import {
   usePrivy,
   type PrivyClient,

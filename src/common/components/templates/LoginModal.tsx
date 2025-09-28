@@ -1,6 +1,6 @@
 "use client";
 import { useAppStore } from "@/common/data/stores/app";
-import { useLogin, usePrivy } from "@privy-io/react-auth";
+import { useLogin, usePrivy, PrivyErrorCode } from "@privy-io/react-auth";
 import React, { useEffect, useMemo, useState } from "react";
 import { SetupStep } from "@/common/data/stores/app/setup";
 import LoadingScreen from "../organisms/LoadingScreen";
@@ -34,9 +34,9 @@ const LoginModal = ({
       }
       setCurrentStep(SetupStep.SIGNED_IN);
     },
-    onError: (error: Error) => {
+    onError: (error: PrivyErrorCode) => {
       setErrored(true);
-      setErrorMessage(error.message || "An error occurred during login");
+      setErrorMessage(`Login failed: ${error}`);
     },
   });
   const [errored, setErrored] = useState(false);
