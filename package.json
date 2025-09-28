@@ -4,6 +4,7 @@
   "license": "",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm", 
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
