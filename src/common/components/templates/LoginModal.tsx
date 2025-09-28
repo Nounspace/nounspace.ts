@@ -34,12 +34,13 @@ const LoginModal = ({
       }
       setCurrentStep(SetupStep.SIGNED_IN);
     },
-    onError: () => {
-      setOpen(false);
+    onError: (error: Error) => {
       setErrored(true);
+      setErrorMessage(error.message || "An error occurred during login");
     },
   });
   const [errored, setErrored] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isWorldMiniApp, setIsWorldMiniApp] = useState(false);
   const { CurrentInitializerComponent } = useAuthenticatorManager();
 
@@ -105,16 +106,22 @@ const LoginModal = ({
         return (
           <div className="flex flex-col gap-4">
             <WorldLoginButton
-              onStart={() => setErrored(false)}
-              onError={() => setErrored(true)}
+              onStart={() => {
+                setErrored(false);
+                setErrorMessage("");
+              }}
+              onError={(error: Error) => {
+                setErrored(true);
+                setErrorMessage(error.message || "An error occurred during login");
+              }}
+              onSuccess={() => {
+                setErrored(false);
+                setErrorMessage("");
+              }}
+              showError={errored}
+              errorMessage={errorMessage}
               className="w-full justify-center"
             />
-            {errored && (
-              <div className="rounded-md bg-red px-4 py-2 text-sm text-white">
-                An error occurred signing you in. Please try again or contact
-                support if the problem persists.
-              </div>
-            )}
           </div>
         );
       }
