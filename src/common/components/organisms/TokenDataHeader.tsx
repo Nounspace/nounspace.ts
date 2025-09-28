@@ -3,6 +3,8 @@ import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 import { useToken } from "@/common/providers/TokenProvider";
+import { MiniKit } from "@worldcoin/minikit-js";
+import { toast } from "sonner";
 
 const TokenDataHeader: React.FC = () => {
   const { tokenData } = useToken();
@@ -41,21 +43,50 @@ const TokenDataHeader: React.FC = () => {
   };
 
   const handleOpenNetscan = () => {
-    window.open(
-      `https://${tokenData?.network}scan.org/address/${contractAddress}`,
-      "_blank",
-    );
+    if (typeof window === "undefined") return;
+    const targetUrl = `https://${tokenData?.network}scan.org/address/${contractAddress}`;
+
+    if (MiniKit.isInstalled()) {
+      window.location.href = targetUrl;
+      return;
+    }
+
+    window.open(targetUrl, "_blank");
   };
 
-  const handleCopyUrl = () => {
+  const handleCopyUrl = async () => {
+    if (typeof window === "undefined") return;
     const url = window.location.href;
-    const tempInput = document.createElement("input");
-    tempInput.value = url;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand("copy");
-    document.body.removeChild(tempInput);
-    alert("URL copied to clipboard");
+
+    if (MiniKit.isInstalled()) {
+      try {
+        const { finalPayload } = await MiniKit.commandsAsync.share({ url });
+        if (finalPayload && finalPayload.status === "error") {
+          toast.error("Unable to share link in World App");
+        }
+      } catch (error) {
+        console.error("World App share failed", error);
+        toast.error("Unable to share link in World App");
+      }
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const tempInput = document.createElement("input");
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+      }
+      toast.success("URL copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy URL", error);
+      toast.error("Unable to copy URL");
+    }
   };
 
   return (

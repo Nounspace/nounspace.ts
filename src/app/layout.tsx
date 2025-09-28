@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { defaultFrame } from "@/constants/metadata";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
+import { MiniKitProvider as WorldMiniKitProvider } from "@worldcoin/minikit-js/minikit-provider";
 import type { Metadata } from 'next' // Migrating next/head
 
 export const metadata: Metadata = {
@@ -57,11 +58,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const worldMiniKitProps = process.env.NEXT_PUBLIC_WORLD_APP_ID
+    ? { appId: process.env.NEXT_PUBLIC_WORLD_APP_ID }
+    : undefined;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <SpeedInsights />
-        <Providers>{sidebarLayout(children)}</Providers>
+        <WorldMiniKitProvider props={worldMiniKitProps}>
+          <SpeedInsights />
+          <Providers>{sidebarLayout(children)}</Providers>
+        </WorldMiniKitProvider>
       </body>
     </html>
   );

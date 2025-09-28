@@ -3,6 +3,7 @@ import React, { ReactNode } from "react";
 import { ErrorBoundary } from "@sentry/react";
 import Linkify from "linkify-react";
 import Link from "next/link";
+import { MiniKit } from "@worldcoin/minikit-js";
 
 import { registerPlugin } from "linkifyjs";
 import {
@@ -41,6 +42,13 @@ const renderLink = ({ attributes, content }: RenderFunctionArgs) => {
       className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
       onClick={(event) => {
         event.stopPropagation();
+        if (typeof window === "undefined") {
+          return;
+        }
+        if (MiniKit.isInstalled()) {
+          window.location.href = href;
+          return;
+        }
         window.open(href, "_blank");
       }}
       rel="noopener noreferrer"
