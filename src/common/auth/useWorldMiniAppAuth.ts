@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
 import {
   usePrivy,
+  useLinkWithSiwe,
   type PrivyClient,
   type PrivyInterface,
 } from "@privy-io/react-auth";
@@ -29,20 +30,7 @@ type WorldAppWalletAuthResponse = WorldAppErrorPayload | WorldAppSuccessPayload;
 export const WORLD_APP_SIWE_STATEMENT =
   "Sign in to Nounspace via World App (SIWE)";
 
-type SiweCapablePrivyClient = Pick<PrivyClient, never> & {
-  generateSiweNonce: (params?: {
-    address?: string;
-    captchaToken?: string;
-  }) => Promise<string>;
-  authenticateWithSiweInternal: (params: {
-    message: string;
-    signature: string;
-    chainId?: string;
-    walletClientType?: string | null;
-    connectorType?: string | null;
-    mode?: string;
-  }) => Promise<unknown>;
-};
+// Removed SiweCapablePrivyClient - using useLinkWithSiwe hook instead
 
 // Removed toOptionalChainId - now handling chainId directly from typed payload
 
@@ -55,11 +43,10 @@ const makeRequestId = () => {
 };
 
 export function useWorldMiniAppAuth() {
-  const privy = usePrivy() as PrivyInterface & {
-    client?: SiweCapablePrivyClient;
-  };
+  const privy = usePrivy() as PrivyInterface;
+  const { generateSiweMessage, linkWithSiwe } = useLinkWithSiwe();
 
-  const { client, ready, getAccessToken } = privy;
+  const { ready, getAccessToken } = privy;
   const [debugLogs, setDebugLogs] = useState<Array<{ timestamp: string; level: 'info' | 'warn' | 'error'; message: string; data?: any }>>([]);
   const [currentStatus, setCurrentStatus] = useState<string>('Initializing...');
 
@@ -80,9 +67,13 @@ export function useWorldMiniAppAuth() {
 
   // Initialize status and logging
   useMemo(() => {
-    addDebugLog('info', 'World App auth hook initialized');
+    addDebugLog('info', 'World App auth hook initialized', {
+      ready,
+      hasGenerateSiweMessage: !!generateSiweMessage,
+      hasLinkWithSiwe: !!linkWithSiwe
+    });
     updateStatus('Initializing...');
-  }, [addDebugLog, updateStatus]);
+  }, [addDebugLog, updateStatus, ready, generateSiweMessage, linkWithSiwe]);
 
   const signInWithWorld = useCallback(async () => {
     updateStatus("Starting authentication...");
@@ -102,25 +93,19 @@ export function useWorldMiniAppAuth() {
 
     addDebugLog('info', 'Privy is ready');
 
-    if (!client?.generateSiweNonce || !client.authenticateWithSiweInternal) {
+    if (!generateSiweMessage || !linkWithSiwe) {
       addDebugLog('error', 'Missing Privy SIWE methods', { 
-        hasGenerateSiweNonce: !!client?.generateSiweNonce,
-        hasAuthenticateWithSiweInternal: !!client?.authenticateWithSiweInternal
+        hasGenerateSiweMessage: !!generateSiweMessage,
+        hasLinkWithSiwe: !!linkWithSiwe
       });
       throw new Error("Authentication services are temporarily unavailable. Please refresh the page and try again.");
     }
 
     addDebugLog('info', 'Privy SIWE methods available');
 
-    let nonce;
-    try {
-      updateStatus("Generating authentication challenge...");
-      nonce = await client.generateSiweNonce({});
-      addDebugLog('info', 'Nonce generated successfully', { nonce: nonce?.substring(0, 10) + '...' });
-    } catch (error) {
-      addDebugLog('error', 'Failed to generate nonce', { error: error instanceof Error ? error.message : String(error) });
-      throw new Error("Failed to generate authentication challenge. Please try again.");
-    }
+    // Generate a simple nonce for World App
+    const nonce = makeRequestId();
+    addDebugLog('info', 'Generated nonce for World App', { nonce });
 
     let finalPayload;
     try {
@@ -129,7 +114,7 @@ export function useWorldMiniAppAuth() {
       addDebugLog('info', 'Initiating World App wallet auth', { 
         requestId,
         statement: WORLD_APP_SIWE_STATEMENT,
-        nonceLength: nonce.length
+        nonce
       });
       
       const result = await MiniKit.commandsAsync.walletAuth({
@@ -234,13 +219,12 @@ export function useWorldMiniAppAuth() {
 
     try {
       updateStatus("Authenticating with Privy...");
-      await client.authenticateWithSiweInternal({
+      await linkWithSiwe({
         message,
         signature,
-        chainId,
+        chainId: chainId || "1", // Default to mainnet if no chainId
         walletClientType: "world-app",
         connectorType: "world-app",
-        mode: "login-or-sign-up",
       });
       addDebugLog('info', 'Privy authentication successful');
     } catch (error) {
@@ -258,12 +242,22 @@ export function useWorldMiniAppAuth() {
 
     updateStatus("Authentication complete!");
     addDebugLog('info', 'World App authentication completed successfully');
-  }, [client, getAccessToken, ready, addDebugLog, updateStatus]);
+  }, [generateSiweMessage, linkWithSiwe, getAccessToken, ready, addDebugLog, updateStatus]);
 
-  const isReadyForWorldLogin = useMemo(
-    () => ready && !!client?.generateSiweNonce && !!client.authenticateWithSiweInternal,
-    [client, ready],
-  );
+  const isReadyForWorldLogin = useMemo(() => {
+    // Check if Privy is ready and SIWE methods are available
+    const isReady = ready && !!generateSiweMessage && !!linkWithSiwe;
+    
+    // Debug logging for readiness check
+    addDebugLog('info', 'Readiness check', {
+      ready,
+      hasGenerateSiweMessage: !!generateSiweMessage,
+      hasLinkWithSiwe: !!linkWithSiwe,
+      isReady
+    });
+    
+    return isReady;
+  }, [ready, generateSiweMessage, linkWithSiwe, addDebugLog]);
 
   // Update status when ready state changes
   useMemo(() => {
