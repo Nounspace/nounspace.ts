@@ -16,6 +16,9 @@ type MatterResultData = {
 };
 
 export async function getAllMarkdownFiles(): Promise<PostData[]> {
+  if (process.env.SKIP_SUPABASE_STORAGE === "true") {
+    return [];
+  }
   const { data, error } = await createSupabaseServerClient()
     .storage
     .from("explore")
@@ -39,6 +42,9 @@ export async function getAllMarkdownFiles(): Promise<PostData[]> {
 export async function getMarkdownFileBySlug(
   slug: string,
 ): Promise<PostData | null> {
+  if (process.env.SKIP_SUPABASE_STORAGE === "true") {
+    return null;
+  }
   const { data, error } = await createSupabaseServerClient()
     .storage
     .from("explore")
@@ -59,6 +65,9 @@ export async function getMarkdownFileBySlug(
 }
 
 export async function getAllSlugs() {
+  if (process.env.SKIP_SUPABASE_STORAGE === "true") {
+    return [];
+  }
   const { data, error } = await createSupabaseServerClient()
     .storage
     .from("explore")

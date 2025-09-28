@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
 import { toast } from "sonner";
 
