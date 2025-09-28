@@ -1,3 +1,5 @@
 {
-  "trailingSlash": false
+  "trailingSlash": false,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install"
 }
