@@ -1,12 +1,14 @@
 "use client";
 import { useAppStore } from "@/common/data/stores/app";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { SetupStep } from "@/common/data/stores/app/setup";
 import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
+import { MiniKit } from "@worldcoin/minikit-js";
+import WorldLoginButton from "@/common/auth/WorldLoginButton";
 const LoginModal = ({
   open,
   setOpen,
@@ -38,18 +40,36 @@ const LoginModal = ({
     },
   });
   const [errored, setErrored] = useState(false);
+  const [isWorldMiniApp, setIsWorldMiniApp] = useState(false);
   const { CurrentInitializerComponent } = useAuthenticatorManager();
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setIsWorldMiniApp(false);
+      return;
+    }
+    setIsWorldMiniApp(MiniKit.isInstalled());
+  }, []);
 
   useEffect(() => {
     if (
       currentStep === SetupStep.NOT_SIGNED_IN &&
       !authenticated &&
       ready &&
-      open
+      open &&
+      !isWorldMiniApp
     ) {
       login();
     }
-  }, [currentStep, open, ready, authenticated]);
+  }, [currentStep, open, ready, authenticated, isWorldMiniApp, login]);
+
+  const shouldShowModal = useMemo(
+    () =>
+      open &&
+      currentStep !== SetupStep.DONE &&
+      (authenticated || isWorldMiniApp),
+    [open, currentStep, authenticated, isWorldMiniApp],
+  );
 
   function getModalContent() {
     if (!ready) {
@@ -61,19 +81,37 @@ const LoginModal = ({
     }
 
     if (currentStep === SetupStep.NOT_SIGNED_IN) {
-      return authenticated ? (
-        <>
-          <div className="self-center">
-            <Spinner className="size-12" />
-          </div>
+      if (authenticated) {
+        return (
+          <>
+            <div className="self-center">
+              <Spinner className="size-12" />
+            </div>
+            {errored && (
+              <div className="bg-red text-white">
+                An error occurred signing you in. Please try again or contact
+                support if the problem persists
+              </div>
+            )}
+          </>
+        );
+      }
+
+      return (
+        <div className="flex flex-col gap-4">
+          <WorldLoginButton
+            onStart={() => setErrored(false)}
+            onError={() => setErrored(true)}
+            className="w-full justify-center"
+          />
           {errored && (
-            <div className="bg-red text-white">
+            <div className="rounded-md bg-red px-4 py-2 text-sm text-white">
               An error occurred signing you in. Please try again or contact
-              support if the problem persists
+              support if the problem persists.
             </div>
           )}
-        </>
-      ) : null;
+        </div>
+      );
     }
 
     if (currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED)
@@ -89,7 +127,7 @@ const LoginModal = ({
   return (
     <Modal
       setOpen={setOpen}
-      open={open && authenticated && currentStep !== SetupStep.DONE}
+      open={shouldShowModal}
       showClose={showClose}
     >
       {getModalContent()}

@@ -5,11 +5,33 @@ import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { MiniKit } from "@worldcoin/minikit-js";
 
 const segment = new AnalyticsBrowser();
 
+const isAnalyticsAllowed = () => {
+  if (typeof window === "undefined") {
+    return true;
+  }
+
+  if (!MiniKit.isInstalled()) {
+    return true;
+  }
+
+  const worldUser = MiniKit.user as { optedIntoOptionalAnalytics?: boolean } | undefined;
+
+  if (worldUser?.optedIntoOptionalAnalytics === false) {
+    return false;
+  }
+
+  return true;
+};
+
 export const analytics = {
   track: (eventName: AnalyticsEvent, properties?: Record<string, any>) => {
+    if (!isAnalyticsAllowed()) {
+      return;
+    }
     try {
       segment.track(eventName, properties);
     } catch (e) {
@@ -17,6 +39,9 @@ export const analytics = {
     }
   },
   identify: (id?: string, properties?: any) => {
+    if (!isAnalyticsAllowed()) {
+      return;
+    }
     try {
       segment.identify(id, properties);
     } catch (e) {
@@ -24,6 +49,9 @@ export const analytics = {
     }
   },
   page: () => {
+    if (!isAnalyticsAllowed()) {
+      return;
+    }
     try {
       segment.page();
     } catch (e) {
@@ -53,6 +81,10 @@ const AnalyticsProviderContent: React.FC<{ children: ReactNode }> = ({
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    if (!isAnalyticsAllowed()) {
+      return;
+    }
+
     if (writeKey) {
       segment.load({ writeKey }).catch((e) => {
         console.error(e);
@@ -61,12 +93,18 @@ const AnalyticsProviderContent: React.FC<{ children: ReactNode }> = ({
   }, [writeKey]);
 
   useEffect(() => {
+    if (!isAnalyticsAllowed()) {
+      return;
+    }
     if (identityPublicKey) {
       analytics.identify(identityPublicKey, { fid });
     }
   }, [identityPublicKey, fid]);
 
   useEffect(() => {
+    if (!isAnalyticsAllowed()) {
+      return;
+    }
     analytics.page();
   }, [pathname, searchParams]);
 
