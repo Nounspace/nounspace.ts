@@ -6,8 +6,9 @@ import { ProposalData } from '@/app/(spaces)/p/[proposalId]/utils';
 // Space type definitions - the single source of truth for space types
 export const SPACE_TYPES = {
   PROFILE: 'profile',
-  TOKEN: 'token', 
+  TOKEN: 'token',
   PROPOSAL: 'proposal',
+  CHANNEL: 'channel',
 } as const;
 
 // TypeScript type derived from the constants (for type checking)
@@ -60,8 +61,21 @@ export interface ProposalSpacePageData extends SpacePageData {
   identityPublicKey?: string;
 }
 
+export interface ChannelSpacePageData extends SpacePageData {
+  spaceType: typeof SPACE_TYPES.CHANNEL;
+  defaultTab: 'Channel';
+  channelId: string;
+  channelDisplayName?: string;
+  moderatorFids: number[];
+  identityPublicKey?: string;
+}
+
 // Union type for all spaces
-export type Space = ProfileSpacePageData | TokenSpacePageData | ProposalSpacePageData;
+export type Space =
+  | ProfileSpacePageData
+  | TokenSpacePageData
+  | ProposalSpacePageData
+  | ChannelSpacePageData;
 
 // Type guards (actual TypeScript type guards that narrow types)
 export function isProfileSpace(space: SpacePageData): space is ProfileSpacePageData {
@@ -74,5 +88,9 @@ export function isTokenSpace(space: SpacePageData): space is TokenSpacePageData 
 
 export function isProposalSpace(space: SpacePageData): space is ProposalSpacePageData {
   return space.spaceType === SPACE_TYPES.PROPOSAL;
+}
+
+export function isChannelSpace(space: SpacePageData): space is ChannelSpacePageData {
+  return space.spaceType === SPACE_TYPES.CHANNEL;
 }
 
