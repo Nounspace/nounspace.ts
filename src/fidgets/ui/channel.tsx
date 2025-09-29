@@ -82,13 +82,27 @@ type SimpleUserSource =
   | null
   | undefined;
 
+const hasNestedUser = (
+  value: SimpleUserSource,
+): value is { user?: NeynarUser | null | undefined } => {
+  return typeof value === "object" && value !== null && "user" in value;
+};
+
+const isNeynarUser = (value: SimpleUserSource): value is NeynarUser => {
+  return typeof value === "object" && value !== null && !("user" in value);
+};
+
 const toSimpleUser = (user?: SimpleUserSource): SimpleUser | undefined => {
   if (!user) {
     return undefined;
   }
 
-  if ("user" in user) {
+  if (hasNestedUser(user)) {
     return toSimpleUser(user.user ?? undefined);
+  }
+
+  if (!isNeynarUser(user)) {
+    return undefined;
   }
 
   const { fid, username, display_name, pfp_url } = user;
