@@ -2,19 +2,38 @@ import requestHandler from "@/common/data/api/requestHandler";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
+const getSingleQueryValue = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
 async function fetchChannelRelevantFollowers(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   try {
+    const channelId = getSingleQueryValue(req.query.id);
+    const viewerFidParam = getSingleQueryValue(req.query.viewer_fid);
+
+    if (!channelId || !viewerFidParam) {
+      return res.status(400).json({
+        result: "error",
+        error: { message: "Missing required channel id or viewer fid" },
+      });
+    }
+
+    const { id: _unusedId, viewer_fid: _unusedViewerFid, ...rest } = req.query;
+
     const options: AxiosRequestConfig = {
       method: "GET",
-      url: "https://api.neynar.com/v2/farcaster/channel/relevant_followers",
+      url: "https://api.neynar.com/v2/farcaster/channel/followers/relevant",
       headers: {
         accept: "application/json",
         api_key: process.env.NEYNAR_API_KEY!,
       },
-      params: req.query,
+      params: {
+        ...rest,
+        id: channelId,
+        viewer_fid: viewerFidParam,
+      },
     };
 
     const { data } = await axios.request(options);

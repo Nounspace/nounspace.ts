@@ -192,13 +192,15 @@ export const useChannelById = (channelId: string, viewerFid?: number) => {
     enabled: !!channelId,
     staleTime: 1000 * 60 * 3,
     queryFn: async () => {
+      const params: Record<string, number | string> = { id: channelId };
+      if (typeof viewerFid === "number") {
+        params.viewer_fid = viewerFid;
+      }
+
       const { data } = await axiosBackend.get<ChannelResponse>(
         "/api/farcaster/neynar/channel",
         {
-          params: {
-            id: channelId,
-            viewer_fid: viewerFid,
-          },
+          params,
         },
       );
 
@@ -213,13 +215,18 @@ export const useChannelMembers = (channelId: string, limit = 10) => {
     enabled: !!channelId,
     staleTime: 1000 * 60 * 3,
     queryFn: async () => {
+      const params: Record<string, number | string> = {
+        channel_id: channelId,
+      };
+
+      if (typeof limit === "number") {
+        params.limit = limit;
+      }
+
       const { data } = await axiosBackend.get<ChannelMemberListResponse>(
         "/api/farcaster/neynar/channel/members",
         {
-          params: {
-            id: channelId,
-            limit,
-          },
+          params,
         },
       );
 
@@ -234,13 +241,18 @@ export const useChannelFollowers = (channelId: string, limit = 10) => {
     enabled: !!channelId,
     staleTime: 1000 * 60 * 3,
     queryFn: async () => {
+      const params: Record<string, number | string> = {
+        id: channelId,
+      };
+
+      if (typeof limit === "number") {
+        params.limit = limit;
+      }
+
       const { data } = await axiosBackend.get<FollowersResponse>(
         "/api/farcaster/neynar/channel/followers",
         {
-          params: {
-            id: channelId,
-            limit,
-          },
+          params,
         },
       );
 
@@ -255,16 +267,18 @@ export const useChannelRelevantFollowers = (
 ) => {
   return useQuery({
     queryKey: ["channel-relevant-followers", channelId, viewerFid],
-    enabled: !!channelId,
+    enabled: !!channelId && typeof viewerFid === "number",
     staleTime: 1000 * 60 * 3,
     queryFn: async () => {
+      const params: Record<string, number | string> = {
+        id: channelId,
+        viewer_fid: viewerFid!,
+      };
+
       const { data } = await axiosBackend.get<RelevantFollowersResponse>(
         "/api/farcaster/neynar/channel/relevant-followers",
         {
-          params: {
-            id: channelId,
-            viewer_fid: viewerFid,
-          },
+          params,
         },
       );
 

@@ -7,8 +7,8 @@ import {
   useChannelRelevantFollowers,
 } from "@/common/data/queries/farcaster";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
+import { defaultStyleFields } from "@/fidgets/helpers";
 import clsx from "clsx";
 import { first, take } from "lodash";
 import React, { useMemo } from "react";
@@ -66,11 +66,21 @@ const SectionHeading: React.FC<{ title: string; count?: number }> = ({
   </div>
 );
 
+type SimpleUser = {
+  fid?: number;
+  username?: string;
+  display_name?: string;
+  pfp_url?: string;
+};
+
 const InlineAvatarList: React.FC<{
-  users: { fid?: number; username?: string; display_name?: string; pfp_url?: string }[];
+  users: (SimpleUser | undefined)[];
   limit?: number;
 }> = ({ users, limit = 6 }) => {
-  const visibleUsers = useMemo(() => take(users, limit), [users, limit]);
+  const visibleUsers = useMemo(
+    () => take(users.filter((user): user is SimpleUser => Boolean(user)), limit),
+    [users, limit],
+  );
 
   if (!visibleUsers.length) {
     return <p className="text-sm text-slate-500">No results found.</p>;
@@ -78,12 +88,17 @@ const InlineAvatarList: React.FC<{
 
   return (
     <div className="flex flex-wrap gap-2 mt-2">
-      {visibleUsers.map((user) => (
-        <div key={user.fid ?? user.username} className="flex items-center gap-2">
+      {visibleUsers.map((user, index) => (
+        <div
+          key={String(user.fid ?? user.username ?? user.display_name ?? index)}
+          className="flex items-center gap-2"
+        >
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.pfp_url} alt={user.display_name || user.username || ""} />
+            <AvatarImage src={user.pfp_url ?? undefined} alt={user.display_name || user.username || ""} />
             <AvatarFallback>
-              {(user.display_name || user.username || "?").slice(0, 2).toUpperCase()}
+              {(user.display_name || user.username || "?")
+                .slice(0, 2)
+                .toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="leading-tight">
@@ -111,22 +126,47 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   );
   const { data: membersResponse, isLoading: membersLoading } = useChannelMembers(channelId, 6);
   const { data: followersResponse, isLoading: followersLoading } = useChannelFollowers(channelId, 6);
+  const hasViewerFid = typeof viewerFid === "number" && viewerFid > 0;
   const { data: relevantFollowersResponse, isLoading: relevantFollowersLoading } =
-    useChannelRelevantFollowers(channelId, viewerFid > 0 ? viewerFid : undefined);
+    useChannelRelevantFollowers(channelId, hasViewerFid ? viewerFid : undefined);
 
-  const isLoading = channelLoading || membersLoading || followersLoading || relevantFollowersLoading;
+  const isLoading =
+    channelLoading ||
+    membersLoading ||
+    followersLoading ||
+    (hasViewerFid ? relevantFollowersLoading : false);
 
   const channel = channelResponse?.channel;
 
   const description = channel?.description?.trim();
   const channelName = channel?.name || channel?.id;
   const avatarUrl = channel?.image_url;
-  const followerCount = channel?.follower_count ?? followersResponse?.users?.length ?? 0;
-  const memberCount = channel?.member_count ?? membersResponse?.members?.length ?? 0;
+  const followerUsers = useMemo(
+    () =>
+      (followersResponse?.users ?? [])
+        .map((follower) => follower?.user)
+        .filter((user): user is SimpleUser => Boolean(user)),
+    [followersResponse?.users],
+  );
+  const memberUsers = useMemo(
+    () =>
+      (membersResponse?.members ?? [])
+        .map((member) => member?.user)
+        .filter((user): user is SimpleUser => Boolean(user)),
+    [membersResponse?.members],
+  );
+  const followerCount = channel?.follower_count ?? followerUsers.length ?? 0;
+  const memberCount = channel?.member_count ?? memberUsers.length ?? 0;
 
-  const leadUser = channel?.lead || first(membersResponse?.members)?.user;
+  const leadUser = channel?.lead || first(memberUsers);
 
-  const relevantFollowers = relevantFollowersResponse?.top_relevant_followers_hydrated || [];
+  const relevantFollowerUsers = useMemo(
+    () =>
+      (relevantFollowersResponse?.top_relevant_followers_hydrated ?? [])
+        .map((follower) => follower?.user)
+        .filter((user): user is SimpleUser => Boolean(user)),
+    [relevantFollowersResponse?.top_relevant_followers_hydrated],
+  );
 
   if (!channelId) {
     return (
@@ -189,22 +229,28 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-3">
           <SectionHeading title="Followers" count={followerCount} />
-          <InlineAvatarList
-            users={(followersResponse?.users || []).map((follower) => follower.user)}
-          />
+          <InlineAvatarList users={followerUsers} />
         </div>
         <div className="flex flex-col gap-3">
           <SectionHeading title="Members" count={memberCount} />
-          <InlineAvatarList
-            users={(membersResponse?.members || []).map((member) => member.user)}
-          />
+          <InlineAvatarList users={memberUsers} />
         </div>
       </div>
 
-      <div className={clsx("flex flex-col gap-3", !relevantFollowers.length && "opacity-70")}
+      <div
+        className={clsx(
+          "flex flex-col gap-3",
+          (!hasViewerFid || !relevantFollowerUsers.length) && "opacity-70",
+        )}
       >
         <SectionHeading title="Relevant Followers" />
-        <InlineAvatarList users={relevantFollowers.map((follower) => follower.user)} />
+        {hasViewerFid ? (
+          <InlineAvatarList users={relevantFollowerUsers} />
+        ) : (
+          <p className="text-sm text-slate-500">
+            Sign in with Farcaster to see relevant followers for this channel.
+          </p>
+        )}
       </div>
     </div>
   );

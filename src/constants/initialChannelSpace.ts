@@ -13,17 +13,6 @@ const createInitialChannelSpaceConfig = (
   const config = cloneDeep(INITIAL_CHANNEL_SPACE_CONFIG);
 
   config.fidgetInstanceDatums = {
-    "channel:profile": {
-      config: {
-        editable: false,
-        settings: {
-          channelId,
-        },
-        data: {},
-      },
-      fidgetType: "channel",
-      id: "channel:profile",
-    },
     "feed:channel": {
       config: {
         editable: false,
@@ -42,21 +31,8 @@ const createInitialChannelSpaceConfig = (
   const layoutItems = [
     {
       w: 6,
-      h: 8,
-      x: 0,
-      y: 0,
-      i: "channel:profile",
-      minW: 4,
-      maxW: 36,
-      minH: 4,
-      maxH: 36,
-      moved: false,
-      static: false,
-    },
-    {
-      w: 6,
       h: 12,
-      x: 6,
+      x: 0,
       y: 0,
       i: "feed:channel",
       minW: 4,

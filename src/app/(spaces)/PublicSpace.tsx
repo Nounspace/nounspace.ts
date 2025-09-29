@@ -563,6 +563,14 @@ export default function PublicSpace({
     localSpaces,
     spacePageData,
     registerProposalSpace,
+    registerSpaceContract,
+    registerSpaceFid,
+    registerChannelSpace,
+    router,
+    getSpacePageUrl,
+    initialConfig,
+    channelDisplayName,
+    channelModeratorFids,
   ]);
 
   const saveConfig = useCallback(
