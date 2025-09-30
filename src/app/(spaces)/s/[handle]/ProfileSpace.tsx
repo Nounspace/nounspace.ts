@@ -94,8 +94,12 @@ export default function ProfileSpace({
 
   return (
     <PublicSpace
-      spacePageData={spaceDataWithClientSideLogic}
+      spaceId={spaceDataWithClientSideLogic.spaceId || null}
       tabName={tabName}
+      initialConfig={spaceDataWithClientSideLogic.config}
+      getSpacePageUrl={spaceDataWithClientSideLogic.spacePageUrl}
+      spaceOwnerFid={spaceDataWithClientSideLogic.spaceOwnerFid}
+      pageType={spaceDataWithClientSideLogic.spaceType}
     />
   );
 }
