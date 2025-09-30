@@ -162,8 +162,15 @@ export default function TokenSpace({
 
   return (
     <PublicSpace
-      spacePageData={updatedSpaceData}
+      spaceId={updatedSpaceData.spaceId || null}
       tabName={tabName}
+      initialConfig={updatedSpaceData.config}
+      getSpacePageUrl={updatedSpaceData.spacePageUrl}
+      spaceOwnerFid={updatedSpaceData.spaceOwnerFid}
+      spaceOwnerAddress={updatedSpaceData.spaceOwnerAddress}
+      tokenData={updatedSpaceData.tokenData}
+      contractAddress={updatedSpaceData.contractAddress}
+      pageType={updatedSpaceData.spaceType}
     />
   );
 }
