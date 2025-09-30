@@ -222,20 +222,41 @@ export async function contractOwnerFromContract(
   let ownerId: string | undefined = "";
   let ownerIdType: OwnerType = "address";
   
+  console.log("[contractOwnerFromContract] Starting contract ownership check:", {
+    contractAddress,
+    network,
+    abiLength: abi.length,
+    hasFidFunction: hasFunction(abi, "fid"),
+    hasOwnerFunction: hasFunction(abi, "owner"),
+    hasDeployerFunction: hasFunction(abi, "deployer")
+  });
+  
   try {
     if (hasFunction(abi, "fid")) {
+      console.log("[contractOwnerFromContract] Trying fid() function...");
       const result = await contract.read.fid();
       ownerId = result.toString();
       ownerIdType = "fid" as OwnerType;
+      console.log("[contractOwnerFromContract] fid() result:", { ownerId, ownerIdType });
     } else if (hasFunction(abi, "owner")) {
+      console.log("[contractOwnerFromContract] Trying owner() function...");
       const rawOwner = await contract.read.owner() as string;
+      console.log("[contractOwnerFromContract] owner() raw result:", rawOwner);
       if (isAddress(rawOwner)) {
         ownerId = rawOwner.toLowerCase();
+        console.log("[contractOwnerFromContract] owner() valid address:", ownerId);
+      } else {
+        console.log("[contractOwnerFromContract] owner() invalid address:", rawOwner);
       }
     } else if (hasFunction(abi, "deployer")) {
+      console.log("[contractOwnerFromContract] Trying deployer() function...");
       const rawDeployer = await contract.read.deployer() as string;
+      console.log("[contractOwnerFromContract] deployer() raw result:", rawDeployer);
       if (isAddress(rawDeployer)) {
         ownerId = rawDeployer.toLowerCase();
+        console.log("[contractOwnerFromContract] deployer() valid address:", ownerId);
+      } else {
+        console.log("[contractOwnerFromContract] deployer() invalid address:", rawDeployer);
       }
     } else {
       // Use contract creator address as a fall back
@@ -277,6 +298,8 @@ export async function contractOwnerFromContract(
     console.error("Error reading contract:", error);
   }
 
+  console.log("[contractOwnerFromContract] Final result:", { ownerId, ownerIdType });
+  
   return {
     ownerId,
     ownerIdType,

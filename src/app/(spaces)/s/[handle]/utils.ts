@@ -1,6 +1,9 @@
-import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
+import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import neynar from "@/common/data/api/neynar";
+import { unstable_noStore as noStore } from "next/cache";
+import { ProfileSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
+import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 
 export type Tab = {
   spaceId: string;
@@ -11,8 +14,17 @@ export const getUserMetadata = async (
   handle: string,
 ): Promise<UserMetadata | null> => {
   try {
-    const { user } = await neynar.lookupUserByUsername({ username: handle });
-
+    // Check if response is valid before destructuring
+    const response = await neynar.lookupUserByUsername({ username: handle });
+    
+    // Validate response has expected structure
+    if (!response || typeof response !== 'object' || !('user' in response)) {
+      console.error('Invalid response from Neynar API:', response);
+      return null;
+    }
+    
+    const { user } = response;
+    
     return {
       fid: user.fid,
       username: user.username,
@@ -21,7 +33,7 @@ export const getUserMetadata = async (
       bio: user.profile?.bio?.text || "",
     };
   } catch (e) {
-    console.error(e);
+    console.error('Error fetching user metadata:', e);
     return null;
   }
 };
@@ -79,4 +91,84 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     console.error("Exception in getTabList:", e);
     return [];
   }
+};
+
+// Profile space specific creator
+export const createProfileSpaceData = (
+  spaceId: string | undefined,
+  spaceName: string,
+  fid: number,
+  tabName: string,
+  identityPublicKey?: string
+): Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'> => {
+  const config = {
+    ...createIntialProfileSpaceConfigForFid(fid, spaceName),
+    timestamp: new Date().toISOString(),
+  };
+
+  return {
+    // Base SpaceData properties
+    spaceId: spaceId,
+    spaceName,
+    spaceType: SPACE_TYPES.PROFILE,
+    updatedAt: new Date().toISOString(),
+    defaultTab: "Profile",
+    currentTab: tabName,
+    config,
+    spaceOwnerFid: fid,
+    identityPublicKey,
+  };
+};
+
+export async function loadProfileSpaceRegistration(fid: number): Promise<{
+  spaceId?: string;
+  identityPublicKey?: string;
+} | null> {
+  noStore();
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId, identityPublicKey")
+      .eq("fid", fid)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.error("Error fetching profile space registration:", error);
+      return null;
+    }
+    return data && data.length > 0 ? data[0] : null;
+  } catch (e) {
+    console.error("Exception in loadProfileSpaceRegistration:", e);
+    return null;
+  }
+}
+
+export const loadUserSpaceData = async (
+  handle: string,
+  tabNameParam?: string
+): Promise<Omit<ProfileSpacePageData, 'isEditable' | 'spacePageUrl'> | null> => {
+  noStore(); 
+
+  const userMetadata = await getUserMetadata(handle);
+  const spaceOwnerFid = userMetadata?.fid || undefined;
+  const spaceOwnerUsername = userMetadata?.username || undefined;
+
+  if (!spaceOwnerFid) {
+    return null;
+  }
+
+  // Check if space already exists in database and get registration data
+  const registrationData = await loadProfileSpaceRegistration(spaceOwnerFid);
+  const spaceId = registrationData?.spaceId;
+  const identityPublicKey = registrationData?.identityPublicKey;
+
+  const tabName = tabNameParam || spaceOwnerUsername || "Profile";
+
+  return createProfileSpaceData(
+    spaceId, // This can be undefined if space doesn't exist yet
+    spaceOwnerUsername || "Profile",
+    spaceOwnerFid,
+    tabName,
+    identityPublicKey
+  );
 };

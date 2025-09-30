@@ -12,7 +12,7 @@ import {
   fetchTokenData,
   GeckoTokenAttribute,
 } from "../lib/utils/fetchTokenData";
-import { ClankerToken, fetchClankerByAddress } from "../data/queries/clanker";
+import { ClankerToken } from "../data/queries/clanker";
 import { fetchEmpireByAddress, EmpireToken } from "../data/queries/empireBuilder";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
@@ -50,7 +50,11 @@ export const fetchMasterToken = async (
     );
 
     const [clankerResponse, empireResponse] = await Promise.all([
-      fetch(`/api/clanker/ca?address=${address}`).then((res) => res.json()),
+      // Only fetch Clanker data for Base network tokens (optimization)
+      // Use API endpoint for client-side calls
+      network === "base" 
+        ? fetch(`/api/clanker/ca?address=${address}`).then((res) => res.json())
+        : Promise.resolve(null),
       fetchEmpireByAddress(address as Address),
     ]);
 

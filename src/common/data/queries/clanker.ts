@@ -65,8 +65,11 @@ export async function tokenRequestorFromContractAddress(
   ]);
 
   console.log("tokenRequestorFromContractAddress data:", {
+    contractAddress,
     clankerData,
     empireData,
+    clankerRequestorFid: clankerData?.requestor_fid,
+    empireOwner: empireData?.owner,
   });
 
   if (empireData && empireData.owner) {

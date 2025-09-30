@@ -1,3 +1,5 @@
+import { SpaceTypeValue } from '@/common/types/spaceData';
+
 export type Json =
   | string
   | number
@@ -374,6 +376,8 @@ export type Database = {
           spaceId: string
           spaceName: string
           timestamp: string
+          proposalId: string | null
+          spaceType: SpaceTypeValue
         }
         Insert: {
           contractAddress?: string | null
@@ -384,6 +388,8 @@ export type Database = {
           spaceId?: string
           spaceName: string
           timestamp: string
+          proposalId?: string | null
+          spaceType: SpaceTypeValue
         }
         Update: {
           contractAddress?: string | null
@@ -394,6 +400,8 @@ export type Database = {
           spaceId?: string
           spaceName?: string
           timestamp?: string
+          proposalId?: string | null
+          spaceType?: SpaceTypeValue
         }
         Relationships: [
           {

@@ -7,6 +7,7 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
 import { tokenRequestorFromContractAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
+import { SPACE_TYPES, SpaceTypeValue } from "@/common/types/spaceData";
 import {
   findIndex,
   first,
@@ -21,9 +22,11 @@ interface SpaceRegistrationBase {
   identityPublicKey: string;
   signature: string;
   timestamp: string;
+  spaceType: SpaceTypeValue;
 }
 
 export interface SpaceRegistrationContract extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.TOKEN;
   contractAddress: string;
   tokenOwnerFid?: number;
   initialConfig?: Omit<SpaceConfig, "isEditable">;
@@ -31,10 +34,12 @@ export interface SpaceRegistrationContract extends SpaceRegistrationBase {
 }
 
 export interface SpaceRegistrationFid extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.PROFILE;
   fid: number;
 }
 
 export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.PROPOSAL;
   proposalId: string;
 }
 
@@ -65,6 +70,7 @@ function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
 function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
   const isValid =
     isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.PROFILE &&
     (typeof maybe["fid"] == "string" || typeof maybe["fid"] == "number");
 
   return isValid;
@@ -74,6 +80,7 @@ function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
 function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistrationContract {
   return (
     isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.TOKEN &&
     typeof maybe["contractAddress"] === "string"
   );
 }
@@ -82,6 +89,7 @@ function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistration
 function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistrationProposer {
   return (
     isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.PROPOSAL &&
     typeof maybe["proposalId"] === "string"
   );
 }
@@ -243,7 +251,12 @@ async function handleGetRequest(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { contractAddress: contractAddressQuery, network: networkQuery, identityPublicKey } = req.query;
+  const {
+    contractAddress: contractAddressQuery,
+    network: networkQuery,
+    identityPublicKey,
+    proposalId: proposalIdQuery,
+  } = req.query;
 
   // Handle contract lookup case
   if (contractAddressQuery && networkQuery) {
@@ -264,6 +277,35 @@ async function handleGetRequest(
       .select("spaceId")
       .eq("contractAddress", contractAddress)
       .eq("network", network);
+
+    if (error) {
+      return res
+        .status(500)
+        .json({ result: "error", error: { message: error.message } });
+    }
+
+    const space = first(data);
+
+    if (space) {
+      return res.status(200).json({ result: "success", value: space });
+    } else {
+      return res.status(404).json({ result: "error", error: { message: "Space not found" } });
+    }
+  }
+
+  // Handle proposal lookup case
+  if (proposalIdQuery) {
+    const proposalId = Array.isArray(proposalIdQuery)
+      ? proposalIdQuery[0]
+      : proposalIdQuery;
+
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("proposalId", proposalId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
 
     if (error) {
       return res

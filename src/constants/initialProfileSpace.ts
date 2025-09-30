@@ -1,27 +1,18 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
-import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
 import { cloneDeep } from "lodash";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialSpaceConfig";
 
-export const INITIAL_SPACE_CONFIG_EMPTY: Omit<SpaceConfig, "isEditable"> = {
-  layoutID: "",
-  layoutDetails: {
-    layoutConfig: {
-      layout: [],
-    },
-    layoutFidget: "grid",
-  },
-  theme: DEFAULT_THEME,
-  fidgetInstanceDatums: {},
-  fidgetTrayContents: [],
-};
+// Set default tabNames for profile spaces
+const INITIAL_PROFILE_SPACE_CONFIG = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+INITIAL_PROFILE_SPACE_CONFIG.tabNames = ["Profile"];
 
-const createIntialPersonSpaceConfigForFid = (
+const createIntialProfileSpaceConfigForFid = (
   fid: number,
   username?: string,
 ): Omit<SpaceConfig, "isEditable"> => {
-  const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+  const config = cloneDeep(INITIAL_PROFILE_SPACE_CONFIG);
   config.fidgetInstanceDatums = {
     "feed:profile": {
       config: {
@@ -82,7 +73,11 @@ const createIntialPersonSpaceConfigForFid = (
   // Set the layout configuration
   const layoutConfig = getLayoutConfig(config.layoutDetails);
   layoutConfig.layout = layoutItems;
+  
+  // Set default tab names
+  config.tabNames = ["Profile"];
+  
   return config;
 };
 
-export default createIntialPersonSpaceConfigForFid;
+export default createIntialProfileSpaceConfigForFid;
