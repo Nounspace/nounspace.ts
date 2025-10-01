@@ -17,42 +17,39 @@ const StatsRow: React.FC<StatsRowProps> = ({
 }) => {
   const stats = [
     {
-      label: "Nouns created",
+      label: "Nouns Created",
       value: totalSettled > 0 ? totalSettled.toLocaleString() : "-",
     },
     {
-      label: "Noun owners",
+      label: "Noun Owners",
       value: nounHolderCount ? nounHolderCount.toLocaleString() : "-",
     },
     {
-      label: "Ideas funded",
-      value: ideasFundedLabel ?? "Hundreds",
+      label: "Ideas Funded",
+      value: ideasFundedLabel ?? "455",
     },
     {
-      label: "Treasury deployed",
-      value: treasuryRaisedLabel ?? "Millions in ETH",
+      label: "Funded (USD)",
+      value: treasuryRaisedLabel ?? "$68M",
     },
   ];
 
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm md:p-10">
+    <section className="rounded-3xl bg-white p-6 md:p-10">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Nouns by the Numbers</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>Nouns by the Numbers</h2>
         <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
           Nouns empower creativity and subcultures, with millions in funding
           distributed to hundreds of ideas, all governed by Noun holders.
         </p>
       </div>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid gap-8 text-center sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-2xl border border-black/10 bg-[#f7f7ff] p-4"
-          >
-            <p className="text-sm text-muted-foreground uppercase tracking-wide">
-              {stat.label}
+          <div key={stat.label} className="flex flex-col items-center justify-center">
+            <p className="user-theme-headings-font text-4xl font-semibold" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+              {stat.value}
             </p>
-            <p className="mt-3 text-3xl font-semibold">{stat.value}</p>
+            <p className="mt-2 text-sm font-semibold text-muted-foreground">{stat.label}</p>
           </div>
         ))}
       </div>
