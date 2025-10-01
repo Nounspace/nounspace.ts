@@ -158,24 +158,18 @@ const JOURNEY_CARDS = [
 const LEARN_POSTS = [
   {
     title: "Nouns Governance: How Nouns DAO backs proposals",
-    description:
-      "Understand the lifecycle of a proposal, from idea to execution on-chain.",
     href: "https://www.nouns.com/learn/nouns-governance",
-    image: "https://www.nouns.com/learn/nouns-governance.png",
+    image: "/learn/governance.png",
   },
   {
     title: "Noggle the Glossary of Nouns DAO",
-    description:
-      "Decode the vocabulary, memes, and phrases you will hear inside the DAO.",
     href: "https://www.nouns.com/learn/noggle-the-glossary",
-    image: "https://www.nouns.com/learn/noggle-the-glossary.png",
+    image: "/learn/noggles.png",
   },
   {
     title: "This is Nouns 101",
-    description:
-      "A primer on what Nouns are, how auctions work, and why the DAO exists.",
     href: "https://www.nouns.com/learn/this-is-nouns-101",
-    image: "https://www.nouns.com/learn/this-is-nouns-101.png",
+    image: "/learn/what-are-nouns.png",
   },
 ];
 
@@ -931,9 +925,11 @@ export const JourneySection = () => {
 
 export const LearnSection = () => {
   return (
-    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-[#f7f7ff] p-6 shadow-sm md:gap-12 md:p-12">
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-[#f7f7ff] p-6 md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Learn about Nouns DAO</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+          Learn about Nouns DAO
+        </h2>
         <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
           All the latest guides, tutorials, and explainers.
         </p>
@@ -943,17 +939,18 @@ export const LearnSection = () => {
           <LinkOut
             key={post.title}
             href={post.href}
-            className="flex h-full flex-col justify-between overflow-hidden rounded-3xl bg-white shadow-sm"
+            className="relative flex h-64 flex-col overflow-hidden rounded-3xl bg-white"
           >
             <img
               src={post.image}
               alt={post.title}
-              className="h-48 w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
             />
-            <div className="space-y-3 p-6 text-left">
-              <h3 className="text-xl font-semibold">{post.title}</h3>
-              <p className="text-sm text-muted-foreground">{post.description}</p>
+            <div className="relative mt-auto bg-[#eef0f5] p-4">
+              <h3 className="user-theme-headings-font text-lg font-semibold" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+                {post.title}
+              </h3>
             </div>
           </LinkOut>
         ))}
