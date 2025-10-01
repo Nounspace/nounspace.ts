@@ -37,7 +37,7 @@ import { NounsAuctionHouseV3Abi, NounsAuctionHouseExtraAbi } from "./abis";
 import type { Auction, Settlement } from "./types";
 import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
-import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX } from "./subgraph";
+import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX, fetchAccountLeaderboardCount } from "./subgraph";
 import LinkOut from "./LinkOut";
 
 const ConnectControl: React.FC = () => {
@@ -417,17 +417,20 @@ const NounsHomeInner: React.FC = () => {
   // Fetch precise counts from public subgraph
   const [executedCount, setExecutedCount] = useState<number | undefined>();
   const [holdersFromSubgraph, setHoldersFromSubgraph] = useState<number | undefined>();
+  const [holdersFromPonder, setHoldersFromPonder] = useState<number | undefined>();
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [exec, holders] = await Promise.all([
+        const [exec, holders, ponder] = await Promise.all([
           fetchExecutedProposalsCount().catch(() => undefined),
           fetchCurrentTokenHolders().catch(() => undefined),
+          fetchAccountLeaderboardCount().catch(() => undefined),
         ]);
         if (!cancelled) {
           setExecutedCount(exec);
           setHoldersFromSubgraph(holders);
+          setHoldersFromPonder(ponder);
         }
       } catch (_) {
         // ignore
@@ -683,13 +686,13 @@ const NounsHomeInner: React.FC = () => {
       <div className={INNER_PADDING}>
         <ThisIsNounsSection />
         <NounsFundsIdeasSection />
-        <GovernedByYouSection nounHolderCount={holdersFromSubgraph ?? nounHolderCount} />
+        <GovernedByYouSection nounHolderCount={holdersFromPonder ?? holdersFromSubgraph ?? nounHolderCount} />
         <TheseAreNounsStrip />
         <GetANounSection />
         <AlreadyOwnSection />
         <StatsRow
           totalSettled={totalSettled}
-          nounHolderCount={holdersFromSubgraph ?? nounHolderCount}
+          nounHolderCount={holdersFromPonder ?? holdersFromSubgraph ?? nounHolderCount}
           ideasFundedLabel={(executedCount ?? undefined)?.toLocaleString() || "Hundreds+"}
           treasuryRaisedLabel={treasuryRaisedUsdLabel ?? treasuryRaisedLabel}
         />

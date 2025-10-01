@@ -402,7 +402,7 @@ export const ThisIsNounsSection = () => {
         {leftIds.map((id, i) => (
           <div
             key={`left-${id.toString()}`}
-            className="absolute h-20 w-20 rounded-2xl bg-white/90 p-1 shadow-sm"
+            className="absolute h-16 w-16 rounded-2xl bg-white/90 p-1 shadow-sm"
             style={{
               top: `${leftPositions[i % leftPositions.length].top}%`,
               left: `${leftPositions[i % leftPositions.length].left}%`,
@@ -417,7 +417,7 @@ export const ThisIsNounsSection = () => {
         {rightIds.map((id, i) => (
           <div
             key={`right-${id.toString()}`}
-            className="absolute h-20 w-20 rounded-2xl bg-white/90 p-1 shadow-sm"
+            className="absolute h-16 w-16 rounded-2xl bg-white/90 p-1 shadow-sm"
             style={{
               top: `${rightPositions[i % rightPositions.length].top}%`,
               right: `${rightPositions[i % rightPositions.length].right}%`,
@@ -582,31 +582,56 @@ export const GovernedByYouSection = ({
 };
 
 export const TheseAreNounsStrip = () => {
+  // Build a sequence for marquee rows; duplicate so translateX(-50%) loops seamlessly
+  const rowIds = [...SAMPLE_NOUN_IDS, ...SAMPLE_NOUN_IDS];
+
+  const Tile = ({ id }: { id: bigint }) => (
+    <div className="h-16 w-16 rounded-2xl border border-black/10 bg-white p-1 md:h-20 md:w-20">
+      <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+    </div>
+  );
+
   return (
     <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-[#f7f7ff] p-6 shadow-sm md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">These are Nouns</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+          These are Nouns
+        </h2>
         <p className="max-w-xl text-base text-muted-foreground md:text-lg">
           One new Noun is born each day with randomly generated traits and
           preserved on the blockchain forever.
         </p>
       </div>
-      <div className="grid w-full max-w-4xl grid-cols-3 gap-3 sm:grid-cols-6 md:grid-cols-9">
-        {SAMPLE_NOUN_IDS.map((id) => (
-          <div
-            key={`sample-${id.toString()}`}
-            className="aspect-square overflow-hidden rounded-2xl border border-black/10 bg-white"
-          >
-            <NounImage nounId={id} className="h-full w-full object-cover" />
-          </div>
-        ))}
+
+      {/* Top marquee (scrolls left) */}
+      <div className="relative w-full overflow-hidden">
+        <div className="marquee-left flex w-max gap-3" style={{ animation: 'scrollLeft 36s linear infinite' as any }}>
+          {rowIds.map((id, i) => (
+            <Tile key={`rowA-${i}`} id={id} />
+          ))}
+        </div>
       </div>
+      {/* Bottom marquee (scrolls right) */}
+      <div className="relative w-full overflow-hidden">
+        <div className="marquee-right flex w-max gap-3" style={{ animation: 'scrollRight 38s linear infinite' as any }}>
+          {rowIds.map((id, i) => (
+            <Tile key={`rowB-${i}`} id={id} />
+          ))}
+        </div>
+      </div>
+
       <LinkOut
         href="https://www.nouns.com/explore"
         className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80"
       >
         Explore Nouns
       </LinkOut>
+
+      {/* keyframes for endless marquee pairs */}
+      <style>{`
+        @keyframes scrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+      `}</style>
     </section>
   );
 };

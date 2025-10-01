@@ -85,3 +85,44 @@ export async function fetchNounSeedBackground(nounId: bigint | number | string):
 
 // Minimal background palette from nouns.com image data (cool, warm)
 export const NOUNS_BG_HEX = ["#d5d7e1", "#e1d7d5"] as const;
+
+// Optional: fetch holder count from nouns.com's Ponder indexer (same source they use)
+// Requires env var NOUNS_PONDER_URL or NEXT_PUBLIC_NOUNS_PONDER_URL
+export async function fetchAccountLeaderboardCount(): Promise<number | undefined> {
+  const INDEXER_URL =
+    (globalThis as any)?.process?.env?.NOUNS_PONDER_URL ||
+    (globalThis as any)?.process?.env?.NEXT_PUBLIC_NOUNS_PONDER_URL;
+  if (!INDEXER_URL) return undefined;
+  const query = `query AccountLeaderboard($cursor: String) {
+    accounts(orderBy: "effectiveNounsBalance", orderDirection: "desc",
+      where: { effectiveNounsBalance_gt: "100000000000000000000000" }, limit: 1000, after: $cursor) {
+      pageInfo { hasNextPage endCursor }
+      items { address effectiveNounsBalance }
+    }
+  }`;
+  const excluded = new Set(
+    [
+      "0x3154Cf16ccdb4C6d922629664174b904d80F2C35", // Base bridge
+      "0x5c1760c98be951A4067DF234695c8014D8e7619C", // Nouns ERC20
+      "0x830BD73E4184ceF73443C15111a1DF14e495C706", // Auction House
+    ].map((a) => a.toLowerCase()),
+  );
+  let cursor: string | null | undefined = undefined;
+  let total = 0;
+  for (let i = 0; i < 20; i++) {
+    const res = await fetch(INDEXER_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ query, variables: { cursor } }),
+      cache: 'no-store',
+    });
+    if (!res.ok) break;
+    const json = await res.json();
+    const data = json?.data;
+    const items: { address: string }[] = data?.accounts?.items ?? [];
+    total += items.filter((i: any) => !excluded.has(String(i.address).toLowerCase())).length;
+    const pageInfo = data?.accounts?.pageInfo;
+    if (pageInfo?.hasNextPage && pageInfo?.endCursor) cursor = pageInfo.endCursor; else break;
+  }
+  return total || undefined;
+}
