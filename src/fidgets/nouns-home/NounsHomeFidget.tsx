@@ -660,9 +660,20 @@ const NounsHomeInner: React.FC = () => {
     }
   }, [auction, attemptSettle, chainId, isConnected, refetch, refresh]);
 
-  return (
-    <div className="flex h-full flex-col gap-6 overflow-y-auto p-4 md:p-6">
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const heroRef = React.useRef<HTMLDivElement>(null);
+  const scrollToAuction = React.useCallback(() => {
+    const root = rootRef.current;
+    const hero = heroRef.current;
+    if (!root || !hero) return;
+    const top = hero.offsetTop - 8;
+    root.scrollTo({ top, behavior: 'smooth' });
+  }, []);
 
+  return (
+    <div ref={rootRef} className="flex h-full flex-col gap-6 overflow-y-auto p-4 md:p-6">
+
+      <div ref={heroRef}>
       <AuctionHero
         auction={activeAuction}
         ensName={bidderEns}
@@ -683,12 +694,13 @@ const NounsHomeInner: React.FC = () => {
         floorPriceNative={floorNative}
         topOfferNative={topOfferNative}
       />
+      </div>
       <div className={INNER_PADDING}>
         <ThisIsNounsSection />
         <NounsFundsIdeasSection />
         <GovernedByYouSection nounHolderCount={holdersFromPonder ?? holdersFromSubgraph ?? nounHolderCount} />
         <TheseAreNounsStrip />
-        <GetANounSection />
+        <GetANounSection currentAuction={activeAuction} countdownMs={countdown} onScrollToAuction={scrollToAuction} />
         <AlreadyOwnSection />
         <StatsRow
           totalSettled={totalSettled}

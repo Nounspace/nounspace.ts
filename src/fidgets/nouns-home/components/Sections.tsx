@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useMemo, useState } from "react";
+import { ArrowRight, Gavel, ShoppingBag, Coins } from "lucide-react";
 import LinkOut from "../LinkOut";
 import NounImage from "../NounImage";
-import { formatEth } from "../utils";
+import { formatEth, formatCountdown } from "../utils";
+import type { Auction } from "../types";
 import type { Settlement } from "../types";
 
 const VIDEO_THUMBNAIL = "https://www.nouns.com/this-is-nouns-video-thumbnail.png";
@@ -684,7 +686,15 @@ export const TheseAreNounsStrip = () => {
   );
 };
 
-export const GetANounSection = () => {
+export const GetANounSection = ({
+  currentAuction,
+  countdownMs,
+  onScrollToAuction,
+}: {
+  currentAuction?: Auction;
+  countdownMs?: number;
+  onScrollToAuction?: () => void;
+}) => {
   return (
     <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
@@ -698,24 +708,68 @@ export const GetANounSection = () => {
         {GET_A_NOUN_CARDS.map((card) => (
           <article
             key={card.title}
-            className="flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 bg-[#f7f7ff] p-6"
+            className="group relative flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 bg-[#f7f7ff] p-6 transition-colors hover:bg-[#e7e8f2]"
           >
+            {/* Top chip button with icon + hover arrow */}
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={card.title.includes('Join') ? onScrollToAuction : undefined}
+                className="relative inline-flex items-center gap-2 rounded-full bg-white px-4 py-1 text-sm font-semibold text-[#17171d]"
+              >
+                <span className="inline-flex items-center gap-1 transition-transform duration-200 group-hover:-translate-x-2">
+                  {card.title.includes('Join') ? (
+                    <Gavel className="h-4 w-4" />
+                  ) : card.title.includes('Shop') ? (
+                    <ShoppingBag className="h-4 w-4" />
+                  ) : (
+                    <Coins className="h-4 w-4" />
+                  )}
+                  {card.buttonLabel}
+                </span>
+                <ArrowRight className="absolute right-3 h-4 w-4 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-1" />
+              </button>
+            </div>
+
             <div className="space-y-3 text-left">
               <h3 className="text-xl font-semibold">{card.title}</h3>
               <p className="text-sm text-muted-foreground">{card.description}</p>
             </div>
-            <img
-              src={card.image}
-              alt={card.title}
-              className="h-40 w-full rounded-2xl object-cover"
-              loading="lazy"
-            />
-            <LinkOut
-              href={card.href}
-              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white hover:bg-black/80"
-            >
-              {card.buttonLabel}
-            </LinkOut>
+
+            {/* Card specific content */}
+            {card.title.includes('Join') ? (
+              <div onClick={onScrollToAuction} className="cursor-pointer select-none">
+                {currentAuction ? (
+                  <div className="flex flex-col items-start gap-3">
+                    <div className="h-28 w-auto">
+                      <NounImage nounId={currentAuction.nounId} className="h-full w-auto object-contain" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-2xl bg-white px-4 py-2 text-sm">
+                        <div className="text-[#5a5a70]">Current bid</div>
+                        <div className="font-semibold">{formatEth(currentAuction.amount)}</div>
+                      </div>
+                      <div className="rounded-2xl bg-white px-4 py-2 text-sm">
+                        <div className="text-[#5a5a70]">Time left</div>
+                        <div className="font-semibold">{formatCountdown(countdownMs ?? 0)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <span className="h-2 w-2 rounded-full bg-green-600" /> Live auction
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-28 w-full rounded-2xl bg-white/60" />
+                )}
+              </div>
+            ) : (
+              <img
+                src={card.image}
+                alt={card.title}
+                className="h-44 w-full rounded-2xl object-contain"
+                loading="lazy"
+              />
+            )}
           </article>
         ))}
       </div>
