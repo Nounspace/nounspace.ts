@@ -410,7 +410,18 @@ export const ThisIsNounsSection = () => {
               transform: `rotate(${(i % 5) - 2}deg) scale(${1 + (i % 3) * 0.04})`,
             }}
           >
-            <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+            <img
+              src={`/nouns-samples/${id.toString()}.svg`}
+              alt={`Noun ${id.toString()}`}
+              className="h-full w-full rounded-xl object-cover"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                const t = e.currentTarget as HTMLImageElement;
+                const fb = `https://noun.pics/${id.toString()}.svg`;
+                if (t.src !== fb) t.src = fb;
+              }}
+            />
           </div>
         ))}
         {/* Right cluster */}
@@ -425,7 +436,18 @@ export const ThisIsNounsSection = () => {
               transform: `rotate(${(i % 5) - 2}deg) scale(${1 + ((i + 1) % 3) * 0.04})`,
             }}
           >
-            <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+            <img
+              src={`/nouns-samples/${id.toString()}.svg`}
+              alt={`Noun ${id.toString()}`}
+              className="h-full w-full rounded-xl object-cover"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                const t = e.currentTarget as HTMLImageElement;
+                const fb = `https://noun.pics/${id.toString()}.svg`;
+                if (t.src !== fb) t.src = fb;
+              }}
+            />
           </div>
         ))}
       </div>
@@ -438,7 +460,18 @@ export const ThisIsNounsSection = () => {
             className="h-14 w-14 rounded-2xl bg-white/90 p-1 shadow-sm"
             style={{ animation: `floatY 6s ease-in-out ${i * 0.25}s infinite alternate` as any }}
           >
-            <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+            <img
+              src={`/nouns-samples/${id.toString()}.svg`}
+              alt={`Noun ${id.toString()}`}
+              className="h-full w-full rounded-xl object-cover"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                const t = e.currentTarget as HTMLImageElement;
+                const fb = `https://noun.pics/${id.toString()}.svg`;
+                if (t.src !== fb) t.src = fb;
+              }}
+            />
           </div>
         ))}
       </div>
@@ -585,11 +618,26 @@ export const TheseAreNounsStrip = () => {
   // Build a sequence for marquee rows; duplicate so translateX(-50%) loops seamlessly
   const rowIds = [...SAMPLE_NOUN_IDS, ...SAMPLE_NOUN_IDS];
 
-  const Tile = ({ id }: { id: bigint }) => (
-    <div className="h-16 w-16 rounded-2xl border border-black/10 bg-white p-1 md:h-20 md:w-20">
-      <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
-    </div>
-  );
+  const Tile = ({ id }: { id: bigint }) => {
+    const src = `/nouns-samples/${id.toString()}.svg`;
+    const fallback = `https://noun.pics/${id.toString()}.svg`;
+    return (
+      <div className="h-16 w-16 rounded-2xl border border-black/10 bg-white p-1 md:h-20 md:w-20">
+        {/* Prefer local asset; fall back to noun.pics to avoid gaps */}
+        <img
+          src={src}
+          alt={`Noun ${id.toString()}`}
+          className="h-full w-full rounded-xl object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            const t = e.currentTarget as HTMLImageElement;
+            if (t.src !== fallback) t.src = fallback;
+          }}
+        />
+      </div>
+    );
+  };
 
   return (
     <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-[#f7f7ff] p-6 shadow-sm md:gap-12 md:p-12">
