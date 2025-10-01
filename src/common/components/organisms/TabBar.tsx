@@ -1,5 +1,4 @@
 "use client";
-import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 import { useAppStore } from "@/common/data/stores/app";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { Reorder } from "framer-motion";
@@ -31,7 +30,6 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
-  pageType?: SpacePageType | undefined;
   isEditable?: boolean;
 }
 
@@ -62,7 +60,6 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
-  pageType,
   isEditable
 }: TabBarProps) {
   const isMobile = useIsMobile();

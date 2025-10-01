@@ -103,13 +103,8 @@ export default function ProposalSpace({
 
   return (
     <PublicSpace
-      spaceId={updatedSpaceData.spaceId || null}
+      spacePageData={updatedSpaceData}
       tabName={tabName}
-      initialConfig={updatedSpaceData.config}
-      getSpacePageUrl={updatedSpaceData.spacePageUrl}
-      spaceOwnerFid={updatedSpaceData.spaceOwnerFid}
-      spaceOwnerAddress={updatedSpaceData.spaceOwnerAddress}
-      pageType={updatedSpaceData.spaceType}
     />
   );
 }
