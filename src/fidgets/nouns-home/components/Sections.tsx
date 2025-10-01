@@ -947,7 +947,7 @@ export const LearnSection = () => {
               className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
             />
-            <div className="relative mt-auto bg-[#eef0f5] p-4">
+            <div className="relative z-10 mt-auto flex h-20 items-center bg-[#eef0f5] p-4">
               <h3 className="user-theme-headings-font text-lg font-semibold" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
                 {post.title}
               </h3>
@@ -978,37 +978,42 @@ export const FaqAccordion = ({
   }, [settlements]);
 
   return (
-    <section className="flex w-full flex-col items-center justify-center gap-6 rounded-3xl bg-white p-6 shadow-sm md:gap-10 md:p-12">
+    <section className="flex w-full flex-col items-center justify-center gap-6 rounded-3xl bg-white p-6 md:gap-10 md:p-12">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Questions? Answers.</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+          Questions? Answers.
+        </h2>
         {totalEth && (
           <p className="text-sm text-muted-foreground">
             Community auctions have raised {totalEth} for the treasury.
           </p>
         )}
       </div>
-      <div className="w-full space-y-3">
+      <div className="w-full divide-y">
         {FAQ_ITEMS.map((item, index) => {
           const isOpen = openIndex === index;
           return (
-            <div
-              key={item.question}
-              className="rounded-2xl border border-black/10 bg-[#f7f7ff]"
-            >
+            <div key={item.question} className="py-2">
               <button
                 type="button"
-                className="flex w-full items-center justify-between px-6 py-4 text-left text-base font-semibold"
+                className="flex w-full items-center justify-between py-3 text-left text-lg font-semibold user-theme-headings-font"
+                style={{ fontFamily: 'var(--user-theme-headings-font)' }}
                 onClick={() => setOpenIndex(isOpen ? null : index)}
                 aria-expanded={isOpen}
               >
-                {item.question}
-                <span aria-hidden>{isOpen ? '-' : '+'}</span>
+                <span>{item.question}</span>
+                <span
+                  aria-hidden
+                  className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                >
+                  ^
+                </span>
               </button>
-              {isOpen && (
-                <div className="space-y-3 px-6 pb-6 text-sm text-muted-foreground">
-                  {item.answer}
-                </div>
-              )}
+              <div
+                className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}
+              >
+                <div className="pb-4 text-sm text-[#5a5a70]">{item.answer}</div>
+              </div>
             </div>
           );
         })}
