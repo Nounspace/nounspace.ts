@@ -350,28 +350,28 @@ export const ThisIsNounsSection = () => {
 
   // Precomputed loose positions for desktop floating tiles
   const leftPositions = [
-    { top: 6, left: -8 },
-    { top: 18, left: 2 },
-    { top: 30, left: -4 },
-    { top: 46, left: 4 },
-    { top: 62, left: -6 },
-    { top: 12, left: 10 },
-    { top: 38, left: 12 },
-    { top: 56, left: 16 },
-    { top: 26, left: 16 },
-    { top: 72, left: 8 },
+    { top: 6, left: -12 },
+    { top: 18, left: 0 },
+    { top: 30, left: -6 },
+    { top: 46, left: 6 },
+    { top: 62, left: -4 },
+    { top: 12, left: 14 },
+    { top: 38, left: 18 },
+    { top: 56, left: 22 },
+    { top: 26, left: 24 },
+    { top: 72, left: 14 },
   ];
   const rightPositions = [
-    { top: 6, right: -8 },
-    { top: 18, right: 2 },
-    { top: 34, right: -4 },
-    { top: 50, right: 6 },
-    { top: 64, right: -6 },
-    { top: 12, right: 10 },
-    { top: 40, right: 14 },
-    { top: 56, right: 16 },
-    { top: 26, right: 16 },
-    { top: 72, right: 8 },
+    { top: 6, right: -12 },
+    { top: 18, right: 0 },
+    { top: 34, right: -6 },
+    { top: 50, right: 8 },
+    { top: 64, right: -4 },
+    { top: 12, right: 14 },
+    { top: 40, right: 18 },
+    { top: 56, right: 22 },
+    { top: 26, right: 24 },
+    { top: 72, right: 14 },
   ];
 
   // Dim/blur tiles on scroll similar to nouns.com
@@ -445,8 +445,8 @@ export const ThisIsNounsSection = () => {
 
       {/* Copy + CTA */}
       <div className="relative z-[1] flex flex-col items-center gap-4">
-        <h2 className="text-4xl font-semibold md:text-5xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>This is Nouns</h2>
-        <p className="max-w-xl md:max-w-2xl text-base text-[#5a5a70] md:text-lg">
+        <h2 className="user-theme-headings-font text-4xl font-semibold md:text-5xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>This is Nouns</h2>
+        <p className="max-w-lg md:max-w-xl text-base text-[#5a5a70] md:text-lg">
           Nouns are unique digital art pieces. One new Noun is auctioned every
           day, forever. They fund creative projects and form a community-owned,
           open-source brand that anyone can use and build upon.
@@ -454,13 +454,13 @@ export const ThisIsNounsSection = () => {
         <button
           type="button"
           onClick={() => setShowVideo(true)}
-          className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-left transition hover:border-black/30"
+          className="flex w-full max-w-sm items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-left transition hover:border-black/30"
           aria-label="Watch This is Nouns"
         >
           <img
             src={VIDEO_THUMBNAIL}
             alt="This is Nouns video thumbnail"
-            className="h-16 w-[104px] rounded-xl object-cover"
+            className="h-14 w-[96px] rounded-xl object-cover"
             loading="lazy"
           />
           <div className="flex flex-1 flex-col justify-center">
@@ -472,8 +472,8 @@ export const ThisIsNounsSection = () => {
 
       {/* Inline video modal */}
       {showVideo && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
-          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-black">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-auto">
+          <div className="relative w-[min(92vw,960px)] rounded-2xl bg-black">
             <button
               type="button"
               className="absolute right-3 top-3 z-10 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold"
