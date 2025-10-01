@@ -78,7 +78,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
       <div className="mx-auto grid max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
-        <div className="flex items-end justify-center pb-4 md:justify-start">
+        <div className="flex items-end justify-center md:justify-start md:ml-8">
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}

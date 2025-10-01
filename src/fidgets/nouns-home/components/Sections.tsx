@@ -396,7 +396,7 @@ export const ThisIsNounsSection = () => {
       {/* Floating tiles - desktop */}
       <div
         className="pointer-events-none absolute inset-0 hidden md:block"
-        style={{ filter: `blur(${Math.round(dim * 2)}px)`, opacity: 0.85 - dim * 0.25 }}
+        style={{ opacity: 0.95 - dim * 0.15 }}
       >
         {/* Left cluster */}
         {leftIds.map((id, i) => (
