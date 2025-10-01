@@ -77,8 +77,8 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
       className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[420px] overflow-visible md:overflow-hidden"
       style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
     >
-      <div className="mx-auto grid max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
-        <div className="flex items-end justify-center md:justify-start md:ml-8">
+      <div className="mx-auto grid h-full max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
+        <div className="flex h-full items-end justify-center md:justify-start md:ml-8">
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}

@@ -690,15 +690,17 @@ export const GetANounSection = ({
   currentAuction,
   countdownMs,
   onScrollToAuction,
+  auctionBgHex,
 }: {
   currentAuction?: Auction;
   countdownMs?: number;
   onScrollToAuction?: () => void;
+  auctionBgHex?: string;
 }) => {
   return (
     <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Get a Noun!</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>Get a Noun!</h2>
         <p className="max-w-xl text-base text-muted-foreground md:text-lg">
           Bid, buy, or explore fractional ownership. Choose the best way to make
           a Noun yours.
@@ -708,7 +710,8 @@ export const GetANounSection = ({
         {GET_A_NOUN_CARDS.map((card) => (
           <article
             key={card.title}
-            className="group relative flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 bg-[#f7f7ff] p-6 transition-colors hover:bg-[#e7e8f2]"
+            className="group relative flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 p-6 transition-colors hover:bg-[#e7e8f2]"
+            style={card.title.includes('Join') && auctionBgHex ? { backgroundColor: auctionBgHex } : { backgroundColor: '#f7f7ff' }}
           >
             {/* Top chip button with icon + hover arrow */}
             <div className="flex items-center justify-between">
@@ -740,11 +743,11 @@ export const GetANounSection = ({
             {card.title.includes('Join') ? (
               <div onClick={onScrollToAuction} className="cursor-pointer select-none">
                 {currentAuction ? (
-                  <div className="flex flex-col items-start gap-3">
+                  <div className="flex flex-col items-center gap-3 text-center">
                     <div className="h-28 w-auto">
                       <NounImage nounId={currentAuction.nounId} className="h-full w-auto object-contain" />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center gap-3">
                       <div className="rounded-2xl bg-white px-4 py-2 text-sm">
                         <div className="text-[#5a5a70]">Current bid</div>
                         <div className="font-semibold">{formatEth(currentAuction.amount)}</div>
@@ -754,7 +757,7 @@ export const GetANounSection = ({
                         <div className="font-semibold">{formatCountdown(countdownMs ?? 0)}</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-green-600">
+                    <div className="flex items-center justify-center gap-2 text-sm text-green-600">
                       <span className="h-2 w-2 rounded-full bg-green-600" /> Live auction
                     </div>
                   </div>

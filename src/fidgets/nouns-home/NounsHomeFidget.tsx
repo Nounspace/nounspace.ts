@@ -700,7 +700,12 @@ const NounsHomeInner: React.FC = () => {
         <NounsFundsIdeasSection />
         <GovernedByYouSection nounHolderCount={holdersFromPonder ?? holdersFromSubgraph ?? nounHolderCount} />
         <TheseAreNounsStrip />
-        <GetANounSection currentAuction={activeAuction} countdownMs={countdown} onScrollToAuction={scrollToAuction} />
+        <GetANounSection
+          currentAuction={activeAuction}
+          countdownMs={countdown}
+          onScrollToAuction={scrollToAuction}
+          auctionBgHex={bgHex}
+        />
         <AlreadyOwnSection />
         <StatsRow
           totalSettled={totalSettled}
