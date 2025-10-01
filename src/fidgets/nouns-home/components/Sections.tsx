@@ -341,42 +341,145 @@ const FAQ_ITEMS: {
 ];
 
 export const ThisIsNounsSection = () => {
+  const [showVideo, setShowVideo] = React.useState(false);
+  const mobileIds = SAMPLE_NOUN_IDS.slice(0, 5);
+  const leftIds = SAMPLE_NOUN_IDS.slice(0, 10);
+  const rightIds = SAMPLE_NOUN_IDS.slice(9, 19);
+
+  // Precomputed loose positions for desktop floating tiles
+  const leftPositions = [
+    { top: 10, left: 0 },
+    { top: 22, left: 4 },
+    { top: 36, left: 2 },
+    { top: 52, left: 6 },
+    { top: 68, left: 1 },
+    { top: 18, left: 8 },
+    { top: 44, left: 10 },
+    { top: 60, left: 12 },
+    { top: 30, left: 12 },
+    { top: 75, left: 6 },
+  ];
+  const rightPositions = [
+    { top: 8, right: 0 },
+    { top: 20, right: 4 },
+    { top: 35, right: 1 },
+    { top: 50, right: 7 },
+    { top: 66, right: 3 },
+    { top: 16, right: 10 },
+    { top: 42, right: 12 },
+    { top: 58, right: 13 },
+    { top: 28, right: 13 },
+    { top: 74, right: 8 },
+  ];
+
   return (
     <section className="relative flex w-full flex-col items-center justify-center gap-10 overflow-hidden rounded-3xl bg-white p-6 text-center shadow-sm md:p-12">
+      {/* Floating tiles - desktop */}
+      <div className="pointer-events-none absolute inset-0 hidden md:block">
+        {/* Left cluster */}
+        {leftIds.map((id, i) => (
+          <div
+            key={`left-${id.toString()}`}
+            className="absolute h-20 w-20 rounded-2xl bg-white/90 p-1 shadow-sm"
+            style={{
+              top: `${leftPositions[i % leftPositions.length].top}%`,
+              left: `${leftPositions[i % leftPositions.length].left}%`,
+              animation: `floatY 6s ease-in-out ${i * 0.3}s infinite alternate` as any,
+            }}
+          >
+            <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+          </div>
+        ))}
+        {/* Right cluster */}
+        {rightIds.map((id, i) => (
+          <div
+            key={`right-${id.toString()}`}
+            className="absolute h-20 w-20 rounded-2xl bg-white/90 p-1 shadow-sm"
+            style={{
+              top: `${rightPositions[i % rightPositions.length].top}%`,
+              right: `${rightPositions[i % rightPositions.length].right}%`,
+              animation: `floatY 6.5s ease-in-out ${i * 0.35}s infinite alternate` as any,
+            }}
+          >
+            <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+          </div>
+        ))}
+      </div>
+
+      {/* Floating tiles - mobile (above header) */}
+      <div className="flex w-full items-center justify-center gap-3 md:hidden">
+        {mobileIds.map((id, i) => (
+          <div
+            key={`mob-${id.toString()}`}
+            className="h-14 w-14 rounded-2xl bg-white/90 p-1 shadow-sm"
+            style={{ animation: `floatY 6s ease-in-out ${i * 0.25}s infinite alternate` as any }}
+          >
+            <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
+          </div>
+        ))}
+      </div>
+
+      {/* Copy + CTA */}
       <div className="relative z-[1] flex flex-col items-center gap-4">
-        <h2 className="text-4xl font-semibold md:text-5xl">This is Nouns</h2>
-        <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+        <h2 className="user-theme-headings-font text-4xl font-semibold md:text-5xl">This is Nouns</h2>
+        <p className="max-w-2xl text-base text-[#5a5a70] md:text-lg">
           Nouns are unique digital art pieces. One new Noun is auctioned every
           day, forever. They fund creative projects and form a community-owned,
           open-source brand that anyone can use and build upon.
         </p>
-        <LinkOut
-          href={VIDEO_URL}
-          className="flex w-full max-w-xl items-center justify-between gap-4 rounded-2xl border border-black/10 bg-white p-3 text-left transition hover:border-black/30"
+        <button
+          type="button"
+          onClick={() => setShowVideo(true)}
+          className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-left transition hover:border-black/30"
+          aria-label="Watch This is Nouns"
         >
           <img
             src={VIDEO_THUMBNAIL}
             alt="This is Nouns video thumbnail"
-            className="h-20 w-[113px] rounded-xl object-cover"
+            className="h-16 w-[104px] rounded-xl object-cover"
             loading="lazy"
           />
-          <div className="flex flex-1 flex-col items-center justify-center">
+          <div className="flex flex-1 flex-col justify-center">
             <span className="text-base font-semibold">This is Nouns</span>
-            <span className="text-sm text-muted-foreground">Watch the video</span>
+            <span className="text-sm text-[#5a5a70]">Watch the video</span>
           </div>
-        </LinkOut>
+        </button>
       </div>
-      <div className="pointer-events-none absolute inset-0 -z-[0] opacity-40">
-        <div className="grid h-full w-full grid-cols-6 gap-3">
-          {SAMPLE_NOUN_IDS.map((id) => (
-            <NounImage
-              key={id.toString()}
-              nounId={id}
-              className="h-full w-full object-cover"
-            />
-          ))}
+
+      {/* Inline video modal */}
+      {showVideo && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-black">
+            <button
+              type="button"
+              className="absolute right-3 top-3 z-10 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold"
+              onClick={() => setShowVideo(false)}
+              aria-label="Close video"
+            >
+              Close
+            </button>
+            <div className="aspect-video w-full">
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube.com/embed/lOzCA7bZG_k?autoplay=1&rel=0"
+                title="This is Nouns"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Local keyframes for gentle float */}
+      <style>{`
+        @keyframes floatY {
+          0% { transform: translateY(0px) rotate(0.5deg); }
+          50% { transform: translateY(-8px) rotate(-0.5deg); }
+          100% { transform: translateY(0px) rotate(0.5deg); }
+        }
+      `}</style>
     </section>
   );
 };
