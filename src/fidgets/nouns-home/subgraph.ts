@@ -126,3 +126,25 @@ export async function fetchAccountLeaderboardCount(): Promise<number | undefined
   }
   return total || undefined;
 }
+
+// Count nouns owned by a specific address (owner account), using the public subgraph.
+// Mirrors nouns.com logic: treasury and ERC20 contract ownership.
+export async function fetchNounsCountByOwner(owner: string): Promise<number> {
+  const ownerLower = owner.toLowerCase();
+  let skip = 0;
+  const page = 1000;
+  let total = 0;
+  for (let i = 0; i < 50; i++) {
+    const data = await gql<{ nouns: { id: string }[] }>(
+      `query NounsByOwner($first:Int!,$skip:Int!,$owner:String!){
+        nouns(first:$first, skip:$skip, where:{ owner_: { id: $owner }}) { id }
+      }`,
+      { first: page, skip, owner: ownerLower },
+    );
+    const count = data.nouns?.length ?? 0;
+    total += count;
+    if (count < page) break;
+    skip += page;
+  }
+  return total;
+}

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useMemo, useState } from "react";
-import { ArrowRight, Gavel, ShoppingBag, Coins } from "lucide-react";
+import { ArrowRight, Gavel, ShoppingBag, Coins, RefreshCcw, Landmark } from "lucide-react";
 import LinkOut from "../LinkOut";
+import { fetchNounsCountByOwner } from "../subgraph";
 import NounImage from "../NounImage";
 import { formatEth, formatCountdown } from "../utils";
 import type { Auction } from "../types";
@@ -795,38 +796,88 @@ export const GetANounSection = ({
 };
 
 export const AlreadyOwnSection = () => {
+  const [instantCount, setInstantCount] = React.useState<number | null>(null);
+  const [treasuryCount, setTreasuryCount] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    (async () => {
+      try {
+        // Same owners used by nouns.com
+        const erc20 = "0x5c1760c98be951A4067DF234695c8014D8e7619C";
+        const treasury = "0xb1a32FC9F9D8b2cf86C068Cae13108809547ef71";
+        const [i, t] = await Promise.all([
+          fetchNounsCountByOwner(erc20).catch(() => null),
+          fetchNounsCountByOwner(treasury).catch(() => null),
+        ]);
+        setInstantCount(i);
+        setTreasuryCount(t);
+      } catch (_) {
+        // Silently handle errors
+      }
+    })();
+  }, []);
+
+  const cards = [
+    {
+      title: "Instant Swap",
+      description: "Swap your Noun! for another Noun.",
+      href: "https://www.nouns.com/explore?instantSwap=1",
+      icon: <RefreshCcw className="h-4 w-4" />,
+      cta: `${instantCount ?? 7} Nouns Available`,
+      image: "https://www.nouns.com/feature/instant-swap/main.png",
+      imageClass: "h-44 w-60 object-cover",
+    },
+    {
+      title: "Treasury Swap",
+      description: "Offer to trade your Noun with one held by the Treasury.",
+      href: "https://www.nouns.com/explore?onlyTreasuryNouns=1",
+      icon: <Landmark className="h-4 w-4" />,
+      cta: `${treasuryCount ?? 537} Nouns Available`,
+      image: "https://www.nouns.com/feature/treasury-swap/main.png",
+      imageClass: "h-44 w-44 object-cover object-left",
+    },
+  ];
+
   return (
-    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Already own a Noun?</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+          Already own a Noun?
+        </h2>
         <p className="max-w-xl text-base text-muted-foreground md:text-lg">
           Swap it for another or trade with the Nouns treasury to find your
           Forever Noun.
         </p>
       </div>
       <div className="grid w-full gap-6 md:grid-cols-2">
-        {ALREADY_OWN_CARDS.map((card) => (
-          <article
+        {cards.map((card) => (
+          <LinkOut
             key={card.title}
-            className="flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 bg-[#f7f7ff] p-6"
+            href={card.href}
+            className="group relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-3xl bg-[#f1f2f8] p-6 transition-colors hover:brightness-95"
           >
-            <div className="space-y-3 text-left">
+            {/* top chip */}
+            <div className="flex items-center justify-between">
+              <span className="relative inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#17171d]">
+                <span className="inline-flex items-center gap-1 transition-transform duration-200 group-hover:-translate-x-2">
+                  {card.icon}
+                  {card.title.includes('Instant') ? 'Swap' : 'Trade'}
+                </span>
+                <ArrowRight className="absolute right-3 h-4 w-4 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-1" />
+              </span>
+            </div>
+            <div className="z-[1] mt-3 space-y-2 text-left">
               <h3 className="text-xl font-semibold">{card.title}</h3>
               <p className="text-sm text-muted-foreground">{card.description}</p>
+              <div className="text-sm font-semibold text-[#3B82F6] inline-flex items-center gap-1">
+                {card.cta}
+                <ArrowRight className="h-4 w-4" />
+              </div>
             </div>
-            <img
-              src={card.image}
-              alt={card.title}
-              className="h-44 w-full rounded-2xl object-cover"
-              loading="lazy"
-            />
-            <LinkOut
-              href={card.href}
-              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white hover:bg-black/80"
-            >
-              {card.buttonLabel}
-            </LinkOut>
-          </article>
+            {/* art bottom-right cropped */}
+            <div className="pointer-events-none absolute bottom-0 right-0 flex items-end justify-end">
+              <img src={card.image} alt={card.title} className={`translate-x-6 translate-y-4 ${card.imageClass}`} loading="lazy" />
+            </div>
+          </LinkOut>
         ))}
       </div>
     </section>
