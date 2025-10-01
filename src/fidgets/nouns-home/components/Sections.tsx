@@ -92,25 +92,25 @@ const SAMPLE_NOUN_IDS = [
 
 const GET_A_NOUN_CARDS = [
   {
-    title: "Join the daily auction",
-    description:
-      "Bid on the latest Noun to become part of the community treasury and governance.",
+    key: 'bid',
+    title: "Bid on today's one-of-a-kind Noun and make it yours!",
+    description: "", // no secondary copy
     buttonLabel: "Bid now",
     href: "https://www.nouns.com/nouns",
     image: "https://www.nouns.com/feature/join-auction/main.png",
   },
   {
-    title: "Shop the secondary market",
-    description:
-      "Buy a Noun across leading marketplaces, all in one place.",
+    key: 'shop',
+    title: "Buy a Noun! Shop all major marketplaces in one place.",
+    description: "",
     buttonLabel: "Shop",
     href: "https://www.nouns.com/explore?buyNow=1",
     image: "https://www.nouns.com/feature/shop/main.png",
   },
   {
-    title: "Redeem $NOUNS for a Noun",
-    description:
-      "Collect 1,000,000 $NOUNS tokens and redeem them for a Noun held in escrow.",
+    key: 'redeem',
+    title: "Collect $NOUNS tokens and redeem them for a Noun.",
+    description: "1,000,000 $NOUNS = 1 Noun",
     buttonLabel: "Redeem",
     href: "https://www.nouns.com/convert?tab=redeem",
     image: "https://www.nouns.com/feature/%24nouns-redeem/main.png",
@@ -707,28 +707,36 @@ export const GetANounSection = ({
         </p>
       </div>
       <div className="grid w-full gap-6 md:grid-cols-3">
-        {GET_A_NOUN_CARDS.map((card) => (
-          <article
+        {GET_A_NOUN_CARDS.map((card) => {
+          const isBid = card.key === 'bid';
+          const isShop = card.key === 'shop';
+          const isRedeem = card.key === 'redeem';
+          const bg = isBid && auctionBgHex ? auctionBgHex : (isRedeem ? '#3B82F6' : '#f7f7ff');
+          const CardTag: any = isShop || isRedeem ? LinkOut : 'div';
+          const linkProps = isShop || isRedeem ? { href: card.href } : {};
+          return (
+          <CardTag
             key={card.title}
-            className="group relative flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 p-6 transition-colors hover:bg-[#e7e8f2]"
-            style={card.title.includes('Join') && auctionBgHex ? { backgroundColor: auctionBgHex } : { backgroundColor: '#f7f7ff' }}
+            {...linkProps}
+            className="group relative flex h-full flex-col justify-between gap-4 rounded-3xl p-6 transition-colors hover:brightness-95"
+            style={{ backgroundColor: bg }}
           >
             {/* Top chip button with icon + hover arrow */}
             <div className="flex items-center justify-between">
               <button
                 type="button"
-                onClick={card.title.includes('Join') ? onScrollToAuction : undefined}
-                className="relative inline-flex items-center gap-2 rounded-full bg-white px-4 py-1 text-sm font-semibold text-[#17171d]"
+                onClick={isBid ? onScrollToAuction : undefined}
+                className="relative inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#17171d]"
               >
                 <span className="inline-flex items-center gap-1 transition-transform duration-200 group-hover:-translate-x-2">
-                  {card.title.includes('Join') ? (
+                  {isBid ? (
                     <Gavel className="h-4 w-4" />
-                  ) : card.title.includes('Shop') ? (
+                  ) : isShop ? (
                     <ShoppingBag className="h-4 w-4" />
                   ) : (
                     <Coins className="h-4 w-4" />
                   )}
-                  {card.buttonLabel}
+                  {isBid ? 'Bid' : isShop ? 'Shop' : 'Redeem'}
                 </span>
                 <ArrowRight className="absolute right-3 h-4 w-4 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-1" />
               </button>
@@ -736,25 +744,29 @@ export const GetANounSection = ({
 
             <div className="space-y-3 text-left">
               <h3 className="text-xl font-semibold">{card.title}</h3>
-              <p className="text-sm text-muted-foreground">{card.description}</p>
+              {card.description && (
+                <p className="text-sm text-muted-foreground">{card.description}</p>
+              )}
             </div>
 
             {/* Card specific content */}
-            {card.title.includes('Join') ? (
+            {isBid ? (
               <div onClick={onScrollToAuction} className="cursor-pointer select-none">
                 {currentAuction ? (
-                  <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="flex flex-col items-center gap-2 text-center">
                     <div className="h-28 w-auto">
                       <NounImage nounId={currentAuction.nounId} className="h-full w-auto object-contain" />
                     </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="rounded-2xl bg-white px-4 py-2 text-sm">
-                        <div className="text-[#5a5a70]">Current bid</div>
-                        <div className="font-semibold">{formatEth(currentAuction.amount)}</div>
-                      </div>
-                      <div className="rounded-2xl bg-white px-4 py-2 text-sm">
-                        <div className="text-[#5a5a70]">Time left</div>
-                        <div className="font-semibold">{formatCountdown(countdownMs ?? 0)}</div>
+                    <div className="w-full max-w-xs rounded-2xl bg-white p-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="rounded-2xl bg-[#eef0f5] px-4 py-2 text-sm">
+                          <div className="text-[#5a5a70]">Current bid</div>
+                          <div className="font-semibold">{formatEth(currentAuction.amount)}</div>
+                        </div>
+                        <div className="rounded-2xl bg-[#eef0f5] px-4 py-2 text-sm">
+                          <div className="text-[#5a5a70]">Time left</div>
+                          <div className="font-semibold">{formatCountdown(countdownMs ?? 0)}</div>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-center gap-2 text-sm text-green-600">
@@ -766,15 +778,17 @@ export const GetANounSection = ({
                 )}
               </div>
             ) : (
-              <img
-                src={card.image}
-                alt={card.title}
-                className="h-44 w-full rounded-2xl object-contain"
-                loading="lazy"
-              />
+              <div className="mt-auto flex h-48 w-full items-end justify-center">
+                <img
+                  src={card.image}
+                  alt={card.title}
+                  className="max-h-full w-auto rounded-2xl object-contain"
+                  loading="lazy"
+                />
+              </div>
             )}
-          </article>
-        ))}
+          </CardTag>
+        );})}
       </div>
     </section>
   );
