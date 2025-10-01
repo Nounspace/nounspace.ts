@@ -146,13 +146,7 @@ export default function PublicSpace({
     }
     
     let nextSpaceId = providedSpaceId;
-    // Make sure we use the correct default tab if providedTabName is empty or "Profile" for token spaces
     let nextTabName = providedTabName ? decodeURIComponent(providedTabName) : spacePageData.defaultTab;
-    
-    // For token spaces, if the tab is "Profile", use the default tab instead
-    if (isTokenSpace(spacePageData) && nextTabName === "Profile") {
-      nextTabName = spacePageData.defaultTab;
-    }
 
     const localSpacesSnapshot = localSpaces;
 
@@ -340,8 +334,8 @@ export default function PublicSpace({
   }
 
   const config = {
-    ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
-      ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
+    ...(currentConfig?.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
+      ? currentConfig.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
       : { ...initialConfig }),
     isEditable,
   };
@@ -535,7 +529,7 @@ export default function PublicSpace({
 
   const commitConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName() ?? "Profile";
+    const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
 
     if (isNil(currentSpaceId)) return;
     const network = isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined;
