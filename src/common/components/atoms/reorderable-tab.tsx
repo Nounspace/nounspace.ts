@@ -15,6 +15,7 @@ interface Props {
   onRemove?: () => void;
   renameTab?: (tabName: string, newName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
+  preloadTabData?: (tabName: string) => void;
 }
 
 export const Tab = ({
@@ -28,6 +29,7 @@ export const Tab = ({
   renameable,
   onRemove,
   renameTab,
+  preloadTabData,
 }: Props) => {
   return (
     <Reorder.Item
@@ -44,6 +46,8 @@ export const Tab = ({
       className={isSelected ? "selected relative" : "relative"}
       onPointerDown={inEditMode ? undefined : (e) => e.preventDefault()}
       dragListener={draggable}
+      onMouseEnter={() => preloadTabData && preloadTabData(tabName)}
+      onTouchStart={() => preloadTabData && preloadTabData(tabName)}
     >
       <Link
         href={getSpacePageUrl(tabName)}
