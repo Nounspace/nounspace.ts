@@ -512,7 +512,7 @@ export const NounsFundsIdeasSection = () => {
   return (
     <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Nouns Funds Ideas</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>Nouns Funds Ideas</h2>
         <p className="max-w-xl text-base text-muted-foreground md:text-lg">
           Proceeds from daily auctions are used to support ideas of all shapes
           and sizes, like these:
@@ -546,21 +546,29 @@ export const GovernedByYouSection = ({
 }: {
   nounHolderCount?: number;
 }) => {
-  const label = nounHolderCount && nounHolderCount > 0
-    ? `Governed by you & ${nounHolderCount} others`
-    : "Governed by you & others";
+  const countLabel = (nounHolderCount && nounHolderCount > 0)
+    ? nounHolderCount.toLocaleString()
+    : undefined;
 
   return (
     <section className="flex w-full items-center justify-center">
-      <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-black px-6 py-10 text-center text-white shadow-sm md:px-16 md:py-16">
+      <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-black px-6 py-14 text-center text-white shadow-sm md:px-20 md:py-24">
         <img
           src="https://www.nouns.com/governed-by-you-background.png"
           alt="Nouns governance"
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 h-full w-full object-cover opacity-100"
           loading="lazy"
         />
         <div className="relative z-[1] flex flex-col items-center gap-4">
-          <h2 className="text-3xl font-semibold md:text-4xl">{label}</h2>
+          <h2 className="user-theme-headings-font text-3xl font-semibold md:text-5xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+            Governed by you &{' '}
+            {countLabel ? (
+              <span className="text-[#3B82F6]">{countLabel}</span>
+            ) : (
+              <span className="text-[#3B82F6]">others</span>
+            )}{' '}
+            {countLabel ? 'others' : ''}
+          </h2>
           <p className="max-w-2xl text-base text-gray-200 md:text-lg">
             Noun holders collectively decide which ideas to fund and shape the future direction of the community.
           </p>
