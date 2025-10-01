@@ -886,9 +886,11 @@ export const AlreadyOwnSection = () => {
 
 export const JourneySection = () => {
   return (
-    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="text-3xl font-semibold md:text-4xl">Start your Nouns journey</h2>
+        <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+          Start your Nouns journey
+        </h2>
         <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
           Whether you are an artist, technologist, scientist, athlete, or
           someone with big ideas, there is a place for you in the Nouns
@@ -904,15 +906,20 @@ export const JourneySection = () => {
           >
             <img src={card.image} alt={card.title} className="h-12 w-12" loading="lazy" />
             <div className="space-y-4">
-              <h3 className="text-2xl font-semibold">{card.title}</h3>
+              <h3 className="user-theme-headings-font text-2xl font-semibold" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
+                {card.title}
+              </h3>
               <p className="text-base text-gray-200">{card.description}</p>
             </div>
             <div className="space-y-3">
               <span className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-black">
                 {card.buttonLabel}
               </span>
-              {card.footer && (
-                <p className="text-xs uppercase tracking-wider text-gray-200">{card.footer}</p>
+              {card.title === 'Join the Nouns Community' && (
+                <div className="flex items-center justify-center gap-1 text-gray-200">
+                  <img src="https://www.nouns.com/farcaster-followers.png" alt="Farcaster followers" className="h-6 w-[58px]" loading="lazy" />
+                  <span className="text-xs uppercase tracking-wider">100k+ Followers</span>
+                </div>
               )}
             </div>
           </LinkOut>
