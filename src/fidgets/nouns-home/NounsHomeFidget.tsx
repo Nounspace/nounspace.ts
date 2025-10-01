@@ -326,18 +326,9 @@ const NounsHomeInner: React.FC = () => {
         if (!res.ok) return;
         const json = await res.json();
         const col = json?.collections?.[0];
-        const extractEth = (obj: any): number | undefined => {
-          if (!obj) return undefined;
-          // Prefer decimal (ETH) values from amount
-          if (obj?.price?.amount?.decimal != null) return Number(obj.price.amount.decimal);
-          if (obj?.amount?.decimal != null) return Number(obj.amount.decimal);
-          // Fallbacks if present
-          if (obj?.price?.native != null) return Number(obj.price.native);
-          if (obj?.amount?.native != null) return Number(obj.amount.native);
-          return undefined;
-        };
-        const floor = extractEth(col?.floorAsk);
-        const top = extractEth(col?.topBid);
+        // Read exactly what nouns.com reads from Reservoir
+        const floor = col?.floorAsk?.price?.amount?.decimal ?? col?.floorAsk?.price?.native;
+        const top = col?.topBid?.price?.amount?.decimal ?? col?.topBid?.price?.native;
         if (!cancelled) {
           if (Number.isFinite(floor)) setFloorNative(floor);
           if (Number.isFinite(top)) setTopOfferNative(top);
@@ -693,6 +684,7 @@ const NounsHomeInner: React.FC = () => {
         onPlaceBid={canBid ? handleBidSubmit : undefined}
         floorPriceNative={floorNative}
         topOfferNative={topOfferNative}
+        isCurrentView={!canGoNext}
       />
       </div>
       <div className={INNER_PADDING}>

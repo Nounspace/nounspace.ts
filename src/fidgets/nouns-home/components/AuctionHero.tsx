@@ -26,6 +26,7 @@ interface AuctionHeroProps {
   onPlaceBid?: (valueWei: bigint) => void;
   floorPriceNative?: number | undefined;
   topOfferNative?: number | undefined;
+  isCurrentView?: boolean;
 }
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -49,6 +50,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   onPlaceBid,
   floorPriceNative,
   topOfferNative,
+  isCurrentView = true,
 }) => {
   const status = getAuctionStatus(auction);
   const nounId = auction ? Number(auction.nounId) : undefined;
@@ -92,7 +94,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col justify-center gap-4 pl-4 pr-4 md:pl-10 md:pr-6 self-center bg-white border border-black/10 rounded-2xl p-4 md:bg-transparent md:border-0 md:rounded-none md:p-0">
+        <div className="-mt-6 flex flex-col justify-center gap-4 pl-4 pr-4 md:mt-0 md:pl-10 md:pr-6 self-center bg-white border border-black/10 rounded-2xl p-4 md:bg-transparent md:border-0 md:rounded-none md:p-0">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-sm text-[#5a5a70]">
               {onPrev && (
@@ -131,10 +133,21 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                   <div className="text-3xl font-medium md:text-4xl">{etherLabel}</div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-[#5a5a70]">Time left</div>
-                  <div className="text-3xl font-medium md:text-4xl">{status === 'ended' ? '00:00' : countdownLabel}</div>
+                  <div className="text-sm font-medium text-[#5a5a70]">{isCurrentView ? 'Time left' : 'Won by'}</div>
+                  <div className="text-3xl font-medium md:text-4xl">
+                    {isCurrentView
+                      ? (status === 'ended' ? '00:00' : countdownLabel)
+                      : (
+                        auction && auction.bidder !== '0x0000000000000000000000000000000000000000' ? (
+                          <a href={`https://etherscan.io/address/${auction.bidder}`} target="_blank" rel="noopener noreferrer" className="underline">
+                            {bidderLabel}
+                          </a>
+                        ) : '-'
+                      )}
+                  </div>
                 </div>
               </div>
+              {isCurrentView && (
               <div className="text-sm font-medium text-[#6b6b80]">
                 <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#d9dbe8] text-[#5a5a70]"><Info className="h-4 w-4" /></span>
                 <a
@@ -157,11 +170,12 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </a>
                 : {typeof topOfferNative === 'number' ? `${topOfferNative.toFixed(2)} ETH` : '—'}
               </div>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-2 md:gap-2 md:mt-1">
-            {status === 'ended' && auction && !auction.settled ? (
+            {isCurrentView && status === 'ended' && auction && !auction.settled ? (
               <button
                 type="button"
                 onClick={onSettle}
@@ -170,7 +184,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
               >
                 {isSettling ? 'Settling...' : 'Settle auction'}
               </button>
-            ) : (
+            ) : isCurrentView ? (
               <>
               <div className="flex w-full max-w-md items-center gap-2">
                 <div className="relative flex-1">
@@ -210,7 +224,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                   )}
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

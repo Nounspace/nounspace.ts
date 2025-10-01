@@ -448,6 +448,14 @@ export const ThisIsNounsSection = () => {
           </div>
         ))}
       </div>
+      {/* Center fade mask to prevent overlap with copy */}
+      <div
+        className="pointer-events-none absolute inset-0 hidden md:block"
+        style={{
+          background:
+            'linear-gradient(90deg, rgba(255,255,255,0) 30%, rgba(255,255,255,1) 47%, rgba(255,255,255,1) 53%, rgba(255,255,255,0) 70%)',
+        }}
+      />
 
       {/* Floating tiles - mobile (above header) */}
       <div className="flex w-full items-center justify-center gap-3 md:hidden">
@@ -586,7 +594,7 @@ export const GovernedByYouSection = ({
         <img
           src="https://www.nouns.com/governed-by-you-background.png"
           alt="Nouns governance"
-          className="absolute inset-0 h-full w-full object-cover opacity-100"
+          className="absolute bottom-0 left-1/2 w-[1600px] -translate-x-1/2 origin-bottom scale-[0.85] md:scale-100"
           loading="lazy"
         />
         <div className="relative z-[1] flex flex-col items-center gap-4">
