@@ -342,40 +342,62 @@ const FAQ_ITEMS: {
 
 export const ThisIsNounsSection = () => {
   const [showVideo, setShowVideo] = React.useState(false);
+  const [dim, setDim] = React.useState(0);
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
   const mobileIds = SAMPLE_NOUN_IDS.slice(0, 5);
   const leftIds = SAMPLE_NOUN_IDS.slice(0, 10);
   const rightIds = SAMPLE_NOUN_IDS.slice(9, 19);
 
   // Precomputed loose positions for desktop floating tiles
   const leftPositions = [
-    { top: 10, left: 0 },
-    { top: 22, left: 4 },
-    { top: 36, left: 2 },
-    { top: 52, left: 6 },
-    { top: 68, left: 1 },
-    { top: 18, left: 8 },
-    { top: 44, left: 10 },
-    { top: 60, left: 12 },
-    { top: 30, left: 12 },
-    { top: 75, left: 6 },
+    { top: 6, left: -8 },
+    { top: 18, left: 2 },
+    { top: 30, left: -4 },
+    { top: 46, left: 4 },
+    { top: 62, left: -6 },
+    { top: 12, left: 10 },
+    { top: 38, left: 12 },
+    { top: 56, left: 16 },
+    { top: 26, left: 16 },
+    { top: 72, left: 8 },
   ];
   const rightPositions = [
-    { top: 8, right: 0 },
-    { top: 20, right: 4 },
-    { top: 35, right: 1 },
-    { top: 50, right: 7 },
-    { top: 66, right: 3 },
-    { top: 16, right: 10 },
-    { top: 42, right: 12 },
-    { top: 58, right: 13 },
-    { top: 28, right: 13 },
-    { top: 74, right: 8 },
+    { top: 6, right: -8 },
+    { top: 18, right: 2 },
+    { top: 34, right: -4 },
+    { top: 50, right: 6 },
+    { top: 64, right: -6 },
+    { top: 12, right: 10 },
+    { top: 40, right: 14 },
+    { top: 56, right: 16 },
+    { top: 26, right: 16 },
+    { top: 72, right: 8 },
   ];
 
+  // Dim/blur tiles on scroll similar to nouns.com
+  React.useEffect(() => {
+    const onScroll = () => {
+      const el = rootRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      // Center distance factor 0 (center) .. 1 (far)
+      const center = rect.top + rect.height / 2;
+      const d = Math.min(1, Math.abs(center - vh / 2) / (vh / 2));
+      setDim(d);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <section className="relative flex w-full flex-col items-center justify-center gap-10 overflow-hidden rounded-3xl bg-white p-6 text-center shadow-sm md:p-12">
+    <section ref={rootRef} className="relative flex w-full flex-col items-center justify-center gap-10 overflow-hidden rounded-3xl bg-white p-6 text-center shadow-sm md:p-12">
       {/* Floating tiles - desktop */}
-      <div className="pointer-events-none absolute inset-0 hidden md:block">
+      <div
+        className="pointer-events-none absolute inset-0 hidden md:block"
+        style={{ filter: `blur(${Math.round(dim * 2)}px)`, opacity: 0.85 - dim * 0.25 }}
+      >
         {/* Left cluster */}
         {leftIds.map((id, i) => (
           <div
@@ -385,6 +407,7 @@ export const ThisIsNounsSection = () => {
               top: `${leftPositions[i % leftPositions.length].top}%`,
               left: `${leftPositions[i % leftPositions.length].left}%`,
               animation: `floatY 6s ease-in-out ${i * 0.3}s infinite alternate` as any,
+              transform: `rotate(${(i % 5) - 2}deg) scale(${1 + (i % 3) * 0.04})`,
             }}
           >
             <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
@@ -399,6 +422,7 @@ export const ThisIsNounsSection = () => {
               top: `${rightPositions[i % rightPositions.length].top}%`,
               right: `${rightPositions[i % rightPositions.length].right}%`,
               animation: `floatY 6.5s ease-in-out ${i * 0.35}s infinite alternate` as any,
+              transform: `rotate(${(i % 5) - 2}deg) scale(${1 + ((i + 1) % 3) * 0.04})`,
             }}
           >
             <NounImage nounId={id} className="h-full w-full rounded-xl object-cover" />
@@ -421,8 +445,8 @@ export const ThisIsNounsSection = () => {
 
       {/* Copy + CTA */}
       <div className="relative z-[1] flex flex-col items-center gap-4">
-        <h2 className="user-theme-headings-font text-4xl font-semibold md:text-5xl">This is Nouns</h2>
-        <p className="max-w-2xl text-base text-[#5a5a70] md:text-lg">
+        <h2 className="text-4xl font-semibold md:text-5xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>This is Nouns</h2>
+        <p className="max-w-xl md:max-w-2xl text-base text-[#5a5a70] md:text-lg">
           Nouns are unique digital art pieces. One new Noun is auctioned every
           day, forever. They fund creative projects and form a community-owned,
           open-source brand that anyone can use and build upon.
