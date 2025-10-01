@@ -1,6 +1,5 @@
 "use client";
 
-
 import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
@@ -38,7 +37,6 @@ export default function PublicSpace({
   
   // Extract ownership props based on space type
   const spaceOwnerFid = isProfileSpace(spacePageData) ? spacePageData.spaceOwnerFid : undefined;
-  const tokenData = isTokenSpace(spacePageData) ? spacePageData.tokenData : undefined;
 
   const {
     clearLocalSpaces,
@@ -97,8 +95,6 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
-  const { editMode } = useSidebarContext();
-  
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
@@ -150,13 +146,7 @@ export default function PublicSpace({
     }
     
     let nextSpaceId = providedSpaceId;
-    // Make sure we use the correct default tab if providedTabName is empty or "Profile" for token spaces
     let nextTabName = providedTabName ? decodeURIComponent(providedTabName) : spacePageData.defaultTab;
-    
-    // For token spaces, if the tab is "Profile", use the default tab instead
-    if (isTokenSpace(spacePageData) && nextTabName === "Profile") {
-      nextTabName = spacePageData.defaultTab;
-    }
 
     const localSpacesSnapshot = localSpaces;
 
@@ -338,42 +328,26 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
-  const currentSpaceId = getCurrentSpaceId();
-  const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
-  
-  console.log("[PublicSpace] Getting space config:", {
-    currentSpaceId,
-    currentTabName,
-    initialConfig,
-    hasInitialConfig: !!initialConfig,
-    spaceDataDefaultTab: spacePageData.defaultTab
-  });
-  
   const currentConfig = getCurrentSpaceConfig();
-  console.log("[PublicSpace] Current space config:", {
-    hasConfig: !!currentConfig,
-    configTabs: currentConfig && currentConfig.tabs ? Object.keys(currentConfig.tabs) : [],
-    currentTab: currentTabName,
-    isUnregisteredSpace: !currentSpaceId // This is normal for unregistered spaces
-  });
-  
-  // If currentConfig is undefined, we'll use initialConfig directly
-  // This is normal for spaces that haven't been registered yet and is not an error
+  if (!currentConfig) {
+    console.error("Current space config is undefined");
+  }
+
   const config = {
-    ...(currentConfig && currentConfig.tabs && currentConfig.tabs[currentTabName]
-      ? currentConfig.tabs[currentTabName]
-      : { ...initialConfig, isEditable }),
+    ...(currentConfig?.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
+      ? currentConfig.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
+      : { ...initialConfig }),
     isEditable,
   };
-  
-  console.log("[PublicSpace] Resolved config:", {
-    usedCurrentConfig: !!(currentConfig && currentConfig.tabs && currentConfig.tabs[currentTabName]),
-    usedInitialConfig: !(currentConfig && currentConfig.tabs && currentConfig.tabs[currentTabName]),
-    hasConfig: !!config,
-    config: config
-  });
 
   const memoizedConfig = useMemo(() => {
+    if (!config) {
+      console.error("Config is undefined");
+      return {
+        ...initialConfig,
+        isEditable: false
+      };
+    }
     return config;
   }, [
     Object.keys(config?.fidgetInstanceDatums || {}).sort().join(','),
@@ -383,7 +357,6 @@ export default function PublicSpace({
     config?.fidgetTrayContents,
     config?.theme,
     initialConfig,
-    isEditable
   ]);
 
   // Update the space registration effect to use the new editability check
@@ -556,7 +529,7 @@ export default function PublicSpace({
 
   const commitConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName() ?? "Profile";
+    const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
 
     if (isNil(currentSpaceId)) return;
     const network = isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined;
@@ -565,7 +538,7 @@ export default function PublicSpace({
 
   const resetConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName() ?? "Profile";
+    const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
 
     if (isNil(currentSpaceId)) return;
     
@@ -588,7 +561,7 @@ export default function PublicSpace({
   // Tab switching function with proper memoization
   const switchTabTo = useCallback(async (tabName: string, shouldSave: boolean = true) => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName() ?? "Profile";
+    const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
 
     // Protect against fast navigation: ignore if there is no space or tab
     if (!currentSpaceId || !tabName) return;
@@ -603,7 +576,11 @@ export default function PublicSpace({
         const resolvedConfig = await config;
         await Promise.all([
           saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
-          commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network)
+          commitSpaceTab(
+            currentSpaceId, 
+            currentTabName, 
+            isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined
+          )
         ]);
       } catch (err) {
         console.error("Error saving/committing tab:", err);
@@ -646,7 +623,7 @@ export default function PublicSpace({
     router,
     saveLocalSpaceTab,
     commitSpaceTab,
-    tokenData?.network,
+    spacePageData,
     localSpaces,
     loadSpaceTab,
     currentUserFid,
@@ -668,10 +645,11 @@ export default function PublicSpace({
     return () => debouncedSwitchTabTo.cancel();
   }, [debouncedSwitchTabTo]);
 
+  const { editMode } = useSidebarContext();
+
   const tabBar = (
     <TabBar
       isTokenPage={isTokenSpace(spacePageData)}
-      pageType={spacePageData.spaceType}
       inHomebase={false}
       currentTab={getCurrentTabName() ?? spacePageData.defaultTab}
       tabList={
@@ -694,7 +672,7 @@ export default function PublicSpace({
           ? deleteSpaceTab(
             currentSpaceId,
             tabName,
-            tokenData?.network as EtherScanChainName,
+            isTokenSpace(spacePageData) ? spacePageData.tokenData?.network as EtherScanChainName : undefined,
           )
           : undefined;
       }}
@@ -705,7 +683,7 @@ export default function PublicSpace({
             currentSpaceId,
             tabName,
             INITIAL_SPACE_CONFIG_EMPTY,
-            tokenData?.network as EtherScanChainName,
+            isTokenSpace(spacePageData) ? spacePageData.tokenData?.network as EtherScanChainName : undefined,
           )
           : undefined;
       }}
@@ -725,7 +703,11 @@ export default function PublicSpace({
       commitTab={async (tabName) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
-          ? commitSpaceTab(currentSpaceId, tabName, tokenData?.network)
+          ? commitSpaceTab(
+              currentSpaceId, 
+              tabName, 
+              isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined
+            )
           : undefined;
       }}
       commitTabOrder={async () => {
@@ -733,7 +715,7 @@ export default function PublicSpace({
         return currentSpaceId
           ? commitSpaceTabOrder(
             currentSpaceId,
-            tokenData?.network as EtherScanChainName,
+            isTokenSpace(spacePageData) ? spacePageData.tokenData?.network as EtherScanChainName : undefined,
           )
           : undefined;
       }}

@@ -1,18 +1,18 @@
 "use client";
-import React from "react";
-import { FaPlus, FaPaintbrush } from "react-icons/fa6";
-import { map } from "lodash";
-import { Reorder } from "framer-motion";
-import { Tab } from "../atoms/reorderable-tab";
-import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
-import { TooltipProvider } from "../atoms/tooltip";
-import TokenDataHeader from "./TokenDataHeader";
-import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { SpaceTypeValue, SpacePageData, isTokenSpace } from "@/common/types/spaceData";
-import { useSidebarContext } from "./Sidebar";
+import { Reorder } from "framer-motion";
+import { debounce, map } from "lodash";
+import React from "react";
+import { FaPaintbrush, FaPlus } from "react-icons/fa6";
+import { toast } from "sonner";
+import { Address } from "viem";
 import { Button } from "../atoms/button";
+import { Tab } from "../atoms/reorderable-tab";
+import { TooltipProvider } from "../atoms/tooltip";
+import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
+import { useSidebarContext } from "./Sidebar";
+import TokenDataHeader from "./TokenDataHeader";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -28,20 +28,13 @@ interface TabBarProps {
   renameTab: (tabName: string, newName: string) => void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
-  isEditable?: boolean;
-  // New spaceData prop - can derive other props from this
-  spaceData?: SpacePageData;
-  // Legacy props for backward compatibility (can be derived from spaceData)
   isTokenPage?: boolean;
   contractAddress?: Address;
-  pageType?: SpaceTypeValue | undefined;
-  spaceId?: string | null;
+  isEditable?: boolean;
 }
 
-const isEditableTab = (tabName: string, spaceData?: SpacePageData) => {
-  const permanentTabs = ["Feed", spaceData?.defaultTab || "Profile"];
-  return !permanentTabs.includes(tabName);
-};
+const PERMANENT_TABS = ["Feed", "Profile"];
+const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
 // Add validation function
 const validateTabName = (tabName: string): string | null => {
@@ -51,12 +44,12 @@ const validateTabName = (tabName: string): string | null => {
   return null;
 };
 
-const TabBar = React.memo(function TabBar({
+function TabBar({
   inHome,
   inHomebase,
   inEditMode,
   currentTab,
-  tabList: tabListParam,
+  tabList = ["Profile"],
   switchTabTo,
   updateTabOrder,
   commitTabOrder,
@@ -65,184 +58,287 @@ const TabBar = React.memo(function TabBar({
   renameTab,
   commitTab,
   getSpacePageUrl,
-  isEditable,
-  spaceData,
-  // Legacy props for backward compatibility
   isTokenPage,
   contractAddress,
-  pageType,
-  spaceId
+  isEditable
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+
+  const { getIsLoggedIn, getIsInitializing, homebaseLoadTab } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
+    homebaseLoadTab: state.homebase.loadHomebaseTab,
   }));
 
-  // Derive values from spaceData when available
-  const derivedIsTokenPage = spaceData ? isTokenSpace(spaceData) : isTokenPage;
-  const derivedContractAddress = spaceData && isTokenSpace(spaceData) 
-    ? spaceData.contractAddress as Address 
-    : contractAddress;
-  const derivedPageType = spaceData ? spaceData.spaceType : pageType;
-  const derivedSpaceId = spaceData ? spaceData.spaceId : spaceId;
-  const defaultTab = spaceData ? spaceData.defaultTab : "Profile";
-  const tabList = tabListParam || [defaultTab];
+  const [isOperating, setIsOperating] = React.useState(false);
+
+  /// State to control post-delete navigation
+  const [pendingTabSwitch, setPendingTabSwitch] = React.useState<string | null>(null);
+
+  // Function to calculate next tab after deletion
+  const nextClosestTab = React.useCallback((tabName: string) => {
+    const index = tabList.indexOf(tabName);
+    const futureTabList = tabList.filter(tab => tab !== tabName);
+    
+    if (futureTabList.length === 0) {
+      return inHomebase ? "Feed" : "Profile";
+    }
+    
+    if (index === tabList.length - 1 && index > 0) {
+      return futureTabList[futureTabList.length - 1];
+    }
+    else if (index >= 0 && index < futureTabList.length) {
+      return futureTabList[index];
+    }
+    else if (futureTabList.length > 0) {
+      return futureTabList[futureTabList.length - 1];
+    }
+    else {
+      return inHomebase ? "Feed" : "Profile";
+    }
+  }, [tabList, inHomebase]);
+
+  // Simple debounced functions without complex optimizations
+  const debouncedCreateTab = React.useCallback(
+    debounce(async (tabName: string) => {
+      if (isOperating) {
+        console.log("Operation already in progress, skipping");
+        return;
+      }
+      
+      console.log("Creating tab with name:", tabName);
+      setIsOperating(true);
+      
+      try {
+        if (!tabName || typeof tabName !== 'string' || tabName.trim() === '') {
+          console.error("Invalid tab name provided:", tabName);
+          return;
+        }
+        
+        const cleanTabName = tabName.trim();
+        
+        // If tab already exists, just switch to it
+        if (tabList.includes(cleanTabName)) {
+          console.log("Tab already exists, switching to it");
+          switchTabTo(cleanTabName, true);
+          return;
+        }
+
+        console.log("Calling createTab function...");
+        const result = await createTab(cleanTabName);
+        console.log("CreateTab result:", result);
+        
+        const finalTabName = result?.tabName || cleanTabName;
+        console.log("Final tab name:", finalTabName);
+
+        // Only commit, don't auto-switch to avoid race conditions
+        console.log("Committing tab order...");
+        
+        // Immediately navigate to the new tab
+        switchTabTo(finalTabName, true);
+        commitTabOrder();
+        
+        console.log("Tab creation completed successfully");
+        
+      } catch (error) {
+        console.error("Error in createTab:", error);
+      } finally {
+        setIsOperating(false);
+      }
+    }, 300),
+    [isOperating, tabList, createTab, commitTabOrder, switchTabTo]
+  );
+
+  const debouncedDeleteTab = React.useCallback(
+    debounce(async (tabName: string) => {
+      if (isOperating) return;
+      setIsOperating(true);
+      try {
+        if (!isEditableTab(tabName)) {
+          toast.error("Cannot delete this tab.");
+          return;
+        }
+        
+        if (tabList.length <= 1) {
+          toast.error("You must have at least one tab.");
+          return;
+        }
+        
+        // Only set pending switch if we're deleting the current tab
+        if (currentTab === tabName) {
+          const nextTab = nextClosestTab(tabName);
+          setPendingTabSwitch(nextTab);
+        }
+        
+        await deleteTab(tabName);
+        
+        toast.success("Tab deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting tab:", error);
+        toast.error("Error deleting tab. Please try again.");
+      } finally {
+        setIsOperating(false);
+      }
+    }, 300),
+    [isOperating, tabList, deleteTab, currentTab, nextClosestTab]
+  );
+
+  const debouncedRenameTab = React.useCallback(
+    debounce(async (tabName: string, newName: string) => {
+      if (isOperating) return;
+      setIsOperating(true);
+      try {
+        if (!newName || typeof newName !== 'string') {
+          return;
+        }
+
+        const sanitizedName = newName.trim();
+        if (!sanitizedName || sanitizedName === tabName) {
+          return;
+        }
+
+        const validationError = validateTabName(sanitizedName);
+        if (validationError) {
+          console.error("Tab name validation failed:", validationError);
+          return;
+        }
+
+        const uniqueName = generateUniqueTabName(sanitizedName);
+        if (!uniqueName || uniqueName === tabName) {
+          return;
+        }
+        
+        renameTab(tabName, uniqueName);
+        const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
+        updateTabOrder(newOrder);
+        switchTabTo(uniqueName);
+        commitTab(uniqueName);
+        commitTabOrder();
+        
+      } catch (error) {
+        console.error("Error in handleRenameTab:", error);
+      } finally {
+        setIsOperating(false);
+      }
+    }, 300),
+    [isOperating, renameTab, updateTabOrder, switchTabTo, commitTab, commitTabOrder, tabList]
+  );
 
   function generateNewTabName(): string {
-    const endIndex = tabList.length + 1;
-    const base = `Tab ${endIndex}`;
-    const uniqueName = generateUniqueTabName(base);
-    return uniqueName || `Tab ${Date.now()}`; // Fallback to timestamp if unique name fails
+    try {
+      // Use the list length to determine the next tab number
+      const nextNumber = tabList.length + 1;
+      const baseName = `Tab ${nextNumber}`;
+      
+      // If this name is available, use it
+      if (!tabList.includes(baseName)) {
+        return baseName;
+      }
+      
+      // If somehow that number is taken, find the next available
+      let counter = nextNumber + 1;
+      let newName = `Tab ${counter}`;
+      
+      while (tabList.includes(newName) && counter < 200) {
+        counter++;
+        newName = `Tab ${counter}`;
+      }
+      
+      return newName;
+    } catch (error) {
+      console.error("Error generating tab name:", error);
+      return `Tab ${Date.now()}`;
+    }
   }
 
   function generateUniqueTabName(tabName: string) {
-    // First validate the base name
-    const validationError = validateTabName(tabName);
-    if (validationError) {
-      console.error("Invalid base tab name:", tabName, validationError);
-      return null; // Return null instead of throwing
-    }
-
-    let iter = 1;
-    let uniqueName = tabName;
-    while (tabList.includes(uniqueName)) {
-      uniqueName = `${tabName} - ${iter}`;
-      // Validate each generated name
-      const validationError = validateTabName(uniqueName);
-      if (validationError) {
-        console.error("Could not generate unique name:", uniqueName, validationError);
-        return null; // Return null instead of throwing
-      }
-      iter += 1;
-    }
-    return uniqueName;
-  }
-
-  async function handleCreateTab(tabName: string) {
     try {
-      // Basic validation
+      // First validate the base name
       const validationError = validateTabName(tabName);
       if (validationError) {
-        console.error("Tab creation validation failed:", validationError);
-        return;
+        console.error("Invalid base tab name:", tabName, validationError);
+        return null;
       }
 
-      // Check if tab already exists
-      if (tabList.includes(tabName)) {
-        switchTabTo(tabName);
-        return;
+      let iter = 1;
+      let uniqueName = tabName;
+      
+      // Safety limit to prevent infinite loops
+      const maxIterations = 100;
+      
+      while (tabList.includes(uniqueName) && iter <= maxIterations) {
+        uniqueName = `${tabName} - ${iter}`;
+        // Validate each generated name
+        const validationError = validateTabName(uniqueName);
+        if (validationError) {
+          console.error("Could not generate unique name:", uniqueName, validationError);
+          return null;
+        }
+        iter += 1;
       }
-
-      // Simple create tab
-      const result = await createTab(tabName);
       
-      if (result?.tabName) {
-        switchTabTo(result.tabName);
-      } else {
-        switchTabTo(tabName);
+      if (iter > maxIterations) {
+        console.error("Max iterations reached for unique name generation");
+        return null;
       }
       
-
-
-      // Commit in background
-      Promise.resolve().then(() => {
-        commitTabOrder();
-      });
-      
+      return uniqueName;
     } catch (error) {
-      console.error("Error in handleCreateTab:", error);
+      console.error("Error in generateUniqueTabName:", error);
+      return null;
     }
   }
 
-  async function handleDeleteTab(tabName: string) {
-    // Simple and safe delete function
-    if (!isEditableTab(tabName, spaceData) || tabList.length <= 1) {
+  // Defensive wrapper for switchTabTo: never navigate to null/undefined
+  const safeSwitchTabTo = React.useCallback((tabName: string, shouldSave?: boolean) => {
+    if (!tabName || typeof tabName !== 'string' || !tabList.includes(tabName)) {
+      console.warn('Attempted navigation to invalid tab:', tabName);
       return;
     }
+    switchTabTo(tabName, shouldSave);
+  }, [switchTabTo, tabList]);
 
-    // Remove the tab from the tabList locally
-    const updatedTabList = tabList.filter((name) => name !== tabName);
-    updateTabOrder(updatedTabList);
-
-    // Decide which tab to activate after deletion
-    let nextTab = nextClosestTab(tabName);
-    if (!updatedTabList.includes(nextTab)) {
-      // If the next tab no longer exists, take the first available one
-      nextTab = updatedTabList[0] || "Profile";
+  // Effect to safely navigate after deleting a tab
+  React.useEffect(() => {
+    if (!pendingTabSwitch) return;
+    if (!tabList.includes(pendingTabSwitch)) {
+      const fallbackTab = tabList[0] || (inHomebase ? "Feed" : "Profile");
+      if (fallbackTab) {
+        console.warn("Target tab no longer exists. Redirecting to:", fallbackTab);
+        safeSwitchTabTo(fallbackTab);
+      } else {
+        console.error("No available tab for navigation after deletion.");
+      }
+      setPendingTabSwitch(null);
+      return;
     }
-
-    // Navigate to the next valid tab
-    switchTabTo(nextTab);
-
-    // Delete the tab
-    deleteTab(tabName);
-  }
-
-  async function handleRenameTab(tabName: string, newName: string) {
-    try {
-      // Basic validation
-      if (!newName || typeof newName !== 'string') {
-        return;
+    const timeoutId = setTimeout(() => {
+      try {
+        try {
+          if (typeof getSpacePageUrl === 'function') {
+            const url = getSpacePageUrl(encodeURIComponent(pendingTabSwitch));
+            if (url && typeof url === 'string') {
+              window.history.pushState({}, '', url);
+            }
+          }
+        } catch (urlError) {
+          // Ignore error when updating URL after tab deletion
+        }
+        safeSwitchTabTo(pendingTabSwitch);
+        setPendingTabSwitch(null);
+      } catch (error) {
+        setPendingTabSwitch(null);
       }
+    }, 50);
+    return () => clearTimeout(timeoutId);
+  }, [tabList, pendingTabSwitch, safeSwitchTabTo, getSpacePageUrl, inHomebase]);
 
-      const sanitizedName = newName.trim();
-      if (!sanitizedName || sanitizedName === tabName) {
-        return;
-      }
-
-      // Validate the new name
-      const validationError = validateTabName(sanitizedName);
-      if (validationError) {
-        console.error("Tab name validation failed:", validationError);
-        return;
-      }
-
-      const uniqueName = generateUniqueTabName(sanitizedName);
-      if (!uniqueName || uniqueName === tabName) {
-        return;
-      }
-      
-      // Simple rename without complex rollback logic
-      renameTab(tabName, uniqueName);
-      
-      // Update tab order
-      const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
-      updateTabOrder(newOrder);
-      
-      // Switch to the new tab name
-      switchTabTo(uniqueName);
-
-      // Commit in background
-      Promise.resolve().then(() => {
-        commitTab(uniqueName);
-        commitTabOrder();
-      });
-      
-    } catch (error) {
-      console.error("Error in handleRenameTab:", error);
-    }
-  }
-
-  function nextClosestTab(tabName: string) {
-    const index = tabList.indexOf(tabName);
-    // For middle tabs, prefer the next tab
-    if (index >= 0 && index < tabList.length - 1) {
-      // If there's a next tab, use it
-      return tabList[index + 1];
-    } else if (index > 0) {
-      // If we're at the end, go to previous tab
-      return tabList[index - 1];
-    } else if (inHomebase) {
-      // If no other tabs, go to Feed
-      return "Feed";
-    } else {
-      // If no other tabs, go to default tab for this space type
-      return defaultTab;
-    }
-  }
+  // Releases the ref whenever the tab actually changes
+  React.useEffect(() => {
+    // No longer needed, but keeping for potential future use
+  }, [currentTab]);
 
   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
@@ -250,24 +346,52 @@ const TabBar = React.memo(function TabBar({
       e.preventDefault();
     }
 
-    // Don't do anything if it's already the current tab
+    // Does nothing if it's already the current tab
     if (currentTab === tabName) {
       return;
     }
-
-    console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-
+    
+    // Update URL immediately on click for instant visual feedback
+    try {
+      if (typeof getSpacePageUrl === 'function') {
+        const url = getSpacePageUrl(encodeURIComponent(tabName));
+        window.history.pushState({}, '', url);
+      }
+    } catch (error) {
+      console.error("Error updating URL:", error);
+    }
+    
+    // Direct call to switchTabTo
     switchTabTo(tabName, true);
-  }, [switchTabTo, currentTab]);
+  }, [currentTab, getSpacePageUrl, switchTabTo]);
+
+  // Function to preload tab data (only for homebase tabs)
+  const preloadTabData = React.useCallback((tabName: string) => {
+    if (inHomebase && typeof homebaseLoadTab === 'function') {
+      homebaseLoadTab(tabName);
+    }
+  }, [inHomebase, homebaseLoadTab]);
+
+  // Simple debounced reorder function
+  const debouncedReorder = React.useCallback(
+    debounce((newOrder) => {
+      if (isOperating) return;
+      setIsOperating(true);
+      updateTabOrder(newOrder);
+      setTimeout(() => {
+        commitTabOrder();
+        setIsOperating(false);
+      }, 50);
+    }, 300),
+    [isOperating, updateTabOrder, commitTabOrder]
+  );
 
   const isLoggedIn = getIsLoggedIn();
-
-
 
   return (
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full"> 
-        {derivedIsTokenPage && derivedContractAddress && (
+        {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 w-full md:w-fit z-20 bg-white">
             <TokenDataHeader />
           </div>
@@ -279,7 +403,7 @@ const TabBar = React.memo(function TabBar({
               <Reorder.Group
                 as="ol"
                 axis="x"
-                onReorder={updateTabOrder}
+                onReorder={debouncedReorder}
                 className="flex flex-nowrap gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
               >
@@ -293,11 +417,12 @@ const TabBar = React.memo(function TabBar({
                       inEditMode={inEditMode}
                       isSelected={currentTab === tabName}
                       onClick={() => handleTabClick(tabName)}
-                      removeable={isEditableTab(tabName, spaceData)}
+                      removeable={isEditableTab(tabName)}
                       draggable={inEditMode}
-                      renameable={isEditableTab(tabName, spaceData)}
-                      onRemove={() => handleDeleteTab(tabName)}
-                      renameTab={handleRenameTab}
+                      renameable={isEditableTab(tabName)}
+                      onRemove={() => debouncedDeleteTab(tabName)}
+                      renameTab={(tab, newName) => debouncedRenameTab(tab, newName)}
+                      preloadTabData={preloadTabData}
                     />
                   )
                 )}
@@ -306,15 +431,6 @@ const TabBar = React.memo(function TabBar({
           </div>
 
           {/* Action Buttons - pushed to right side */}
-          {(() => {
-            console.log('[TabBar] Edit button render check:', {
-              isEditable,
-              inEditMode,
-              willShowEditButton: isEditable && !inEditMode,
-              willShowAddTabButton: isEditable && inEditMode
-            });
-            return null;
-          })()}
           {(isEditable) && (
             <div className="flex items-center gap-2 px-2 flex-shrink-0">
               {!inEditMode && (
@@ -328,7 +444,8 @@ const TabBar = React.memo(function TabBar({
               )}
               {(inEditMode) && (
                 <Button
-                  onClick={() => handleCreateTab(generateNewTabName())}
+                  onClick={() => debouncedCreateTab(generateNewTabName())}
+                  disabled={isOperating}
                   className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
                 >
                   <FaPlus />
@@ -338,17 +455,22 @@ const TabBar = React.memo(function TabBar({
             </div>
           )}
         </div>
-        {((derivedIsTokenPage || (derivedPageType === 'proposal' && !derivedSpaceId)) &&
-          !getIsInitializing() &&
-          !isLoggedIn &&
-          !isMobile) && (
-          <ClaimButtonWithModal contractAddress={derivedContractAddress} />
+        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
+          <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
       </div>
+     {/* Visual operation feedback as a tooltip */}
+      {isOperating && (
+        <div className="fixed bottom-8 right-8 z-50">
+          <TooltipProvider>
+            <div className="bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 shadow-lg flex items-center">
+              <span className="text-blue-600 font-bold">Processing operation...</span>
+            </div>
+          </TooltipProvider>
+        </div>
+      )}
     </TooltipProvider>
   );
-});
-
-TabBar.displayName = 'TabBar';
+}
 
 export default TabBar;
