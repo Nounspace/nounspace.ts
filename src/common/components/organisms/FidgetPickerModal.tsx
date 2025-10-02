@@ -8,8 +8,7 @@ import {
   FidgetOption, 
   StaticFidgetOption, 
   CuratedFidgetOption, 
-  MiniAppFidgetOption,
-  FidgetSearchFilters 
+  MiniAppFidgetOption
 } from "@/common/types/fidgetOptions";
 import { Input } from "../atoms/input";
 

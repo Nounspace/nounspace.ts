@@ -4,7 +4,6 @@ import {
   StaticFidgetOption, 
   CuratedFidgetOption, 
   MiniAppFidgetOption,
-  FarcasterFrameApp,
   FidgetCategory,
   FidgetSearchFilters,
   FidgetOptionsResponse 

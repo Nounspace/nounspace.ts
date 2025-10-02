@@ -1,1 +1,0 @@
-alter table "public"."spaceRegistrations" add column "network" text; 
