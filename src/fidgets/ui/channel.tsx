@@ -134,7 +134,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
 
   if (isLoading) {
     return (
-      <div className="h-full w-full overflow-hidden rounded-xl bg-white p-6 shadow-sm dark:bg-slate-900">
+      <div className="h-full w-full overflow-hidden rounded-xl bg-white p-6 dark:bg-slate-900">
         <SkeletonSection />
       </div>
     );
@@ -149,7 +149,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   }
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-auto rounded-xl bg-white p-6 shadow-sm dark:bg-slate-900">
+    <div className="flex h-full flex-col gap-6 overflow-auto rounded-xl bg-white p-6 dark:bg-slate-900">
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="flex flex-1 items-start gap-4">
           <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-200">
