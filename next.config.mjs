@@ -32,6 +32,7 @@ const cspHeader = `
       wss://relay.walletconnect.org
       https://explorer-api.walletconnect.com
       wss://www.walletlink.org
+      wss://space-builder-server.onrender.com
       https://*.rpc.privy.systems
       https://auth.privy.io
       https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3
