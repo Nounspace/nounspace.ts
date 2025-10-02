@@ -150,8 +150,8 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
 
   return (
     <div className="flex h-full flex-col gap-6 overflow-auto rounded-xl bg-white p-6 shadow-sm dark:bg-slate-900">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-start gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="flex flex-1 items-start gap-4">
           <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-200">
             {avatarUrl ? (
               <img src={avatarUrl} alt={channelName ?? channel.id} className="h-full w-full object-cover" />
@@ -161,67 +161,71 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
               </div>
             )}
           </div>
-          <div className="flex flex-col">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              {channelName}
-            </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-300">/{channel.id}</p>
-            {ownerUser && (
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <span className="uppercase tracking-wide text-slate-500">Owner</span>
-                {ownerUser.username ? (
-                  <Link
-                    href={`/s/${ownerUser.username}`}
-                    className="flex items-center gap-2 text-slate-700 transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400"
-                  >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage
-                        src={ownerUser.pfp_url ?? undefined}
-                        alt={ownerUser.display_name || ownerUser.username || ""}
-                      />
-                      <AvatarFallback>
-                        {(ownerUser.display_name || ownerUser.username || "?")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{ownerUser.display_name || ownerUser.username || `FID ${ownerUser.fid}`}</span>
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={ownerUser.pfp_url ?? undefined} alt={ownerUser.display_name || ""} />
-                      <AvatarFallback>
-                        {(ownerUser.display_name || "?")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{ownerUser.display_name || `FID ${ownerUser.fid}`}</span>
-                  </div>
-                )}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-6">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  {channelName}
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-300">/{channel.id}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Followers
+                  </span>
+                  <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    {followerCount.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Members
+                  </span>
+                  <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    {memberCount.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {ownerUser && (
+          <div className="mt-2 flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300 md:ml-auto md:mt-0">
+            <span className="uppercase tracking-wide text-slate-500">Owner</span>
+            {ownerUser.username ? (
+              <Link
+                href={`/s/${ownerUser.username}`}
+                className="flex items-center gap-2 text-slate-700 transition hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarImage
+                    src={ownerUser.pfp_url ?? undefined}
+                    alt={ownerUser.display_name || ownerUser.username || ""}
+                  />
+                  <AvatarFallback>
+                    {(ownerUser.display_name || ownerUser.username || "?")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span>{ownerUser.display_name || ownerUser.username || `FID ${ownerUser.fid}`}</span>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={ownerUser.pfp_url ?? undefined} alt={ownerUser.display_name || ""} />
+                  <AvatarFallback>
+                    {(ownerUser.display_name || "?")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span>{ownerUser.display_name || `FID ${ownerUser.fid}`}</span>
               </div>
             )}
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Followers
-            </span>
-            <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {followerCount.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Members
-            </span>
-            <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {memberCount.toLocaleString()}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
       {(description || externalLink?.url) && (
         <div className="space-y-3">

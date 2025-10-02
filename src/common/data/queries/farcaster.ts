@@ -216,7 +216,7 @@ export const useChannelMembers = (channelId: string, limit = 10) => {
     staleTime: 1000 * 60 * 3,
     queryFn: async () => {
       const params: Record<string, number | string> = {
-        channel_id: channelId,
+        id: channelId,
       };
 
       if (typeof limit === "number") {
