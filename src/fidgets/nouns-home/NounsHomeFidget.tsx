@@ -321,7 +321,7 @@ const NounsHomeInner: React.FC = () => {
     (async () => {
       try {
         const res = await fetch(
-          "https://api.reservoir.tools/collections/v7?includeTopBid=true&collections=0x9c8ff314c9bc7f6e59a9d9225fb22946427edc03",
+          "https://api.reservoir.tools/collections/v7?id=0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03&includeTopBid=true",
           { cache: 'no-store' }
         );
         if (!res.ok) return;
