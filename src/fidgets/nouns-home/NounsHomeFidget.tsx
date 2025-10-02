@@ -278,7 +278,8 @@ const NounsHomeInner: React.FC = () => {
 
   useEffect(() => {
     if (!auction) return;
-    setViewNounId(Number(auction.nounId));
+    // Do not override if user is viewing a past auction
+    setViewNounId((prev) => (prev == null || prev >= Number(auction.nounId) ? Number(auction.nounId) : prev));
     setDisplayAuction(auction);
     const updateCountdown = () => {
       const remaining = Number(auction.endTime) * 1000 - Date.now();

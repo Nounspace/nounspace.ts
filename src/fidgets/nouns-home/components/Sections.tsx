@@ -392,7 +392,7 @@ export const ThisIsNounsSection = () => {
     <section ref={rootRef} className="relative flex w-full flex-col items-center justify-center gap-10 overflow-hidden rounded-3xl bg-white p-6 text-center shadow-sm md:p-12">
       {/* Floating tiles - desktop */}
       <div
-        className="pointer-events-none absolute inset-0 hidden md:block"
+        className="pointer-events-none absolute inset-0 z-0 hidden md:block"
         style={{ opacity: 0.95 - dim * 0.15 }}
       >
         {/* Left cluster */}
@@ -450,7 +450,7 @@ export const ThisIsNounsSection = () => {
       </div>
       {/* Center fade mask to prevent overlap with copy */}
       <div
-        className="pointer-events-none absolute inset-0 hidden md:block"
+        className="pointer-events-none absolute inset-0 z-10 hidden md:block"
         style={{
           background:
             'linear-gradient(90deg, rgba(255,255,255,0) 30%, rgba(255,255,255,1) 47%, rgba(255,255,255,1) 53%, rgba(255,255,255,0) 70%)',
@@ -701,7 +701,7 @@ export const GetANounSection = ({
   auctionBgHex?: string;
 }) => {
   return (
-    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 md:gap-12 md:p-12">
       <div className="flex flex-col items-center gap-3 text-center">
         <h2 className="user-theme-headings-font text-3xl font-semibold md:text-4xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>Get a Noun!</h2>
         <p className="max-w-xl text-base text-muted-foreground md:text-lg">
@@ -781,13 +781,8 @@ export const GetANounSection = ({
                 )}
               </div>
             ) : (
-              <div className="mt-auto flex h-48 w-full items-end justify-center">
-                <img
-                  src={card.image}
-                  alt={card.title}
-                  className="max-h-full w-auto rounded-2xl object-contain"
-                  loading="lazy"
-                />
+              <div className="pointer-events-none absolute bottom-0 right-0 flex w-full items-end justify-end">
+                <img src={card.image} alt={card.title} className="h-56 w-auto object-contain" loading="lazy" />
               </div>
             )}
           </CardTag>
@@ -855,7 +850,7 @@ export const AlreadyOwnSection = () => {
           <LinkOut
             key={card.title}
             href={card.href}
-            className="group relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-3xl bg-[#f1f2f8] p-6 transition-colors hover:brightness-95"
+            className="group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-3xl bg-[#f1f2f8] p-6 transition-colors hover:brightness-95"
           >
             {/* top chip */}
             <div className="flex items-center justify-between">

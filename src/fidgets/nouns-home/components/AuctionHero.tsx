@@ -129,7 +129,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
             <div className="space-y-3">
               <div className="flex flex-wrap gap-10">
                 <div>
-                  <div className="text-sm font-medium text-[#5a5a70]">Current bid</div>
+                  <div className="text-sm font-medium text-[#5a5a70]">{isCurrentView ? 'Current bid' : 'Winning bid'}</div>
                   <div className="text-3xl font-medium md:text-4xl">{etherLabel}</div>
                 </div>
                 <div>
