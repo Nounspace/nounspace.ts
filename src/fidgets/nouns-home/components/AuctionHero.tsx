@@ -84,7 +84,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}
-              className="h-[200px] w-auto max-w-full object-contain sm:h-[260px] md:h-[400px] md:translate-y-6"
+              className="h-[200px] w-auto max-w-full object-contain sm:h-[260px] md:h-[400px] md:translate-y-10"
               priority
             />
           ) : (
@@ -148,7 +148,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </div>
               </div>
               {isCurrentView && (
-              <div className="text-sm font-medium text-[#6b6b80]">
+              <div className="flex items-center text-sm font-medium text-[#6b6b80]">
                 <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#d9dbe8] text-[#5a5a70]"><Info className="h-4 w-4" /></span>
                 <a
                   href="https://www.nouns.com/explore"

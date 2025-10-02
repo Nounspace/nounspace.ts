@@ -721,7 +721,7 @@ export const GetANounSection = ({
           <CardTag
             key={card.title}
             {...linkProps}
-            className="group relative flex h-full flex-col justify-between gap-4 rounded-3xl p-6 transition-colors hover:brightness-95"
+            className="group relative flex h-full min-h-[340px] flex-col justify-start gap-4 rounded-3xl p-6 pb-28 transition-colors hover:brightness-95"
             style={{ backgroundColor: bg }}
           >
             {/* Top chip button with icon + hover arrow */}
@@ -781,7 +781,7 @@ export const GetANounSection = ({
                 )}
               </div>
             ) : (
-              <div className="pointer-events-none absolute bottom-0 left-1/2 flex w-full -translate-x-1/2 items-end justify-center">
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex items-end justify-center">
                 <img src={card.image} alt={card.title} className="h-56 w-auto object-contain" loading="lazy" />
               </div>
             )}
