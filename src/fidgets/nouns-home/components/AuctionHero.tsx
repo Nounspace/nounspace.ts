@@ -84,7 +84,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           {nounId !== undefined ? (
             <NounImage
               nounId={auction!.nounId}
-              className="h-[200px] w-auto max-w-full object-contain sm:h-[260px] md:h-[400px]"
+              className="h-[200px] w-auto max-w-full object-contain sm:h-[260px] md:h-[400px] md:translate-y-6"
               priority
             />
           ) : (

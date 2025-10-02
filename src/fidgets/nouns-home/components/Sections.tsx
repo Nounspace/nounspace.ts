@@ -453,7 +453,7 @@ export const ThisIsNounsSection = () => {
         className="pointer-events-none absolute inset-0 z-10 hidden md:block"
         style={{
           background:
-            'linear-gradient(90deg, rgba(255,255,255,0) 30%, rgba(255,255,255,1) 47%, rgba(255,255,255,1) 53%, rgba(255,255,255,0) 70%)',
+            'linear-gradient(90deg, rgba(255,255,255,0) 10%, rgba(255,255,255,1) 40%, rgba(255,255,255,1) 60%, rgba(255,255,255,0) 90%)',
         }}
       />
 
@@ -482,7 +482,7 @@ export const ThisIsNounsSection = () => {
       </div>
 
       {/* Copy + CTA */}
-      <div className="relative z-[1] flex flex-col items-center gap-4">
+      <div className="relative z-[20] flex flex-col items-center gap-4">
         <h2 className="user-theme-headings-font text-4xl font-semibold md:text-5xl" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>This is Nouns</h2>
         <p className="max-w-lg md:max-w-xl text-base text-[#5a5a70] md:text-lg">
           Nouns are unique digital art pieces. One new Noun is auctioned every
@@ -594,7 +594,7 @@ export const GovernedByYouSection = ({
         <img
           src="https://www.nouns.com/governed-by-you-background.png"
           alt="Nouns governance"
-          className="absolute bottom-0 left-1/2 w-[1600px] -translate-x-1/2 origin-bottom scale-[0.85] md:scale-100"
+          className="absolute bottom-0 left-1/2 w-[1600px] -translate-x-1/2 origin-bottom scale-[1.15] md:scale-100"
           loading="lazy"
         />
         <div className="relative z-[1] flex flex-col items-center gap-4">
@@ -781,7 +781,7 @@ export const GetANounSection = ({
                 )}
               </div>
             ) : (
-              <div className="pointer-events-none absolute bottom-0 right-0 flex w-full items-end justify-end">
+              <div className="pointer-events-none absolute bottom-0 left-1/2 flex w-full -translate-x-1/2 items-end justify-center">
                 <img src={card.image} alt={card.title} className="h-56 w-auto object-contain" loading="lazy" />
               </div>
             )}
