@@ -10,7 +10,7 @@ export const NOUNS_TAB_CONFIG = {
           h: 10,
           x: 0,
           y: 0,
-          i: "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26",
+          i: "nounsHome:3a8d7f19-3e77-4c2b-9c7f-1a6f5f5a6f01",
           minW: 2,
           maxW: 36,
           minH: 2,
@@ -44,24 +44,26 @@ export const NOUNS_TAB_CONFIG = {
     },
   },
   fidgetInstanceDatums: {
-    "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26": {
+    "nounsHome:3a8d7f19-3e77-4c2b-9c7f-1a6f5f5a6f01": {
       config: {
         data: {},
         editable: true,
         settings: {
+          // Keep default visual style aligned with theme.
           background: "var(--user-theme-fidget-background)",
-          cropOffsetX: 0,
-          cropOffsetY: -4,
-          fidgetBorderColor: "rgba(238, 238, 238, 0)",
-          fidgetBorderWidth: "0",
-          fidgetShadow: "none",
-          isScrollable: false,
+          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+          fidgetShadow: "var(--user-theme-fidget-shadow)",
           showOnMobile: true,
-          url: "https://www.nouns.com",
+          // Ensure content can scroll inside the fidget container
+          isScrollable: true,
+          // Fonts: headings Londrina, body Poppins (matches nouns.com tone)
+          headingsFontFamily: "Londrina Solid",
+          fontFamily: "Poppins",
         },
       },
-      fidgetType: "iframe",
-      id: "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26",
+      fidgetType: "nounsHome",
+      id: "nounsHome:3a8d7f19-3e77-4c2b-9c7f-1a6f5f5a6f01",
     },
   },
   fidgetTrayContents: [],

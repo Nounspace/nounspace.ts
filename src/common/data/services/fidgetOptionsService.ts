@@ -113,6 +113,7 @@ export class FidgetOptionsService {
           case 'gallery':
           case 'text':
           case 'video':
+          case 'nounsHome':
             primaryCategory = 'content';
             break;
             
@@ -143,6 +144,9 @@ export class FidgetOptionsService {
             specificTags.push('utility');
         }
         
+        if (key === 'nounsHome') {
+          specificTags.push('nouns', 'auction');
+        }
         // Add the fidget type as a specific tag
         specificTags.push(key);
         
