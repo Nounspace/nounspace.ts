@@ -36,10 +36,10 @@ const channelProperties: FidgetProperties = {
 };
 
 const SkeletonSection: React.FC = () => (
-  <div className="flex flex-col gap-4 animate-pulse">
-    <div className="flex items-center gap-4">
+  <div className="flex flex-col gap-3 animate-pulse">
+    <div className="flex items-center gap-3">
       <div className="h-16 w-16 rounded-full bg-gray-200 dark:bg-gray-700" />
-      <div className="flex flex-col gap-2 flex-1">
+      <div className="flex flex-1 flex-col gap-2">
         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
         <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
       </div>
@@ -134,7 +134,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
 
   if (isLoading) {
     return (
-      <div className="h-full w-full overflow-hidden rounded-xl bg-white p-6 dark:bg-slate-900">
+      <div className="h-full w-full overflow-hidden rounded-xl bg-white p-5 dark:bg-slate-900">
         <SkeletonSection />
       </div>
     );
@@ -149,9 +149,9 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   }
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-auto rounded-xl bg-white p-6 dark:bg-slate-900">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex flex-1 items-start gap-4">
+    <div className="flex h-full flex-col gap-5 overflow-auto rounded-xl bg-white p-5 dark:bg-slate-900">
+      <div className="relative flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-1 items-start gap-3 pr-20 md:gap-4 md:pr-0">
           <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-200">
             {avatarUrl ? (
               <img src={avatarUrl} alt={channelName ?? channel.id} className="h-full w-full object-cover" />
@@ -161,15 +161,15 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
               </div>
             )}
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-6">
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                   {channelName}
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-300">/{channel.id}</p>
               </div>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
+              <div className="hidden flex-wrap items-start gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-300 md:flex">
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Followers
@@ -188,10 +188,18 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
                 </div>
               </div>
             </div>
+            <div className="flex items-center gap-3 text-sm md:hidden">
+              <p>
+                <span className="font-bold">{followerCount.toLocaleString()}</span> Followers
+              </p>
+              <p>
+                <span className="font-bold">{memberCount.toLocaleString()}</span> Members
+              </p>
+            </div>
           </div>
         </div>
         {ownerUser && (
-          <div className="mt-2 flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300 md:ml-auto md:mt-0">
+          <div className="absolute right-0 top-0 flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300 md:static md:ml-auto md:mt-0">
             <span className="uppercase tracking-wide text-slate-500">Owner</span>
             {ownerUser.username ? (
               <Link
@@ -228,7 +236,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
         )}
       </div>
       {(description || externalLink?.url) && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {description && (
             <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
               {description}
