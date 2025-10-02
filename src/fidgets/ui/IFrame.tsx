@@ -116,24 +116,167 @@ const createMiniAppBootstrapSrcDoc = (targetUrl: string) => {
         if (!parentWindow) {
           return;
         }
+
         var provider = parentWindow.__nounspaceMiniAppEthProvider;
-        if (provider) {
-          window.ethereum = provider;
-          ${providerInfoScript}
-          var announce = function() {
-            var detail = {
-              info: providerInfo,
-              provider: provider
-            };
-            window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: detail }));
-          };
-          window.dispatchEvent(new Event("ethereum#initialized"));
-          announce();
-          window.addEventListener("eip6963:requestProvider", announce);
+        if (!provider) {
+          return;
         }
+
+        var providerInfo;
+        ${providerInfoScript}
+
+        var buildProviderProxy = function(originalProvider) {
+          if (!originalProvider || (typeof originalProvider !== "object" && typeof originalProvider !== "function")) {
+            return originalProvider;
+          }
+
+          var proxy = {};
+
+          var bindMethod = function(key) {
+            try {
+              var value = originalProvider[key];
+              if (typeof value === "function") {
+                proxy[key] = value.bind(originalProvider);
+                return;
+              }
+            } catch (err) {}
+
+            try {
+              Object.defineProperty(proxy, key, {
+                configurable: true,
+                enumerable: false,
+                get: function() {
+                  try {
+                    return originalProvider[key];
+                  } catch (err) {
+                    return undefined;
+                  }
+                },
+                set: function(newValue) {
+                  try {
+                    originalProvider[key] = newValue;
+                  } catch (err) {}
+                }
+              });
+            } catch (err) {}
+          };
+
+          [
+            "request",
+            "send",
+            "sendAsync",
+            "on",
+            "once",
+            "off",
+            "addListener",
+            "removeListener",
+            "removeAllListeners",
+            "emit"
+          ].forEach(bindMethod);
+
+          try {
+            var descriptor = Object.getOwnPropertyDescriptor(originalProvider, "providers");
+            if (descriptor && descriptor.get) {
+              Object.defineProperty(proxy, "providers", {
+                configurable: true,
+                enumerable: false,
+                get: function() {
+                  try {
+                    var result = descriptor.get.call(originalProvider) || [];
+                    return Array.isArray(result) ? result.concat(proxy) : [proxy];
+                  } catch (err) {
+                    return [proxy];
+                  }
+                }
+              });
+            } else if (Array.isArray(originalProvider.providers)) {
+              proxy.providers = originalProvider.providers.concat(proxy);
+            } else {
+              proxy.providers = [proxy];
+            }
+          } catch (err) {
+            proxy.providers = [proxy];
+          }
+
+          proxy.isMiniAppProvider = true;
+          proxy.isNounspaceMiniAppProvider = true;
+
+          return proxy;
+        };
+
+        var proxyProvider = buildProviderProxy(provider) || provider;
+
+        var announceDetail = Object.freeze({
+          info: providerInfo,
+          provider: proxyProvider
+        });
+
+        var announceTo = function(targetWindow) {
+          if (!targetWindow) {
+            return;
+          }
+          try {
+            targetWindow.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: announceDetail }));
+          } catch (err) {
+            console.warn("Mini app provider announce failed", err);
+          }
+        };
+
+        try {
+          Object.defineProperty(window, "ethereum", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: proxyProvider
+          });
+        } catch (err) {
+          window.ethereum = proxyProvider;
+        }
+
+        try {
+          if (!window.ethereum.providers || window.ethereum.providers.indexOf(proxyProvider) === -1) {
+            window.ethereum.providers = Array.isArray(window.ethereum.providers)
+              ? window.ethereum.providers.concat(proxyProvider)
+              : [proxyProvider];
+          }
+        } catch (err) {}
+
+        try {
+          window.dispatchEvent(new Event("ethereum#initialized"));
+        } catch (err) {}
+
+        announceTo(window);
+
+        try {
+          parentWindow.addEventListener("eip6963:announceProvider", function(event) {
+            if (!event || !event.detail) {
+              return;
+            }
+            try {
+              window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: event.detail }));
+            } catch (innerErr) {
+              console.warn("Failed to forward announce event to mini app iframe", innerErr);
+            }
+          });
+        } catch (err) {}
+
+        try {
+          window.addEventListener("eip6963:requestProvider", function() {
+            try {
+              parentWindow.dispatchEvent(new Event("eip6963:requestProvider"));
+            } catch (innerErr) {
+              console.warn("Failed to forward provider request event from mini app iframe", innerErr);
+            }
+          });
+        } catch (err) {}
+
+        try {
+          parentWindow.dispatchEvent(new Event("eip6963:requestProvider"));
+        } catch (requestErr) {}
       } catch (err) {
         console.error("Mini app provider bootstrap failed", err);
       }
+
       setTimeout(function(){
         var target = ${JSON.stringify(safeTargetUrl)};
         if (target) {
