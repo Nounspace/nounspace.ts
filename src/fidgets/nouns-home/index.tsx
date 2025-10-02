@@ -19,7 +19,7 @@ export type NounsHomeFidgetSettings = {
 } & FidgetSettingsStyle;
 
 const nounsHomeProperties: FidgetProperties = {
-  fidgetName: "Nouns Home",
+  fidgetName: "Nouns Auction",
   icon: 0x1f5bc,
   fields: [
     {
@@ -116,8 +116,8 @@ const NounsHomeFidget: React.FC<FidgetArgs<NounsHomeFidgetSettings>> = ({ settin
 
 export const fidget = {
   id: "nouns-home",
-  title: "Nouns",
-  description: "Nouns homepage (auction) UI inside nounspace",
+  title: "Nouns Auction",
+  description: "Nouns auction UI inside nounspace",
   version: "1.0.0",
 };
 
