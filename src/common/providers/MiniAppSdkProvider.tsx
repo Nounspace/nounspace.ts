@@ -49,6 +49,9 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     sdk: null,
     frameContext: null,
   });
+  type EthereumProvider = typeof frameSdk.wallet.ethProvider;
+  const [resolvedEthProvider, setResolvedEthProvider] =
+    useState<EthereumProvider | null>(null);
 
   useEffect(() => {
     // Only initialize on client side
@@ -88,21 +91,61 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
+    if (!state.isReady || !state.sdk) {
+      setResolvedEthProvider(null);
+      return;
+    }
+
+    let cancelled = false;
+    const { wallet } = state.sdk;
+
+    setResolvedEthProvider(wallet.ethProvider);
+
+    const resolveProvider = async () => {
+      try {
+        const provider = await wallet.getEthereumProvider();
+
+        if (!cancelled) {
+          setResolvedEthProvider(provider ?? wallet.ethProvider);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to resolve Mini App Ethereum provider", error);
+          setResolvedEthProvider(wallet.ethProvider);
+        }
+      }
+    };
+
+    resolveProvider();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state.isReady, state.sdk]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    if (!state.isReady || !state.sdk?.wallet?.ethProvider) {
-      return;
-    }
-
-    const ethProvider = state.sdk.wallet.ethProvider;
-    if (!ethProvider) {
-      return;
-    }
-
     const win = window as Window;
-    win.__nounspaceMiniAppEthProvider = ethProvider;
+
+    if (!state.isReady || !resolvedEthProvider) {
+      if (win.__nounspaceMiniAppEthProvider) {
+        delete win.__nounspaceMiniAppEthProvider;
+      }
+
+      if (
+        win.__nounspaceMiniAppProviderInfo?.uuid ===
+        MINI_APP_PROVIDER_METADATA.uuid
+      ) {
+        delete win.__nounspaceMiniAppProviderInfo;
+      }
+
+      return;
+    }
+
+    win.__nounspaceMiniAppEthProvider = resolvedEthProvider;
 
     const iconUrl = new URL(
       MINI_APP_PROVIDER_METADATA.iconPath,
@@ -121,7 +164,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     const announceProvider = () => {
       const detail = Object.freeze({
         info: Object.freeze({ ...providerInfo }),
-        provider: ethProvider,
+        provider: resolvedEthProvider,
       });
 
       window.dispatchEvent(
@@ -146,13 +189,13 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     window.dispatchEvent(new CustomEvent("eip6963:requestProvider"));
 
     return () => {
-      if (win.__nounspaceMiniAppEthProvider === ethProvider) {
+      if (win.__nounspaceMiniAppEthProvider === resolvedEthProvider) {
         delete win.__nounspaceMiniAppEthProvider;
       }
 
       if (
-        win.__nounspaceMiniAppProviderInfo &&
-        win.__nounspaceMiniAppProviderInfo.uuid === providerInfo.uuid
+        win.__nounspaceMiniAppProviderInfo?.uuid ===
+        MINI_APP_PROVIDER_METADATA.uuid
       ) {
         delete win.__nounspaceMiniAppProviderInfo;
       }
@@ -162,7 +205,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
         handleRequestProvider,
       );
     };
-  }, [state.isReady, state.sdk]);
+  }, [resolvedEthProvider, state.isReady]);
 
   return (
     <MiniAppSdkContext.Provider value={state}>
