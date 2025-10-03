@@ -49,6 +49,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     sdk: null,
     frameContext: null,
   });
+  const [resolvedEthProvider, setResolvedEthProvider] = useState<unknown>();
 
   useEffect(() => {
     // Only initialize on client side
@@ -88,21 +89,61 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
+    if (!state.isReady || !state.sdk?.wallet) {
+      setResolvedEthProvider(undefined);
+      return;
+    }
+
+    let cancelled = false;
+
+    const resolveProvider = async () => {
+      try {
+        const provider =
+          (await state.sdk.wallet.getEthereumProvider()) ??
+          state.sdk.wallet.ethProvider;
+
+        if (cancelled) {
+          return;
+        }
+
+        setResolvedEthProvider(provider);
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to resolve Mini App Ethereum provider:", error);
+          setResolvedEthProvider(undefined);
+        }
+      }
+    };
+
+    resolveProvider();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state.isReady, state.sdk]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    if (!state.isReady || !state.sdk?.wallet?.ethProvider) {
+    if (!state.isReady) {
+      const win = window as Window;
+      delete win.__nounspaceMiniAppEthProvider;
+      delete win.__nounspaceMiniAppProviderInfo;
       return;
     }
 
-    const ethProvider = state.sdk.wallet.ethProvider;
-    if (!ethProvider) {
+    const provider = resolvedEthProvider ?? state.sdk?.wallet?.ethProvider;
+    if (!provider) {
+      const win = window as Window;
+      delete win.__nounspaceMiniAppEthProvider;
+      delete win.__nounspaceMiniAppProviderInfo;
       return;
     }
 
     const win = window as Window;
-    win.__nounspaceMiniAppEthProvider = ethProvider;
+    win.__nounspaceMiniAppEthProvider = provider;
 
     const iconUrl = new URL(
       MINI_APP_PROVIDER_METADATA.iconPath,
@@ -121,7 +162,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     const announceProvider = () => {
       const detail = Object.freeze({
         info: Object.freeze({ ...providerInfo }),
-        provider: ethProvider,
+        provider,
       });
 
       window.dispatchEvent(
@@ -146,7 +187,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     window.dispatchEvent(new CustomEvent("eip6963:requestProvider"));
 
     return () => {
-      if (win.__nounspaceMiniAppEthProvider === ethProvider) {
+      if (win.__nounspaceMiniAppEthProvider === provider) {
         delete win.__nounspaceMiniAppEthProvider;
       }
 
@@ -162,7 +203,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
         handleRequestProvider,
       );
     };
-  }, [state.isReady, state.sdk]);
+  }, [resolvedEthProvider, state.isReady, state.sdk]);
 
   return (
     <MiniAppSdkContext.Provider value={state}>
