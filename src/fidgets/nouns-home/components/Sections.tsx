@@ -950,7 +950,7 @@ export const LearnSection = () => {
               className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
             />
-            <div className="relative z-10 mt-auto flex h-20 items-center bg-[#eef0f5] p-4">
+            <div className="relative z-10 mt-auto flex h-20 items-center rounded-b-3xl bg-[#eef0f5] p-4">
               <h3 className="user-theme-headings-font text-lg font-semibold" style={{ fontFamily: 'var(--user-theme-headings-font)' }}>
                 {post.title}
               </h3>
