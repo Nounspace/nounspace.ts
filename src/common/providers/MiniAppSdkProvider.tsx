@@ -91,13 +91,20 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    if (!state.isReady || !state.sdk) {
+    if (!state.isReady) {
+      setResolvedEthProvider(null);
+      return;
+    }
+
+    const sdk = state.sdk;
+
+    if (!sdk) {
       setResolvedEthProvider(null);
       return;
     }
 
     let cancelled = false;
-    const { wallet } = state.sdk;
+    const { wallet } = sdk;
 
     setResolvedEthProvider(wallet.ethProvider);
 
