@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { parseEther } from 'viem';
 import NounImage from '../NounImage';
@@ -63,6 +63,13 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   const isEnded = status === 'ended';
   const buttonDisabled = isEnded ? !auction || auction.settled || isSettling : status === 'pending';
 
+  const placeholderEth = useMemo(() => {
+    if (!minRequiredWei) return '0.10';
+    const eth = Number(minRequiredWei) / 1e18;
+    const roundedUp = Math.ceil(eth * 100) / 100;
+    return roundedUp.toFixed(2);
+  }, [minRequiredWei]);
+
   const [bidInput, setBidInput] = useState('');
   const handleBidClick = () => {
     if (!onPlaceBid) return onOpenBid();
@@ -96,7 +103,20 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
 
         <div className="-mt-6 flex flex-col justify-center gap-4 pl-4 pr-4 md:mt-0 md:pl-10 md:pr-6 self-center bg-white border border-black/10 rounded-2xl p-4 md:bg-transparent md:border-0 md:rounded-none md:p-0">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-sm text-[#5a5a70]">
+            {/* Mobile top bar: date left, arrows right */}
+            <div className="flex items-center justify-between text-sm text-[#5a5a70] md:hidden">
+              {dateLabel && <span className="font-semibold">{dateLabel}</span>}
+              <div className="flex items-center gap-2">
+                {onPrev && (
+                  <button type="button" onClick={onPrev} className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black" aria-label="Previous auction"><ChevronLeft className="h-4 w-4" /></button>
+                )}
+                {onNext && (
+                  <button type="button" onClick={onNext} disabled={!canGoNext} className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black disabled:opacity-40" aria-label="Next auction"><ChevronRight className="h-4 w-4" /></button>
+                )}
+              </div>
+            </div>
+            {/* Desktop top bar (arrows then date) */}
+            <div className="hidden items-center gap-2 text-sm text-[#5a5a70] md:flex">
               {onPrev && (
                 <button
                   type="button"
@@ -127,7 +147,19 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
               {nounId !== undefined ? `Noun ${nounId}` : 'Loading'}
             </h1>
             <div className="space-y-3">
-              <div className="flex flex-wrap gap-10">
+              {/* Mobile compact rows */}
+              <div className="space-y-2 md:hidden">
+                <div className="flex w-full items-baseline justify-between">
+                  <span className="text-sm text-[#5a5a70]">{isCurrentView ? 'Current bid' : 'Winning bid'}</span>
+                  <span className="text-xl font-semibold">{etherLabel}</span>
+                </div>
+                <div className="flex w-full items-baseline justify-between">
+                  <span className="text-sm text-[#5a5a70]">{isCurrentView ? 'Time left' : 'Won by'}</span>
+                  <span className="text-xl font-semibold">{isCurrentView ? (status === 'ended' ? '00:00' : countdownLabel) : (auction && auction.bidder !== '0x0000000000000000000000000000000000000000' ? (<a href={`https://etherscan.io/address/${auction.bidder}`} target="_blank" rel="noopener noreferrer" className="underline">{bidderLabel}</a>) : '-')}</span>
+                </div>
+              </div>
+              {/* Desktop stats */}
+              <div className="hidden flex-wrap gap-10 md:flex">
                 <div>
                   <div className="text-sm font-medium text-[#5a5a70]">{isCurrentView ? 'Current bid' : 'Winning bid'}</div>
                   <div className="text-3xl font-medium md:text-4xl">{etherLabel}</div>
@@ -148,13 +180,13 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </div>
               </div>
               {isCurrentView && (
-              <div className="flex items-center text-sm font-medium text-[#6b6b80]">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#6b6b80] md:text-sm">
                 <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#d9dbe8] text-[#5a5a70]"><Info className="h-4 w-4" /></span>
                 <a
                   href="https://www.nouns.com/explore"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline"
+                  className="underline whitespace-nowrap"
                 >
                   Floor price
                 </a>
@@ -164,7 +196,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                   href="https://www.nouns.com/explore"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline"
+                  className="underline whitespace-nowrap"
                 >
                   Top offer
                 </a>
@@ -190,7 +222,7 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 <div className="relative flex-1">
                   <input
                     className="w-full rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 pr-16 text-base outline-none focus:border-black placeholder:font-semibold"
-                    placeholder={minRequiredWei ? String(Number(minRequiredWei) / 1e18) : '0.1'}
+                    placeholder={placeholderEth}
                     inputMode="decimal"
                     value={bidInput}
                     onChange={(e) => setBidInput(e.target.value)}
