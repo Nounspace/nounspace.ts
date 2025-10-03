@@ -84,8 +84,8 @@ const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
         {
           w: 6,
           h: 7,
-          x: 8,
-          y: 3,
+          x: 0,
+          y: 0,
           i: onboardingFidgetID,
           moved: false,
           static: false,

@@ -62,14 +62,12 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   const etherLabel = auction ? formatEth(auction.amount, 3) : 'Loading';
   const isEnded = status === 'ended';
   const buttonDisabled = isEnded ? !auction || auction.settled || isSettling : status === 'pending';
-
   const placeholderEth = useMemo(() => {
     if (!minRequiredWei) return '0.10';
     const eth = Number(minRequiredWei) / 1e18;
     const roundedUp = Math.ceil(eth * 100) / 100;
     return roundedUp.toFixed(2);
   }, [minRequiredWei]);
-
   const [bidInput, setBidInput] = useState('');
   const handleBidClick = () => {
     if (!onPlaceBid) return onOpenBid();
