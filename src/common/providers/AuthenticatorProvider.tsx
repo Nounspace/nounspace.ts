@@ -17,9 +17,9 @@ const AuthenticatorProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Ensure Zustand always syncs the authenticated Privy user
   useEffect(() => {
-    if (ready && user) {
-      setPrivyUser(user);
-    }
+    if (!ready) return;
+    // Sync on login and clear on logout
+    setPrivyUser(user ?? null);
   }, [ready, user, setPrivyUser]);
 
   return (
