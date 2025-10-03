@@ -180,31 +180,28 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
                 </div>
               </div>
               {isCurrentView && (
-              <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-[#6b6b80] md:text-sm">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#6b6b80] md:text-sm">
                 <span className="mr-1 hidden h-6 w-6 items-center justify-center rounded-full bg-[#d9dbe8] text-[#5a5a70] md:inline-flex"><Info className="h-4 w-4" /></span>
-                <span className="flex items-baseline gap-1">
+                <span className="flex items-baseline gap-1 whitespace-nowrap">
                   <a
                     href="https://www.nouns.com/explore"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline whitespace-nowrap"
+                    className="underline"
                   >
-                    Floor price
+                    Floor price:
                   </a>
-                  <span>:</span>
                   <span>{typeof floorPriceNative === 'number' ? `${floorPriceNative.toFixed(2)} ETH` : '—'}</span>
                 </span>
-                <span className="mx-2">•</span>
-                <span className="flex items-baseline gap-1">
+                <span className="flex items-baseline gap-1 whitespace-nowrap">
                   <a
                     href="https://www.nouns.com/explore"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline whitespace-nowrap"
+                    className="underline"
                   >
-                    Top offer
+                    Top offer:
                   </a>
-                  <span>:</span>
                   <span>{typeof topOfferNative === 'number' ? `${topOfferNative.toFixed(2)} ETH` : '—'}</span>
                 </span>
               </div>
