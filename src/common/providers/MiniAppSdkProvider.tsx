@@ -91,7 +91,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    if (!state.isReady || !state.sdk) {
+    if (!state.isReady || !state.sdk?.wallet) {
       setResolvedEthProvider(null);
       return;
     }
@@ -110,7 +110,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (error) {
         if (!cancelled) {
-          console.error("Failed to resolve Mini App Ethereum provider", error);
+          console.error("Failed to resolve Mini App Ethereum provider:", error);
           setResolvedEthProvider(wallet.ethProvider);
         }
       }
@@ -130,22 +130,20 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const win = window as Window;
 
-    if (!state.isReady || !resolvedEthProvider) {
-      if (win.__nounspaceMiniAppEthProvider) {
-        delete win.__nounspaceMiniAppEthProvider;
-      }
-
-      if (
-        win.__nounspaceMiniAppProviderInfo?.uuid ===
-        MINI_APP_PROVIDER_METADATA.uuid
-      ) {
-        delete win.__nounspaceMiniAppProviderInfo;
-      }
-
+    if (!state.isReady) {
+      delete win.__nounspaceMiniAppEthProvider;
+      delete win.__nounspaceMiniAppProviderInfo;
       return;
     }
 
-    win.__nounspaceMiniAppEthProvider = resolvedEthProvider;
+    const provider = resolvedEthProvider ?? state.sdk?.wallet?.ethProvider;
+    if (!provider) {
+      delete win.__nounspaceMiniAppEthProvider;
+      delete win.__nounspaceMiniAppProviderInfo;
+      return;
+    }
+
+    win.__nounspaceMiniAppEthProvider = provider;
 
     const iconUrl = new URL(
       MINI_APP_PROVIDER_METADATA.iconPath,
@@ -164,7 +162,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     const announceProvider = () => {
       const detail = Object.freeze({
         info: Object.freeze({ ...providerInfo }),
-        provider: resolvedEthProvider,
+        provider,
       });
 
       window.dispatchEvent(
@@ -189,7 +187,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     window.dispatchEvent(new CustomEvent("eip6963:requestProvider"));
 
     return () => {
-      if (win.__nounspaceMiniAppEthProvider === resolvedEthProvider) {
+      if (win.__nounspaceMiniAppEthProvider === provider) {
         delete win.__nounspaceMiniAppEthProvider;
       }
 
@@ -205,7 +203,7 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
         handleRequestProvider,
       );
     };
-  }, [resolvedEthProvider, state.isReady]);
+  }, [resolvedEthProvider, state.isReady, state.sdk]);
 
   return (
     <MiniAppSdkContext.Provider value={state}>
