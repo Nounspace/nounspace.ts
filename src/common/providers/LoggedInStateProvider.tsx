@@ -225,7 +225,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   ]);
 
   useEffect(() => {
-    if (ready && authenticated && user && user.wallet) {
+    if (ready && authenticated && user) {
       if (
         currentStep === SetupStep.NOT_SIGNED_IN ||
         currentStep === SetupStep.UNINITIALIZED
