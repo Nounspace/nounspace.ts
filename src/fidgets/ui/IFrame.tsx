@@ -663,6 +663,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   );
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const iframeWindowRef = useRef<Window | null>(null);
+  const pendingBridgeMessagesRef = useRef<Array<Record<string, unknown>>>([]);
+  const iframeLoadListenerRef = useRef<((event: Event) => void) | null>(null);
   const providerRef = useRef<MiniAppEthereumProvider | null>(null);
   const providerInfoRef = useRef<MiniAppProviderInfo | null>(null);
   const activeSubscriptionsRef = useRef(new Set<string>());
@@ -670,10 +672,47 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     new Map<string, (...args: unknown[]) => void>(),
   );
 
-  const miniAppIframeRef = useCallback((node: HTMLIFrameElement | null) => {
-    iframeRef.current = node;
-    iframeWindowRef.current = node?.contentWindow ?? null;
-  }, []);
+  const deliverBridgeMessage = useCallback(
+    (targetWindow: Window, message: Record<string, unknown>) => {
+      try {
+        targetWindow.postMessage(
+          {
+            __nounspaceMiniApp: true,
+            bridgeId,
+            ...message,
+          },
+          "*",
+        );
+      } catch (error) {
+        console.warn("Failed to post message to mini app iframe", error);
+      }
+    },
+    [bridgeId],
+  );
+
+  const flushPendingBridgeMessages = useCallback(() => {
+    const targetWindow =
+      iframeWindowRef.current ?? iframeRef.current?.contentWindow ?? null;
+
+    if (!targetWindow) {
+      return false;
+    }
+
+    iframeWindowRef.current = targetWindow;
+
+    if (pendingBridgeMessagesRef.current.length === 0) {
+      return true;
+    }
+
+    const pending = pendingBridgeMessagesRef.current;
+    pendingBridgeMessagesRef.current = [];
+
+    pending.forEach((message) => {
+      deliverBridgeMessage(targetWindow, message);
+    });
+
+    return true;
+  }, [deliverBridgeMessage]);
 
   const getDefaultProviderInfo = useCallback((): MiniAppProviderInfo => {
     let icon = MINI_APP_PROVIDER_METADATA.iconPath;
@@ -703,25 +742,15 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         iframeWindowRef.current ?? iframeRef.current?.contentWindow ?? null;
 
       if (!targetWindow) {
+        pendingBridgeMessagesRef.current.push(message);
         return;
       }
 
       iframeWindowRef.current = targetWindow;
 
-      try {
-        targetWindow.postMessage(
-          {
-            __nounspaceMiniApp: true,
-            bridgeId,
-            ...message,
-          },
-          "*",
-        );
-      } catch (error) {
-        console.warn("Failed to post message to mini app iframe", error);
-      }
+      deliverBridgeMessage(targetWindow, message);
     },
-    [bridgeId],
+    [deliverBridgeMessage],
   );
 
   const gatherProviderProperties = useCallback(
@@ -871,6 +900,46 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       }
     },
     [announceProviderState, attachSubscription, detachAllSubscriptions],
+  );
+
+  const notifyIframeReady = useCallback(() => {
+    const hasWindow = flushPendingBridgeMessages();
+
+    if (hasWindow && providerRef.current) {
+      announceProviderState();
+    }
+  }, [announceProviderState, flushPendingBridgeMessages]);
+
+  const miniAppIframeRef = useCallback(
+    (node: HTMLIFrameElement | null) => {
+      if (iframeRef.current && iframeLoadListenerRef.current) {
+        iframeRef.current.removeEventListener(
+          "load",
+          iframeLoadListenerRef.current,
+        );
+        iframeLoadListenerRef.current = null;
+      }
+
+      iframeRef.current = node;
+      iframeWindowRef.current = node?.contentWindow ?? null;
+
+      if (!node) {
+        pendingBridgeMessagesRef.current = [];
+        iframeLoadListenerRef.current = null;
+        return;
+      }
+
+      notifyIframeReady();
+
+      const handleLoad = () => {
+        iframeWindowRef.current = node.contentWindow ?? null;
+        notifyIframeReady();
+      };
+
+      node.addEventListener("load", handleLoad);
+      iframeLoadListenerRef.current = handleLoad;
+    },
+    [notifyIframeReady],
   );
 
   const serializeProviderError = useCallback((error: unknown) => {
