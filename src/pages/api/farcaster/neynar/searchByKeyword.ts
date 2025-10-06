@@ -22,10 +22,6 @@ async function searchCasts(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const { data } = await axios.request(options);
-    if (data.status && data.status !== 200) {
-      return res.status(data.status).json(data);
-    }
-
     res.status(200).json(data);
   } catch (e) {
     if (isAxiosError(e)) {

@@ -1,6 +1,7 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import Image, { ImageProps } from 'next/image';
 
 const LazyImageComponent = ({
   src,
@@ -10,7 +11,7 @@ const LazyImageComponent = ({
   onError,
   referrerPolicy,
   ...props
-}: React.ImgHTMLAttributes<HTMLImageElement> & {
+}: Omit<ImageProps, 'src'> & {
   src: string;
   alt?: string;
   className?: string;
@@ -61,17 +62,18 @@ const LazyImageComponent = ({
     <div ref={ref} className="relative">
       {(!shouldLoad || !loaded) && placeholder}
       {shouldLoad && (
-        <img
+        <Image
           src={src}
-          alt={alt}
+          alt={alt || ''}
           className={classNames(
             className,
             !loaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100'
           )}
           onLoad={handleLoad}
-          onError={onError}
-          referrerPolicy={referrerPolicy}
-          {...props}
+          onError={onError as any}
+          width={props.width as number || 500}
+          height={props.height as number || 300}
+          {...(props as any)}
         />
       )}
     </div>
