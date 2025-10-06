@@ -2,52 +2,70 @@
 
 import { useEffect, useRef } from "react";
 import { useMiniAppSdk } from "@/common/lib/hooks/useMiniAppSdk";
-import useMiniApp from "@/common/utils/useMiniApp";
 
 const MiniAppReady = () => {
   const { sdk } = useMiniAppSdk();
-  const { isInMiniApp } = useMiniApp();
   const hasSignaledReady = useRef(false);
 
   useEffect(() => {
-    if (hasSignaledReady.current) {
-      return;
-    }
-
-    if (!sdk || isInMiniApp !== true) {
+    if (!sdk || hasSignaledReady.current) {
       return;
     }
 
     let animationFrameId: number | null = null;
-    let readyCompleted = false;
+    let cancelled = false;
 
-    hasSignaledReady.current = true;
+    const markComplete = () => {
+      hasSignaledReady.current = true;
+    };
 
-    const signalReady = async () => {
+    const attemptSignal = async () => {
+      if (!sdk || cancelled || hasSignaledReady.current) {
+        return;
+      }
+
       try {
+        const isMiniApp =
+          typeof sdk.isInMiniApp === "function" ? await sdk.isInMiniApp() : true;
+
+        if (!isMiniApp) {
+          markComplete();
+          return;
+        }
+
         await sdk.actions.ready();
-        readyCompleted = true;
+        markComplete();
       } catch (error) {
         console.error("Error signaling mini app ready:", error);
-        hasSignaledReady.current = false;
+        scheduleAttempt();
       }
     };
 
-    if (typeof window === "undefined") {
-      signalReady();
-    } else {
-      animationFrameId = window.requestAnimationFrame(signalReady);
+    function scheduleAttempt() {
+      if (cancelled || hasSignaledReady.current) {
+        return;
+      }
+
+      if (typeof window === "undefined") {
+        void attemptSignal();
+        return;
+      }
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        animationFrameId = null;
+        void attemptSignal();
+      });
     }
 
+    scheduleAttempt();
+
     return () => {
-      if (!readyCompleted) {
-        hasSignaledReady.current = false;
-      }
+      cancelled = true;
       if (animationFrameId !== null) {
         window.cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [sdk, isInMiniApp]);
+  }, [sdk]);
 
   return null;
 };
