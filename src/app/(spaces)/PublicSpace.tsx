@@ -243,7 +243,7 @@ export default function PublicSpace({
       let loadPromise;
       if (!initialDataLoadRef.current) {
         isLoadingRef.current = true;
-        setTabLoading(true); // loading de tab
+        setTabLoading(true); // set tab loading state
         loadPromise = loadSpaceTabOrder(currentSpaceId)
           .then(() => {
             return loadEditableSpaces();
@@ -270,16 +270,18 @@ export default function PublicSpace({
       }
       loadPromise
         .then(() => {
-          setTabLoading(false);
-          isLoadingRef.current = false;
-          initialDataLoadRef.current = true;
           if (currentSpaceId) {
             if (!loadedTabsRef.current[currentSpaceId]) {
               loadedTabsRef.current[currentSpaceId] = new Set();
             }
             loadedTabsRef.current[currentSpaceId].add(currentTabName);
           }
-          if (currentSpaceId && !initialDataLoadRef.current) {
+          // ensure loadRemainingTabs is called only on first load
+          const wasFirstLoad = !initialDataLoadRef.current;
+          setTabLoading(false);
+          isLoadingRef.current = false;
+          initialDataLoadRef.current = true;
+          if (currentSpaceId && wasFirstLoad) {
             void loadRemainingTabs(currentSpaceId);
           }
         })
@@ -615,8 +617,7 @@ export default function PublicSpace({
     loadSpaceTab,
     currentUserFid,
     config,
-    setCurrentTabName,
-    setTabLoading
+    setCurrentTabName
   ]);
 
   // Debounce tab switching to prevent rapid clicks
@@ -738,13 +739,11 @@ export default function PublicSpace({
 
   // Update initial loading when the space is loaded
   useEffect(() => {
-    if (
+    setInitialLoading(
       providedSpaceId !== undefined &&
       providedSpaceId !== "" &&
-      localSpaces[providedSpaceId]
-    ) {
-      setInitialLoading(false);
-    }
+      !localSpaces[providedSpaceId]
+    );
   }, [providedSpaceId, localSpaces]);
 
   if (shouldShowSkeleton) {
