@@ -360,6 +360,7 @@ export default function PublicSpace({
       const registerSpace = async () => {
         try {
           let newSpaceId: string | undefined;
+          let newUrl: string | undefined;
 
           // First check local spaces for existing space
           if (isTokenSpace(spacePageData) && spacePageData.contractAddress && spacePageData.tokenData?.network) {
@@ -422,9 +423,6 @@ export default function PublicSpace({
               spacePageData.defaultTab,
               spacePageData.spacePageUrl(spacePageData.defaultTab),
             );
-
-            const newUrl = spacePageData.spacePageUrl(spacePageData.defaultTab);
-            router.replace(newUrl);
           } else if (isChannelSpace(spacePageData) && !isNil(currentUserFid)) {
             const displayName = spacePageData.channelDisplayName || spacePageData.channelId;
             const moderatorFids = spacePageData.moderatorFids || [];
@@ -436,9 +434,6 @@ export default function PublicSpace({
               spacePageData.spacePageUrl(spacePageData.defaultTab),
               moderatorFids,
             );
-
-            const newUrl = spacePageData.spacePageUrl(spacePageData.defaultTab);
-            router.replace(newUrl);
           }
 
           if (newSpaceId) {
@@ -462,8 +457,7 @@ export default function PublicSpace({
             // Invalidate cache by reloading editable spaces
             await loadEditableSpaces(); // Second load to invalidate cache
 
-            // Update the URL to include the new space ID
-            const newUrl = spacePageData.spacePageUrl(spacePageData.defaultTab);
+            newUrl = spacePageData.spacePageUrl(spacePageData.defaultTab);
             router.replace(newUrl);
           }
         } catch (error) {
