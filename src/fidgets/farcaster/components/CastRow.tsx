@@ -23,6 +23,7 @@ import { ErrorBoundary } from "@sentry/react";
 import { Properties } from "csstype";
 import { get, includes, isObject, isUndefined, map } from "lodash";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
@@ -455,12 +456,14 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
         {renderReaction(CastReactionType.quote, true, undefined, getIconForCastReactionType(CastReactionType.quote))}
         {cast.channel && cast.channel.name && (
-          <div
+          <Link
             key={`cast-${cast.hash}-channel-name`}
-            className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md"
+            href={`/c/${encodeURIComponent((cast.channel.id || cast.channel.name).toString())}`}
+            className="mt-1.5 flex items-center text-sm opacity-60 transition-colors hover:text-blue-500 focus:text-blue-500 py-1 px-1.5 rounded-md"
+            onClick={(event) => event.stopPropagation()}
           >
             /{cast.channel.name}
-          </div>
+          </Link>
         )}
         <div
           className="ml-auto mt-1.5 flex cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"

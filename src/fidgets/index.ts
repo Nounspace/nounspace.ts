@@ -5,6 +5,7 @@ import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
 import Profile from "./ui/profile";
+import Channel from "./ui/channel";
 import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
@@ -20,6 +21,7 @@ import Portfolio from "./token/Portfolio";
 import chat from "./ui/chat";
 import MobileStack from "./layout/tabFullScreen";
 import FramesFidget from "./framesV2/components/FramesFidget";
+import NounsHome from "./nouns-home";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -28,6 +30,7 @@ export const CompleteFidgets = {
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Example : undefined,
   profile:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
+  channel: Channel,
   // Farcaster
   frame: Frame,
   // iframely: iframely,
@@ -40,6 +43,7 @@ export const CompleteFidgets = {
   iframe: IFrame,
   // Nouns
   governance: NounishGovernance,
+  nounsHome: NounsHome,
   links: Links,
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,

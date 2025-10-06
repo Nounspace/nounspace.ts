@@ -1,9 +1,13 @@
 import {
   BulkUsersResponse,
+  ChannelMemberListResponse,
+  ChannelResponse,
   Conversation,
   FeedResponse,
   FeedType,
   FilterType,
+  FollowersResponse,
+  RelevantFollowersResponse,
 } from "@neynar/nodejs-sdk/build/api";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -179,5 +183,106 @@ export const useFidFromAddress = (address?: string) => {
       return undefined;
     },
     staleTime: 1000 * 60 * 2,
+  });
+};
+
+export const useChannelById = (channelId: string, viewerFid?: number) => {
+  return useQuery({
+    queryKey: ["channel", channelId, viewerFid],
+    enabled: !!channelId,
+    staleTime: 1000 * 60 * 3,
+    queryFn: async () => {
+      const params: Record<string, number | string> = { id: channelId };
+      if (typeof viewerFid === "number") {
+        params.viewer_fid = viewerFid;
+      }
+
+      const { data } = await axiosBackend.get<ChannelResponse>(
+        "/api/farcaster/neynar/channel",
+        {
+          params,
+        },
+      );
+
+      return data;
+    },
+  });
+};
+
+export const useChannelMembers = (channelId: string, limit = 10) => {
+  return useQuery({
+    queryKey: ["channel-members", channelId, limit],
+    enabled: !!channelId,
+    staleTime: 1000 * 60 * 3,
+    queryFn: async () => {
+      const params: Record<string, number | string> = {
+        id: channelId,
+      };
+
+      if (typeof limit === "number") {
+        params.limit = limit;
+      }
+
+      const { data } = await axiosBackend.get<ChannelMemberListResponse>(
+        "/api/farcaster/neynar/channel/members",
+        {
+          params,
+        },
+      );
+
+      return data;
+    },
+  });
+};
+
+export const useChannelFollowers = (channelId: string, limit = 10) => {
+  return useQuery({
+    queryKey: ["channel-followers", channelId, limit],
+    enabled: !!channelId,
+    staleTime: 1000 * 60 * 3,
+    queryFn: async () => {
+      const params: Record<string, number | string> = {
+        id: channelId,
+      };
+
+      if (typeof limit === "number") {
+        params.limit = limit;
+      }
+
+      const { data } = await axiosBackend.get<FollowersResponse>(
+        "/api/farcaster/neynar/channel/followers",
+        {
+          params,
+        },
+      );
+
+      return data;
+    },
+  });
+};
+
+export const useChannelRelevantFollowers = (
+  channelId: string,
+  viewerFid?: number,
+) => {
+  return useQuery({
+    queryKey: ["channel-relevant-followers", channelId, viewerFid],
+    enabled: !!channelId && typeof viewerFid === "number",
+    staleTime: 1000 * 60 * 3,
+    queryFn: async () => {
+      const params: Record<string, number | string> = {
+        id: channelId,
+        viewer_fid: viewerFid!,
+      };
+
+      const { data } = await axiosBackend.get<RelevantFollowersResponse>(
+        "/api/farcaster/neynar/channel/relevant-followers",
+        {
+          params,
+        },
+      );
+
+      return data;
+    },
   });
 };

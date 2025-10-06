@@ -3,9 +3,19 @@ export const isImageUrl = (url: string) => {
     return false;
   }
 
+  try {
+    const { hostname } = new URL(url);
+    if (hostname === "res.cloudinary.com") {
+      return true;
+    }
+  } catch (error) {
+    // Ignore URL parsing errors and fall through to other checks
+  }
+
   return (
-    url.match(/\.(jpeg|jpg|gif|png)$/) != null || url.includes("imagedelivery")
-  || url.startsWith("blob:")
+    url.match(/\.(jpeg|jpg|gif|png)$/) != null ||
+    url.includes("imagedelivery") ||
+    url.startsWith("blob:")
   );
 };
 

@@ -32,6 +32,7 @@ const cspHeader = `
       wss://relay.walletconnect.org
       https://explorer-api.walletconnect.com
       wss://www.walletlink.org
+      wss://space-builder-server.onrender.com
       https://*.rpc.privy.systems
       https://auth.privy.io
       https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3
@@ -40,7 +41,11 @@ const cspHeader = `
       https://api.segment.io
       https://api.imgbb.com
       https://api.goldsky.com
+      https://api.reservoir.tools
       https://base-mainnet.g.alchemy.com
+      https://eth-mainnet.g.alchemy.com
+      https://cloudflare-eth.com
+      https://api.coingecko.com
       https://stream.warpcast.com
       https://stream.farcaster.xyz
       https://res.cloudinary.com/;
