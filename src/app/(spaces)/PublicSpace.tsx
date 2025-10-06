@@ -776,7 +776,7 @@ export default function PublicSpace({
             <div className="grow">
               <SpaceLoading
                 hasProfile={
-                  isProfileSpace(spacePageData) && spaceOwnerFid
+                  isProfileSpace(spacePageData) && spacePageData.spaceOwnerFid
                 }
                 hasFeed={false}
               />
