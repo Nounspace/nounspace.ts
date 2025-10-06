@@ -15,7 +15,7 @@ interface PrivyState {
 }
 
 interface PrivyActions {
-  setPrivyUser: (user: PrivyUser) => void;
+  setPrivyUser: (user: PrivyUser | null) => void;
 }
 
 export type PrivyStore = PrivyActions & PrivyState;
@@ -68,7 +68,7 @@ export function useSignMessage() {
 
 export const privyStore = (set: StoreSet<AppStore>): PrivyStore => ({
   ...privyDefault,
-  setPrivyUser: (user: PrivyUser) => {
+  setPrivyUser: (user: PrivyUser | null) => {
     set((draft) => {
       draft.account.privyUser = user;
     }, "setPrivyUser");
