@@ -382,9 +382,9 @@ export default function PublicSpace({
               setCurrentTabName(spacePageData.defaultTab);
               return;
             }
-          } else if (isChannelSpace(spacePageData)) {
+          } else if (isChannelSpace(spacePageData) && spacePageData.channelId) {
             const existingSpace = Object.values(localSpaces).find(
-              (space) => space.channelId === spacePageData.channelId,
+              (space) => space.channelId && space.channelId === spacePageData.channelId,
             );
 
             if (existingSpace) {
