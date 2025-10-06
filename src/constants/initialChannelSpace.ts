@@ -31,14 +31,14 @@ const createInitialChannelSpaceConfig = (
   const layoutItems = [
     {
       w: 6,
-      h: 12,
+      h: 8,
       x: 0,
       y: 0,
       i: "feed:channel",
       minW: 4,
-      maxW: 36,
+      maxW: 20,
       minH: 6,
-      maxH: 36,
+      maxH: 12,
       moved: false,
       static: false,
     },
