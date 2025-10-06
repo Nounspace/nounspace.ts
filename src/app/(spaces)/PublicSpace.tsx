@@ -768,8 +768,8 @@ export default function PublicSpace({
     <div className="user-theme-background w-full h-full relative flex-col">
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
-          {profile ? (
-            <div className="z-50 bg-white md:h-40">{profile}</div>
+          {headerFidget ? (
+            <div className="z-50 bg-white md:h-40">{headerFidget}</div>
           ) : null}
           <TabBarSkeleton />
           <div className="flex h-full">
