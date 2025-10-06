@@ -42,16 +42,8 @@ export default function PublicSpace({
   const initialConfig = spacePageData.config;
   const getSpacePageUrl = spacePageData.spacePageUrl;
   
-  // Extract ownership props based on space type
-  const spaceOwnerFid = isProfileSpace(spacePageData) ? spacePageData.spaceOwnerFid : undefined;
-  const tokenData = isTokenSpace(spacePageData) ? spacePageData.tokenData : undefined;
-  const channelId = isChannelSpace(spacePageData) ? spacePageData.channelId : undefined;
-  const channelDisplayName = isChannelSpace(spacePageData)
-    ? spacePageData.channelDisplayName || spacePageData.channelId
-    : undefined;
-  const channelModeratorFids = isChannelSpace(spacePageData)
-    ? spacePageData.moderatorFids
-    : [];
+  // These properties should already be part of the spacePageData
+  // provided by the space-specific components
 
   const {
     clearLocalSpaces,
@@ -177,9 +169,9 @@ export default function PublicSpace({
         nextSpaceId = existingSpace.id;
         nextTabName = decodeURIComponent(providedTabName);
       }
-    } else if (isProfileSpace(spacePageData) && spaceOwnerFid) {
+    } else if (isProfileSpace(spacePageData) && spacePageData.spaceOwnerFid) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
-        (space) => space.fid === spaceOwnerFid,
+        (space) => space.fid === spacePageData.spaceOwnerFid,
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
@@ -478,12 +470,15 @@ export default function PublicSpace({
             const newUrl = getSpacePageUrl(spacePageData.defaultTab);
             router.replace(newUrl);
           } else if (isChannelSpace(spacePageData) && !isNil(currentUserFid)) {
+            const displayName = spacePageData.channelDisplayName || spacePageData.channelId;
+            const moderatorFids = spacePageData.moderatorFids || [];
+            
             newSpaceId = await registerChannelSpace(
               spacePageData.channelId,
-              channelDisplayName || spacePageData.channelId,
+              displayName,
               currentUserFid,
               getSpacePageUrl(spacePageData.defaultTab),
-              channelModeratorFids,
+              moderatorFids,
             );
 
             const newUrl = getSpacePageUrl(spacePageData.defaultTab);
@@ -543,8 +538,6 @@ export default function PublicSpace({
     router,
     getSpacePageUrl,
     initialConfig,
-    channelDisplayName,
-    channelModeratorFids,
   ]);
 
   const saveConfig = useCallback(
@@ -770,15 +763,15 @@ export default function PublicSpace({
     />
   );
 
-  const headerFidget = isProfileSpace(spacePageData) && spaceOwnerFid ? (
+  const headerFidget = isProfileSpace(spacePageData) && spacePageData.spaceOwnerFid ? (
     <Profile.fidget
-      settings={{ fid: spaceOwnerFid }}
+      settings={{ fid: spacePageData.spaceOwnerFid }}
       saveData={async () => noop()}
       data={{}}
     />
-  ) : isChannelSpace(spacePageData) && channelId ? (
+  ) : isChannelSpace(spacePageData) && spacePageData.channelId ? (
     <Channel.fidget
-      settings={{ channelId }}
+      settings={{ channelId: spacePageData.channelId }}
       saveData={async () => noop()}
       data={{}}
     />
