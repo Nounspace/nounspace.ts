@@ -730,16 +730,16 @@ export default function PublicSpace({
   // Shows the skeleton only during the initial loading of the space
   const shouldShowSkeleton =
     initialLoading &&
-    providedSpaceId !== undefined && providedSpaceId !== "";
+    spacePageData.spaceId !== undefined && spacePageData.spaceId !== "";
 
   // Update initial loading when the space is loaded
   useEffect(() => {
     setInitialLoading(
-      providedSpaceId !== undefined &&
-      providedSpaceId !== "" &&
-      !localSpaces[providedSpaceId]
+      spacePageData.spaceId !== undefined &&
+      spacePageData.spaceId !== "" &&
+      !localSpaces[spacePageData.spaceId]
     );
-  }, [providedSpaceId, localSpaces]);
+  }, [spacePageData.spaceId, localSpaces]);
 
   if (shouldShowSkeleton) {
     return (
