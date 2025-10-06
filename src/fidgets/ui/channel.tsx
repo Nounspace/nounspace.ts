@@ -126,6 +126,8 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
     toSimpleUser(channel?.lead) ||
     toSimpleUser(first(membersResponse?.members)?.user ?? undefined);
   const externalLink = channel?.external_link;
+  const isValid = externalLink?.url ? isValidHttpUrl(externalLink.url) : false;
+  const safeUrl = useSafeUrl(externalLink?.url || "");
 
   if (!channelId) {
     return (
@@ -245,15 +247,10 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
               {description}
             </p>
           )}
-          {externalLink?.url && (() => {
-            const isValid = isValidHttpUrl(externalLink.url);
-            const safeUrl = useSafeUrl(externalLink.url);
-            
-            if (!isValid || !safeUrl) {
-              return <span className="text-sm text-slate-500 dark:text-slate-400">Link unavailable</span>;
-            }
-            
-            return (
+          {externalLink?.url && (
+            !isValid || !safeUrl ? (
+              <span className="text-sm text-slate-500 dark:text-slate-400">Link unavailable</span>
+            ) : (
               <a
                 href={safeUrl}
                 target="_blank"
@@ -262,8 +259,8 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
               >
                 <span>{externalLink.title || "External Link"}</span>
               </a>
-            );
-          })()}
+            )
+          )}
         </div>
       )}
     </div>
