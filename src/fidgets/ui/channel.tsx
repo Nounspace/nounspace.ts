@@ -2,7 +2,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/common/components/atoms/a
 import TextInput from "@/common/components/molecules/TextInput";
 import { useChannelById, useChannelFollowers, useChannelMembers } from "@/common/data/queries/farcaster";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
+import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
+import { LazyImage } from "@/fidgets/farcaster/components/LazyLoad";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import { first } from "lodash";
 import Link from "next/link";
@@ -154,7 +157,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
         <div className="flex flex-1 items-start gap-3 pr-20 md:gap-4 md:pr-0">
           <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-200">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={channelName ?? channel.id} className="h-full w-full object-cover" />
+              <LazyImage src={avatarUrl} alt={channelName ?? channel.id} className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-xl text-slate-500">
                 /
@@ -242,16 +245,25 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
               {description}
             </p>
           )}
-          {externalLink?.url && (
-            <a
-              href={externalLink.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
-            >
-              <span>{externalLink.title || "External Link"}</span>
-            </a>
-          )}
+          {externalLink?.url && (() => {
+            const isValid = isValidHttpUrl(externalLink.url);
+            const safeUrl = useSafeUrl(externalLink.url);
+            
+            if (!isValid || !safeUrl) {
+              return <span className="text-sm text-slate-500 dark:text-slate-400">Link unavailable</span>;
+            }
+            
+            return (
+              <a
+                href={safeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+              >
+                <span>{externalLink.title || "External Link"}</span>
+              </a>
+            );
+          })()}
         </div>
       )}
     </div>
