@@ -6,6 +6,7 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import { useAppStore } from "@/common/data/stores/app";
+import type { UpdatableSpaceConfig } from "@/common/data/stores/app/space/spaceStore";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
@@ -25,7 +26,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
-import { SpaceConfigSaveDetails } from "./Space";
+import type { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
 import {
@@ -536,10 +537,17 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
+  type SanitizableTabConfig =
+    | (Omit<SpaceConfig, "isEditable"> & {
+        isEditable?: boolean;
+        isPrivate?: boolean;
+      })
+    | UpdatableSpaceConfig;
+
   const sanitizeTabConfig = useCallback(
     (
-      candidate?: (typeof currentConfig)["tabs"][string],
-    ): (typeof currentConfig)["tabs"][string] | undefined => {
+      candidate?: SanitizableTabConfig,
+    ): SanitizableTabConfig | undefined => {
       if (!candidate) {
         return undefined;
       }
