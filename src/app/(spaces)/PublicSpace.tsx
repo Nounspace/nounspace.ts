@@ -20,6 +20,7 @@ import {
   pickBy,
   isUndefined,
   isPlainObject,
+  cloneDeep,
 } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -105,6 +106,13 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const matchesSpaceData = useCallback(
     (candidate?: (typeof localSpaces)[string]) => {
@@ -465,6 +473,10 @@ export default function PublicSpace({
       }
       loadPromise
         .then(() => {
+          if (!isMountedRef.current) {
+            return;
+          }
+
           if (currentSpaceId) {
             if (!loadedTabsRef.current[currentSpaceId]) {
               loadedTabsRef.current[currentSpaceId] = new Set();
@@ -481,6 +493,10 @@ export default function PublicSpace({
           }
         })
         .catch((error) => {
+          if (!isMountedRef.current) {
+            return;
+          }
+
           console.error("Error loading space:", error);
           setTabLoading(false);
           isLoadingRef.current = false;
@@ -491,6 +507,10 @@ export default function PublicSpace({
   // Checks if the user is signed into Farcaster
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
+      if (!isMountedRef.current) {
+        return;
+      }
+
       setIsSignedIntoFarcaster(
         indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
       );
@@ -506,11 +526,52 @@ export default function PublicSpace({
       methodName: "getAccountFid",
       isLookup: true,
     }).then((authManagerResp) => {
+      if (!isMountedRef.current) {
+        return;
+      }
+
       if (authManagerResp.result === "success") {
         setCurrentUserFid(authManagerResp.value as number);
       }
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
+
+  const sanitizeTabConfig = useCallback(
+    (
+      candidate?: (typeof currentConfig)["tabs"][string],
+    ): (typeof currentConfig)["tabs"][string] | undefined => {
+      if (!candidate) {
+        return undefined;
+      }
+
+      if (!isPlainObject(candidate)) {
+        console.warn(
+          "Ignoring cached tab config because it is not a plain object",
+          resolvedTabName,
+        );
+        return undefined;
+      }
+
+      const { fidgetInstanceDatums, layoutDetails, theme } = candidate;
+
+      const hasInvalidShape = (
+        fidgetInstanceDatums != null && !isPlainObject(fidgetInstanceDatums)
+      ) ||
+        (layoutDetails != null && !isPlainObject(layoutDetails)) ||
+        (theme != null && !isPlainObject(theme));
+
+      if (hasInvalidShape) {
+        console.warn(
+          "Ignoring cached tab config because it is missing required plain-object fields",
+          resolvedTabName,
+        );
+        return undefined;
+      }
+
+      return cloneDeep(candidate);
+    },
+    [resolvedTabName],
+  );
 
   const cachedTabConfig = useMemo(() => {
     if (!hasMatchingSpace) {
@@ -519,25 +580,21 @@ export default function PublicSpace({
 
     const candidate = currentConfig?.tabs?.[resolvedTabName];
 
-    if (candidate == null) {
-      return undefined;
-    }
+    return sanitizeTabConfig(candidate);
+  }, [hasMatchingSpace, currentConfig, resolvedTabName, sanitizeTabConfig]);
 
-    if (!isPlainObject(candidate)) {
-      console.warn(
-        "Ignoring cached tab config because it is not a plain object",
-        resolvedTabName,
-      );
-      return undefined;
-    }
+  const fallbackConfig = useMemo(
+    () => cloneDeep(spacePageData.config),
+    [spacePageData.config],
+  );
 
-    return candidate;
-  }, [hasMatchingSpace, currentConfig, resolvedTabName]);
-
-  const config = {
-    ...(cachedTabConfig ?? { ...spacePageData.config }),
-    isEditable,
-  };
+  const config = useMemo(
+    () => ({
+      ...(cachedTabConfig ?? fallbackConfig),
+      isEditable,
+    }),
+    [cachedTabConfig, fallbackConfig, isEditable],
+  );
 
   const resolveSpaceIdForActions = useCallback(() => {
     const id = getCurrentSpaceId();
@@ -760,21 +817,33 @@ export default function PublicSpace({
 
     if (isNil(currentSpaceId)) return;
     
-    let configToSave;
-    if (isNil(remoteSpaces[currentSpaceId])) {
-      configToSave = {
-        ...spacePageData.config,
-        isPrivate: false,
-      };
-    } else {
-      const remoteConfig = remoteSpaces[currentSpaceId].tabs[currentTabName];
-      configToSave = {
-        ...remoteConfig,
-      };
+    const baseConfig = isNil(remoteSpaces[currentSpaceId])
+      ? cloneDeep(spacePageData.config)
+      : cloneDeep(remoteSpaces[currentSpaceId].tabs[currentTabName]);
+
+    const sanitized = sanitizeTabConfig(baseConfig);
+
+    if (!sanitized) {
+      console.warn(
+        "Falling back to default config during reset because cached config was invalid",
+        currentTabName,
+      );
     }
-    
+
+    const configToSave = {
+      ...(sanitized ?? fallbackConfig),
+      isPrivate: false,
+    };
+
     saveLocalSpaceTab(currentSpaceId, currentTabName, configToSave);
-  }, [getCurrentSpaceId, spacePageData.config, remoteSpaces, getCurrentTabName]);
+  }, [
+    getCurrentSpaceId,
+    spacePageData.config,
+    remoteSpaces,
+    getCurrentTabName,
+    sanitizeTabConfig,
+    fallbackConfig,
+  ]);
 
   // Tab switching function with proper memoization
   const switchTabTo = useCallback(async (tabName: string, shouldSave: boolean = true) => {
@@ -793,21 +862,32 @@ export default function PublicSpace({
     const currentTabName = resolvedTabName;
 
     // Update tab name and navigate instantly
-    setCurrentTabName(tabName);
+    if (isMountedRef.current) {
+      setCurrentTabName(tabName);
+    }
     router.push(spacePageData.spacePageUrl(tabName));
 
     // Save and commit in background if needed
     if (shouldSave) {
       try {
         const resolvedConfig = await config;
-        await Promise.all([
-          saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
-          commitSpaceTab(
-            currentSpaceId,
-            currentTabName,
-            isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined
-          )
-        ]);
+        if (isMountedRef.current) {
+          if (!isPlainObject(resolvedConfig)) {
+            console.warn(
+              "Skipping tab save because resolved config is not a plain object",
+              currentTabName,
+            );
+          } else {
+            await Promise.all([
+              saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
+              commitSpaceTab(
+                currentSpaceId,
+                currentTabName,
+                isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined
+              )
+            ]);
+          }
+        }
       } catch (err) {
         console.error("Error saving/committing tab:", err);
       }
@@ -818,7 +898,10 @@ export default function PublicSpace({
     const tabLoaded = loadedTabsRef.current[currentSpaceId]?.has(tabName) ?? false;
 
     // Protect against race condition: only execute if component is mounted
-    let isMounted = true;
+    if (!isMountedRef.current) {
+      return;
+    }
+
     setTabLoading(true);
     try {
       if (!tabExists) {
@@ -834,14 +917,12 @@ export default function PublicSpace({
         loadedTabsRef.current[currentSpaceId].add(tabName);
       }
     } catch (err) {
-      if (isMounted) {
+      if (isMountedRef.current) {
         console.error("Error loading tab:", err);
       }
     } finally {
-      if (isMounted) setTabLoading(false);
+      if (isMountedRef.current) setTabLoading(false);
     }
-    // Clear flag on unmount
-    return () => { isMounted = false; };
   }, [
     getCurrentSpaceId,
     matchesSpaceData,
@@ -855,7 +936,8 @@ export default function PublicSpace({
     loadSpaceTab,
     currentUserFid,
     config,
-    setCurrentTabName
+    setCurrentTabName,
+    isMountedRef,
   ]);
 
   // Debounce tab switching to prevent rapid clicks
@@ -917,12 +999,22 @@ export default function PublicSpace({
         const currentSpaceId = resolveSpaceIdForActions();
         if (currentSpaceId) {
           const resolvedConfig = await config;
-          return saveLocalSpaceTab(
-            currentSpaceId,
-            oldName,
-            resolvedConfig,
-            newName,
-          );
+          if (isMountedRef.current) {
+            if (!isPlainObject(resolvedConfig)) {
+              console.warn(
+                "Skipping tab rename save because resolved config is not a plain object",
+                oldName,
+              );
+              return undefined;
+            }
+
+            return saveLocalSpaceTab(
+              currentSpaceId,
+              oldName,
+              resolvedConfig,
+              newName,
+            );
+          }
         }
         return undefined;
       }}
