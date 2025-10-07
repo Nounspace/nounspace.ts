@@ -15,7 +15,7 @@ export type BuilderScoreFidgetSettings = {
   darkMode: boolean;
 } & FidgetSettingsStyle;
 
-const BASE_URL = "https://farcaster-talent-sco-tlzb.bolt.host";
+const BASE_URL = "https://talent-score-eight.vercel.app";
 
 const builderScoreProperties: FidgetProperties = {
   fidgetName: "Builder Score",
