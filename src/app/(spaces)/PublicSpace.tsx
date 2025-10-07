@@ -146,6 +146,23 @@ export default function PublicSpace({
 
   const requestedTabName =
     currentTabNameValue || providedTabName || spacePageData.defaultTab;
+
+  const currentConfig = getCurrentSpaceConfig();
+  if (!currentConfig) {
+    console.error("Current space config is undefined");
+  }
+
+  const resolvedTabName = useMemo(() => {
+    if (hasMatchingSpace && currentConfig?.tabs?.[requestedTabName]) {
+      return requestedTabName;
+    }
+
+    return spacePageData.defaultTab;
+  }, [currentConfig?.tabs, hasMatchingSpace, requestedTabName, spacePageData.defaultTab]);
+
+  const activeSpaceId = hasMatchingSpace
+    ? currentSpaceIdValue ?? undefined
+    : undefined;
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
@@ -367,23 +384,6 @@ export default function PublicSpace({
       }
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
-
-  const currentConfig = getCurrentSpaceConfig();
-  if (!currentConfig) {
-    console.error("Current space config is undefined");
-  }
-
-  const resolvedTabName = useMemo(() => {
-    if (hasMatchingSpace && currentConfig?.tabs?.[requestedTabName]) {
-      return requestedTabName;
-    }
-
-    return spacePageData.defaultTab;
-  }, [currentConfig?.tabs, hasMatchingSpace, requestedTabName, spacePageData.defaultTab]);
-
-  const activeSpaceId = hasMatchingSpace
-    ? currentSpaceIdValue ?? undefined
-    : undefined;
 
   const config = {
     ...(hasMatchingSpace && currentConfig?.tabs?.[resolvedTabName]
