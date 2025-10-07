@@ -98,6 +98,54 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+
+  const matchesSpaceData = useCallback(
+    (candidate?: (typeof localSpaces)[string]) => {
+      if (!candidate) {
+        return false;
+      }
+
+      if (spacePageData.spaceId) {
+        return candidate.id === spacePageData.spaceId;
+      }
+
+      if (isProfileSpace(spacePageData) && spacePageData.spaceOwnerFid) {
+        return candidate.fid === spacePageData.spaceOwnerFid;
+      }
+
+      if (isChannelSpace(spacePageData) && spacePageData.channelId) {
+        return candidate.channelId === spacePageData.channelId;
+      }
+
+      if (
+        isTokenSpace(spacePageData) &&
+        spacePageData.contractAddress &&
+        spacePageData.tokenData?.network
+      ) {
+        return (
+          candidate.contractAddress === spacePageData.contractAddress &&
+          candidate.network === spacePageData.tokenData.network
+        );
+      }
+
+      if (isProposalSpace(spacePageData) && spacePageData.proposalId) {
+        return candidate.proposalId === spacePageData.proposalId;
+      }
+
+      return false;
+    },
+    [spacePageData],
+  );
+
+  const currentSpaceIdValue = getCurrentSpaceId();
+  const currentTabNameValue = getCurrentTabName();
+  const currentLocalSpace = currentSpaceIdValue
+    ? localSpaces[currentSpaceIdValue]
+    : undefined;
+  const hasMatchingSpace = matchesSpaceData(currentLocalSpace);
+
+  const requestedTabName =
+    currentTabNameValue || providedTabName || spacePageData.defaultTab;
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
@@ -180,9 +228,16 @@ export default function PublicSpace({
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
-      const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
+      if (!matchesSpaceData(localSpaces[spaceId])) {
+        return;
+      }
+
+      const currentTabName =
+        spaceId === activeSpaceId
+          ? resolvedTabName
+          : getCurrentTabName() ?? spacePageData.defaultTab;
       const tabOrder = localSpaces[spaceId]?.order || [];
-      
+
       // Initialize the set of loaded tabs for this space if it doesn't exist
       if (!loadedTabsRef.current[spaceId]) {
         loadedTabsRef.current[spaceId] = new Set();
@@ -206,7 +261,15 @@ export default function PublicSpace({
         );
       }
     },
-    [localSpaces, getCurrentTabName, loadSpaceTab, currentUserFid],
+    [
+      localSpaces,
+      matchesSpaceData,
+      activeSpaceId,
+      resolvedTabName,
+      getCurrentTabName,
+      loadSpaceTab,
+      currentUserFid,
+    ],
   );
 
   // Track if initial data load already happened
@@ -310,12 +373,34 @@ export default function PublicSpace({
     console.error("Current space config is undefined");
   }
 
+  const resolvedTabName = useMemo(() => {
+    if (hasMatchingSpace && currentConfig?.tabs?.[requestedTabName]) {
+      return requestedTabName;
+    }
+
+    return spacePageData.defaultTab;
+  }, [currentConfig?.tabs, hasMatchingSpace, requestedTabName, spacePageData.defaultTab]);
+
+  const activeSpaceId = hasMatchingSpace
+    ? currentSpaceIdValue ?? undefined
+    : undefined;
+
   const config = {
-    ...(currentConfig?.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
-      ? currentConfig.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
+    ...(hasMatchingSpace && currentConfig?.tabs?.[resolvedTabName]
+      ? currentConfig.tabs[resolvedTabName]
       : { ...spacePageData.config }),
     isEditable,
   };
+
+  const resolveSpaceIdForActions = useCallback(() => {
+    const id = getCurrentSpaceId();
+    if (!id) {
+      return undefined;
+    }
+
+    const candidate = localSpaces[id];
+    return matchesSpaceData(candidate) ? id : undefined;
+  }, [getCurrentSpaceId, localSpaces, matchesSpaceData]);
 
   const memoizedConfig = useMemo(() => {
     if (!config) {
@@ -540,10 +625,18 @@ export default function PublicSpace({
   // Tab switching function with proper memoization
   const switchTabTo = useCallback(async (tabName: string, shouldSave: boolean = true) => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName() ?? spacePageData.defaultTab;
+    const currentLocal = currentSpaceId ? localSpaces[currentSpaceId] : undefined;
 
     // Protect against fast navigation: ignore if there is no space or tab
     if (!currentSpaceId || !tabName) return;
+
+    if (!matchesSpaceData(currentLocal)) {
+      setCurrentTabName(spacePageData.defaultTab);
+      router.push(spacePageData.spacePageUrl(spacePageData.defaultTab));
+      return;
+    }
+
+    const currentTabName = resolvedTabName;
 
     // Update tab name and navigate instantly
     setCurrentTabName(tabName);
@@ -556,8 +649,8 @@ export default function PublicSpace({
         await Promise.all([
           saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
           commitSpaceTab(
-            currentSpaceId, 
-            currentTabName, 
+            currentSpaceId,
+            currentTabName,
             isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined
           )
         ]);
@@ -597,7 +690,8 @@ export default function PublicSpace({
     return () => { isMounted = false; };
   }, [
     getCurrentSpaceId,
-    getCurrentTabName,
+    matchesSpaceData,
+    resolvedTabName,
     spacePageData.spacePageUrl,
     router,
     saveLocalSpaceTab,
@@ -629,23 +723,23 @@ export default function PublicSpace({
     <TabBar
       isTokenPage={isTokenSpace(spacePageData)}
       inHomebase={false}
-      currentTab={getCurrentTabName() ?? spacePageData.defaultTab}
+      currentTab={resolvedTabName}
       tabList={
-        getCurrentSpaceId()
-          ? localSpaces[getCurrentSpaceId()!]?.order
+        activeSpaceId
+          ? localSpaces[activeSpaceId]?.order
           : [spacePageData.defaultTab]
       }
       contractAddress={isTokenSpace(spacePageData) ? spacePageData.contractAddress as Address : undefined}
       switchTabTo={debouncedSwitchTabTo}
       updateTabOrder={async (newOrder) => {
-        const currentSpaceId = getCurrentSpaceId();
+        const currentSpaceId = resolveSpaceIdForActions();
         return currentSpaceId
           ? updateSpaceTabOrder(currentSpaceId, newOrder)
           : undefined;
       }}
       inEditMode={editMode}
       deleteTab={async (tabName) => {
-        const currentSpaceId = getCurrentSpaceId();
+        const currentSpaceId = resolveSpaceIdForActions();
         return currentSpaceId
           ? deleteSpaceTab(
             currentSpaceId,
@@ -655,7 +749,7 @@ export default function PublicSpace({
           : undefined;
       }}
       createTab={async (tabName) => {
-        const currentSpaceId = getCurrentSpaceId();
+        const currentSpaceId = resolveSpaceIdForActions();
         return currentSpaceId
           ? createSpaceTab(
             currentSpaceId,
@@ -666,7 +760,7 @@ export default function PublicSpace({
           : undefined;
       }}
       renameTab={async (oldName, newName) => {
-        const currentSpaceId = getCurrentSpaceId();
+        const currentSpaceId = resolveSpaceIdForActions();
         if (currentSpaceId) {
           const resolvedConfig = await config;
           return saveLocalSpaceTab(
@@ -679,17 +773,17 @@ export default function PublicSpace({
         return undefined;
       }}
       commitTab={async (tabName) => {
-        const currentSpaceId = getCurrentSpaceId();
+        const currentSpaceId = resolveSpaceIdForActions();
         return currentSpaceId
           ? commitSpaceTab(
-              currentSpaceId, 
-              tabName, 
+              currentSpaceId,
+              tabName,
               isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined
             )
           : undefined;
       }}
       commitTabOrder={async () => {
-        const currentSpaceId = getCurrentSpaceId();
+        const currentSpaceId = resolveSpaceIdForActions();
         return currentSpaceId
           ? commitSpaceTabOrder(
             currentSpaceId,
