@@ -28,7 +28,9 @@ export async function GET() {
       homeUrl: URL,
       webhookUrl: `${URL}/api/webhook`,
       primaryCategory: metadata.APP_PRIMARY_CATEGORY || process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY,
-      tags: [],
+      tags:
+        metadata.APP_TAGS ||
+        process.env.NEXT_PUBLIC_APP_TAGS?.split(',').map((tag) => tag.trim()).filter(Boolean),
       heroImageUrl: metadata.APP_HERO_IMAGE || process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
       tagline: metadata.APP_TAGLINE || process.env.NEXT_PUBLIC_APP_TAGLINE,
       ogTitle: metadata.APP_OG_TITLE || process.env.NEXT_PUBLIC_APP_OG_TITLE,
