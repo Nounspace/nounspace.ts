@@ -11,7 +11,15 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
 import Channel from "@/fidgets/ui/channel";
 import { useWallets } from "@privy-io/react-auth";
-import { indexOf, isNil, mapValues, noop, debounce } from "lodash";
+import {
+  indexOf,
+  isNil,
+  mapValues,
+  noop,
+  debounce,
+  pickBy,
+  isUndefined,
+} from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
@@ -49,7 +57,6 @@ export default function PublicSpace({
     loadSpaceTab,
     saveLocalSpaceTab,
     commitSpaceTab,
-    getCurrentSpaceConfig,
     loadSpaceTabOrder,
     updateSpaceTabOrder,
     commitSpaceTabOrder,
@@ -70,7 +77,6 @@ export default function PublicSpace({
     localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     loadEditableSpaces: state.space.loadEditableSpaces,
-    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
     loadSpaceTab: state.space.loadSpaceTab,
     createSpaceTab: state.space.createSpaceTab,
     deleteSpaceTab: state.space.deleteSpaceTab,
@@ -142,15 +148,51 @@ export default function PublicSpace({
   const currentLocalSpace = currentSpaceIdValue
     ? localSpaces[currentSpaceIdValue]
     : undefined;
-  const hasMatchingSpace = matchesSpaceData(currentLocalSpace);
+  const matchingSpace = useMemo(() => {
+    if (currentLocalSpace && matchesSpaceData(currentLocalSpace)) {
+      return currentLocalSpace;
+    }
+
+    return Object.values(localSpaces).find((space) => matchesSpaceData(space));
+  }, [currentLocalSpace, localSpaces, matchesSpaceData]);
+  const matchingSpaceId = matchingSpace?.id;
+  const hasMatchingSpace = Boolean(matchingSpaceId);
 
   const requestedTabName =
     currentTabNameValue || providedTabName || spacePageData.defaultTab;
 
-  const currentConfig = getCurrentSpaceConfig();
-  if (!currentConfig) {
-    console.error("Current space config is undefined");
-  }
+  const currentConfig = useMemo(() => {
+    if (!matchingSpace) {
+      return undefined;
+    }
+
+    const tabsWithDatumsImproved = pickBy(
+      mapValues(matchingSpace.tabs, (tabInfo) =>
+        tabInfo
+          ? {
+              ...tabInfo,
+              fidgetInstanceDatums: mapValues(
+                tabInfo.fidgetInstanceDatums,
+                (datum) => ({
+                  ...datum,
+                  config: {
+                    settings: datum.config.settings,
+                    editable: datum.config.editable,
+                    data: {},
+                  },
+                }),
+              ),
+            }
+          : undefined,
+      ),
+      (value) => !isUndefined(value),
+    );
+
+    return {
+      ...matchingSpace,
+      tabs: tabsWithDatumsImproved,
+    };
+  }, [matchingSpace]);
 
   const resolvedTabName = useMemo(() => {
     if (hasMatchingSpace && currentConfig?.tabs?.[requestedTabName]) {
@@ -160,9 +202,27 @@ export default function PublicSpace({
     return spacePageData.defaultTab;
   }, [currentConfig?.tabs, hasMatchingSpace, requestedTabName, spacePageData.defaultTab]);
 
-  const activeSpaceId = hasMatchingSpace
-    ? currentSpaceIdValue ?? undefined
-    : undefined;
+  useEffect(() => {
+    const currentId = getCurrentSpaceId();
+    const currentCandidate = currentId ? localSpaces[currentId] : undefined;
+
+    if (matchingSpaceId && currentId !== matchingSpaceId) {
+      setCurrentSpaceId(matchingSpaceId);
+      return;
+    }
+
+    if (!matchingSpaceId && currentId && !matchesSpaceData(currentCandidate)) {
+      setCurrentSpaceId(null);
+    }
+  }, [
+    matchingSpaceId,
+    getCurrentSpaceId,
+    localSpaces,
+    matchesSpaceData,
+    setCurrentSpaceId,
+  ]);
+
+  const activeSpaceId = matchingSpaceId;
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
@@ -394,13 +454,20 @@ export default function PublicSpace({
 
   const resolveSpaceIdForActions = useCallback(() => {
     const id = getCurrentSpaceId();
-    if (!id) {
-      return undefined;
+    if (id) {
+      const candidate = localSpaces[id];
+      if (matchesSpaceData(candidate)) {
+        return id;
+      }
     }
 
-    const candidate = localSpaces[id];
-    return matchesSpaceData(candidate) ? id : undefined;
-  }, [getCurrentSpaceId, localSpaces, matchesSpaceData]);
+    return matchingSpaceId;
+  }, [
+    getCurrentSpaceId,
+    localSpaces,
+    matchesSpaceData,
+    matchingSpaceId,
+  ]);
 
   const memoizedConfig = useMemo(() => {
     if (!config) {
