@@ -19,6 +19,7 @@ import {
   debounce,
   pickBy,
   isUndefined,
+  isPlainObject,
 } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -223,15 +224,81 @@ export default function PublicSpace({
   ]);
 
   const activeSpaceId = matchingSpaceId;
+  const lastClearedSpaceKeyRef = useRef<string | null>(null);
+
+  const fallbackSpaceIdentity = useMemo(() => {
+    if (isProfileSpace(spacePageData) && spacePageData.spaceOwnerFid) {
+      return `profile:${spacePageData.spaceOwnerFid}`;
+    }
+
+    if (isChannelSpace(spacePageData) && spacePageData.channelId) {
+      return `channel:${spacePageData.channelId}`;
+    }
+
+    if (
+      isTokenSpace(spacePageData) &&
+      spacePageData.contractAddress &&
+      spacePageData.tokenData?.network
+    ) {
+      return `token:${spacePageData.contractAddress}:${spacePageData.tokenData.network}`;
+    }
+
+    if (isProposalSpace(spacePageData) && spacePageData.proposalId) {
+      return `proposal:${spacePageData.proposalId}`;
+    }
+
+    return null;
+  }, [spacePageData]);
+
+  const resolvedSpaceIdentity = useMemo(() => {
+    const explicitId = spacePageData.spaceId ?? activeSpaceId ?? null;
+
+    if (explicitId) {
+      return `id:${explicitId}`;
+    }
+
+    return fallbackSpaceIdentity;
+  }, [spacePageData.spaceId, activeSpaceId, fallbackSpaceIdentity]);
+
   // Clear cache only when switching to a different space
   useEffect(() => {
-    const currentSpaceId = getCurrentSpaceId();
-    if (currentSpaceId !== spacePageData.spaceId) {
-      clearLocalSpaces();
-      loadedTabsRef.current = {};
-      initialDataLoadRef.current = false;
+    const identityKey = resolvedSpaceIdentity;
+
+    if (identityKey == null) {
+      lastClearedSpaceKeyRef.current = null;
+      return;
     }
-  }, [clearLocalSpaces, getCurrentSpaceId, spacePageData.spaceId]);
+
+    if (lastClearedSpaceKeyRef.current === identityKey) {
+      return;
+    }
+
+    if (lastClearedSpaceKeyRef.current === null) {
+      lastClearedSpaceKeyRef.current = identityKey;
+      return;
+    }
+
+    const currentSpaceId = getCurrentSpaceId();
+    if (
+      !spacePageData.spaceId &&
+      activeSpaceId &&
+      currentSpaceId === activeSpaceId
+    ) {
+      lastClearedSpaceKeyRef.current = identityKey;
+      return;
+    }
+
+    clearLocalSpaces();
+    loadedTabsRef.current = {};
+    initialDataLoadRef.current = false;
+    lastClearedSpaceKeyRef.current = identityKey;
+  }, [
+    resolvedSpaceIdentity,
+    getCurrentSpaceId,
+    clearLocalSpaces,
+    spacePageData.spaceId,
+    activeSpaceId,
+  ]);
 
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -445,10 +512,30 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
+  const cachedTabConfig = useMemo(() => {
+    if (!hasMatchingSpace) {
+      return undefined;
+    }
+
+    const candidate = currentConfig?.tabs?.[resolvedTabName];
+
+    if (candidate == null) {
+      return undefined;
+    }
+
+    if (!isPlainObject(candidate)) {
+      console.warn(
+        "Ignoring cached tab config because it is not a plain object",
+        resolvedTabName,
+      );
+      return undefined;
+    }
+
+    return candidate;
+  }, [hasMatchingSpace, currentConfig, resolvedTabName]);
+
   const config = {
-    ...(hasMatchingSpace && currentConfig?.tabs?.[resolvedTabName]
-      ? currentConfig.tabs[resolvedTabName]
-      : { ...spacePageData.config }),
+    ...(cachedTabConfig ?? { ...spacePageData.config }),
     isEditable,
   };
 
