@@ -1,6 +1,7 @@
 import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { SpaceConfig } from "@/app/(spaces)/Space";
+import { sanitizeTabConfig } from "@/common/utils/sanitizeTabConfig";
 import { isNil, isUndefined, mapValues, pickBy } from "lodash";
 
 interface CurrentSpaceStoreState {
@@ -60,24 +61,42 @@ export const createCurrentSpaceStoreFunc = (
     const currentSpaceUpdatableConfig = get().space.localSpaces[currentSpaceId];
     if (currentSpaceUpdatableConfig) {
       const tabsWithDatumsImproved = pickBy(
-        mapValues(currentSpaceUpdatableConfig.tabs, (tabInfo) =>
-          tabInfo
-            ? {
-                ...tabInfo,
-                fidgetInstanceDatums: mapValues(
-                  tabInfo.fidgetInstanceDatums,
-                  (datum) => ({
-                    ...datum,
-                    config: {
-                      settings: datum.config.settings,
-                      editable: datum.config.editable,
-                      data: {}, // TO DO: Inject fidget data here
-                    },
-                  }),
-                ),
-              }
-            : undefined,
-        ),
+        mapValues(currentSpaceUpdatableConfig.tabs, (tabInfo, tabName) => {
+          if (!tabInfo) {
+            return undefined;
+          }
+
+          const sanitized = sanitizeTabConfig(tabInfo, {
+            tabName,
+            requireIsPrivate: true,
+            defaultIsPrivate: false,
+            log: (message, ...details) =>
+              console.warn(
+                "Ignoring cached local tab config:",
+                message,
+                ...details,
+              ),
+          });
+
+          if (!sanitized) {
+            return undefined;
+          }
+
+          return {
+            ...sanitized,
+            fidgetInstanceDatums: mapValues(
+              sanitized.fidgetInstanceDatums ?? {},
+              (datum) => ({
+                ...datum,
+                config: {
+                  settings: datum.config.settings,
+                  editable: datum.config.editable,
+                  data: {}, // TO DO: Inject fidget data here
+                },
+              }),
+            ),
+          };
+        }),
         (i) => !isUndefined(i),
       );
       return {

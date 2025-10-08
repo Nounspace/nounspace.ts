@@ -10,6 +10,7 @@ import type {
   UpdatableDatabaseWritableSpaceSaveConfig,
   UpdatableSpaceConfig,
 } from "@/common/data/stores/app/space/spaceStore";
+import { sanitizeTabConfig as sanitizeTabConfigShape } from "@/common/utils/sanitizeTabConfig";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
@@ -550,64 +551,13 @@ export default function PublicSpace({
   const sanitizeTabConfig = useCallback(
     (
       candidate?: SanitizableTabConfig,
-    ): ServerTabConfig | undefined => {
-      if (!candidate) {
-        return undefined;
-      }
-
-      if (!isPlainObject(candidate)) {
-        console.warn(
-          "Ignoring cached tab config because it is not a plain object",
-          resolvedTabName,
-        );
-        return undefined;
-      }
-
-      const { fidgetInstanceDatums, layoutDetails, theme } = candidate as {
-        fidgetInstanceDatums?: unknown;
-        layoutDetails?: unknown;
-        theme?: unknown;
-      };
-
-      if (
-        (fidgetInstanceDatums != null && !isPlainObject(fidgetInstanceDatums)) ||
-        (layoutDetails != null && !isPlainObject(layoutDetails)) ||
-        (theme != null && !isPlainObject(theme))
-      ) {
-        console.warn(
-          "Ignoring cached tab config because it is missing required plain-object fields",
-          resolvedTabName,
-        );
-        return undefined;
-      }
-
-      if (isPlainObject(fidgetInstanceDatums)) {
-        for (const [key, datum] of Object.entries(
-          fidgetInstanceDatums as Record<string, unknown>,
-        )) {
-          if (!isPlainObject(datum)) {
-            console.warn(
-              "Ignoring cached tab config because fidget datum is not a plain object",
-              resolvedTabName,
-              key,
-            );
-            return undefined;
-          }
-
-          const configValue = (datum as { config?: unknown }).config;
-          if (configValue != null && !isPlainObject(configValue)) {
-            console.warn(
-              "Ignoring cached tab config because fidget config is not a plain object",
-              resolvedTabName,
-              key,
-            );
-            return undefined;
-          }
-        }
-      }
-
-      return cloneDeep(candidate) as ServerTabConfig;
-    },
+    ): ServerTabConfig | undefined =>
+      sanitizeTabConfigShape<SanitizableTabConfig>(candidate, {
+        tabName: resolvedTabName,
+        defaultIsPrivate: false,
+        log: (message, ...details) =>
+          console.warn("Ignoring cached tab config:", message, ...details),
+      }) as ServerTabConfig | undefined,
     [resolvedTabName],
   );
 

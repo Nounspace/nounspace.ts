@@ -7,6 +7,7 @@ import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
+import { sanitizeTabConfig } from "@/common/utils/sanitizeTabConfig";
 import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
 import {
@@ -309,6 +310,20 @@ export const createSpaceStoreFunc = (
       localCopy.timestamp = newTimestamp;
       // console.log("localCopy", localCopy);
     }
+
+    const sanitizedCopy = sanitizeTabConfig(localCopy, {
+      tabName,
+      requireIsPrivate: true,
+      defaultIsPrivate: false,
+      log: (message, ...details) =>
+        console.warn("Skipping saveLocalSpaceTab due to invalid config:", message, ...details),
+    });
+
+    if (!sanitizedCopy) {
+      return;
+    }
+
+    localCopy = sanitizedCopy;
 
     set((draft) => {
       // Create space entry if it doesn't exist
