@@ -70,7 +70,11 @@ export function sanitizeTabConfig<T extends Record<string, unknown>>(
   }
 
   if (isPlainObject(fidgetInstanceDatums)) {
-    for (const [datumId, datum] of Object.entries(fidgetInstanceDatums)) {
+    const datumEntries = Object.entries(
+      fidgetInstanceDatums as Record<string, unknown>,
+    );
+
+    for (const [datumId, datum] of datumEntries) {
       if (!isPlainObject(datum)) {
         warn(options, "tab config datum is not a plain object", datumId);
         return undefined;
