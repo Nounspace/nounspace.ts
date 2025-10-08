@@ -3,6 +3,7 @@ import { CompleteFidgets } from "@/fidgets";
 import { Card, CardContent } from "../atoms/card";
 import { isUndefined, map } from "lodash";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
+import { getInitialGridSize } from "@/common/fidgets/utils";
 import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export interface FidgetPickerProps {
@@ -44,10 +45,11 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
                 "text/plain",
                 JSON.stringify(generateFidgetInstance(fidgetId, fidgetModule)),
               );
+              const initialSize = getInitialGridSize(fidgetModule.properties);
               setExternalDraggedItem({
                 i: fidgetId,
-                w: fidgetModule.properties.size.minWidth,
-                h: fidgetModule.properties.size.minHeight,
+                w: initialSize.width,
+                h: initialSize.height,
               });
             }}
           >

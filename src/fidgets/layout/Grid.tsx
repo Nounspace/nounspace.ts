@@ -19,6 +19,7 @@ import {
   FidgetArgs,
   FidgetModule,
 } from "@/common/fidgets";
+import { getInitialGridSize } from "@/common/fidgets/utils";
 import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
@@ -458,16 +459,19 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
+    const fidgetProperties = CompleteFidgets[fidgetData.fidgetType].properties;
+    const initialSize = getInitialGridSize(fidgetProperties);
+
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
       x: item.x,
       y: item.y,
-      w: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
-      minW: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
-      maxW: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
-      h: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
-      minH: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
-      maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxHeight,
+      w: initialSize.width,
+      minW: fidgetProperties.size.minWidth,
+      maxW: fidgetProperties.size.maxWidth,
+      h: initialSize.height,
+      minH: fidgetProperties.size.minHeight,
+      maxH: fidgetProperties.size.maxHeight,
       resizeHandles: resizeDirections,
     };
 
@@ -568,14 +572,15 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const fidgetProps = CompleteFidgets[fidgetType].properties;
     const minW = fidgetProps.size.minWidth;
     const minH = fidgetProps.size.minHeight;
+    const initialSize = getInitialGridSize(fidgetProps);
 
     const createAndSaveFidget = (posX: number, posY: number): boolean => {
       const newItem: PlacedGridItem = {
         i: id,
         x: posX,
         y: posY,
-        w: minW,
-        h: minH,
+        w: initialSize.width,
+        h: initialSize.height,
         minW,
         minH,
         maxW: fidgetProps.size.maxWidth,
@@ -598,7 +603,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
     // If specific coordinates provided, try that position
     if (x !== undefined && y !== undefined) {
-      if (isSpaceAvailable(x, y, minW, minH, { checkBoundaries: true })) {
+      if (
+        isSpaceAvailable(x, y, initialSize.width, initialSize.height, {
+          checkBoundaries: true,
+        })
+      ) {
         return createAndSaveFidget(x, y);
       }
       return false;
@@ -606,7 +615,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
     // If we have a target position, try to add there first
     if (targetPosition) {
-      const success = isSpaceAvailable(targetPosition.x, targetPosition.y, minW, minH, { checkBoundaries: true });
+      const success = isSpaceAvailable(
+        targetPosition.x,
+        targetPosition.y,
+        initialSize.width,
+        initialSize.height,
+        { checkBoundaries: true },
+      );
       setTargetPosition(null); // Clear target position after use
       if (success) {
         return createAndSaveFidget(targetPosition.x, targetPosition.y);
@@ -614,9 +629,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     }
 
     // Fall back to finding the first available space
-    for (let searchX = 0; searchX <= memoizedGridDetails.cols - minW; searchX++) {
-      for (let searchY = 0; searchY <= memoizedGridDetails.maxRows - minH; searchY++) {
-        if (isSpaceAvailable(searchX, searchY, minW, minH)) {
+    for (
+      let searchX = 0;
+      searchX <= memoizedGridDetails.cols - initialSize.width;
+      searchX++
+    ) {
+      for (
+        let searchY = 0;
+        searchY <= memoizedGridDetails.maxRows - initialSize.height;
+        searchY++
+      ) {
+        if (isSpaceAvailable(searchX, searchY, initialSize.width, initialSize.height)) {
           return createAndSaveFidget(searchX, searchY);
         }
       }

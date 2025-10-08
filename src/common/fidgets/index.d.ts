@@ -84,6 +84,10 @@ export type FidgetProperties<S extends FidgetSettings = FidgetSettings> = {
     minWidth: NumericRange<1, 36>;
     maxWidth: NumericRange<1, 36>;
   };
+  defaultSize?: {
+    width: NumericRange<1, 36>;
+    height: NumericRange<1, 36>;
+  };
 };
 
 export type FidgetRenderContext = {

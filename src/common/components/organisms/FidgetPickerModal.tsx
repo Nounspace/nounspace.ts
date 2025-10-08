@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useState, useEffect, useMemo, useCallb
 import { CompleteFidgets } from "@/fidgets";
 import { Card, CardContent } from "../atoms/card";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
+import { getInitialGridSize } from "@/common/fidgets/utils";
 import Modal from "../molecules/Modal";
 import { FidgetOptionsService } from "@/common/data/services/fidgetOptionsService";
 import { 
@@ -313,10 +314,11 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
                 "text/plain",
                 JSON.stringify(generateFidgetInstance(staticOption.fidgetType, fidgetModule)),
               );
+              const initialSize = getInitialGridSize(fidgetModule.properties);
               setExternalDraggedItem({
                 i: staticOption.fidgetType,
-                w: fidgetModule.properties.size.minWidth,
-                h: fidgetModule.properties.size.minHeight,
+                w: initialSize.width,
+                h: initialSize.height,
               });
             }
           }
