@@ -6,7 +6,10 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import { useAppStore } from "@/common/data/stores/app";
-import type { UpdatableSpaceConfig } from "@/common/data/stores/app/space/spaceStore";
+import type {
+  UpdatableDatabaseWritableSpaceSaveConfig,
+  UpdatableSpaceConfig,
+} from "@/common/data/stores/app/space/spaceStore";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
@@ -36,6 +39,13 @@ import {
   isProposalSpace,
   isChannelSpace,
 } from "@/common/types/spaceData";
+
+type ServerTabConfig = SpacePageData["config"] & {
+  isEditable?: boolean;
+  isPrivate?: boolean;
+};
+
+type SanitizableTabConfig = UpdatableSpaceConfig | ServerTabConfig;
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -537,17 +547,10 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
-  type SanitizableTabConfig =
-    | (Omit<SpaceConfig, "isEditable"> & {
-        isEditable?: boolean;
-        isPrivate?: boolean;
-      })
-    | UpdatableSpaceConfig;
-
   const sanitizeTabConfig = useCallback(
     (
       candidate?: SanitizableTabConfig,
-    ): SanitizableTabConfig | undefined => {
+    ): ServerTabConfig | undefined => {
       if (!candidate) {
         return undefined;
       }
@@ -576,7 +579,36 @@ export default function PublicSpace({
         return undefined;
       }
 
-      return cloneDeep(candidate);
+      const sanitized = cloneDeep(candidate) as ServerTabConfig;
+
+      const normalizedEntries = Object.entries(
+        sanitized.fidgetInstanceDatums ?? {},
+      ).map(([key, datum]) => {
+        const configWithData = {
+          ...datum.config,
+          data:
+            isPlainObject((datum as { config?: { data?: unknown } }).config?.data) &&
+            !isNil((datum as { config?: { data?: unknown } }).config?.data)
+              ? (datum as { config?: { data?: unknown } }).config?.data
+              : {},
+        };
+
+        return [
+          key,
+          {
+            ...datum,
+            config: configWithData,
+          },
+        ];
+      });
+
+      sanitized.fidgetInstanceDatums = Object.fromEntries(
+        normalizedEntries,
+      ) as ServerTabConfig["fidgetInstanceDatums"];
+
+      delete (sanitized as { isPrivate?: boolean }).isPrivate;
+
+      return sanitized;
     },
     [resolvedTabName],
   );
@@ -591,12 +623,42 @@ export default function PublicSpace({
     return sanitizeTabConfig(candidate);
   }, [hasMatchingSpace, currentConfig, resolvedTabName, sanitizeTabConfig]);
 
-  const fallbackConfig = useMemo(
-    () => cloneDeep(spacePageData.config),
+  const toSavableTabConfig = useCallback(
+    (
+      tabConfig: ServerTabConfig,
+    ): UpdatableDatabaseWritableSpaceSaveConfig => {
+      const cloned = cloneDeep(tabConfig);
+      const { isEditable: _ignoredEditable, ...rest } = cloned;
+
+      const normalizedEntries = Object.entries(
+        rest.fidgetInstanceDatums ?? {},
+      ).map(([key, datum]) => [
+        key,
+        {
+          ...datum,
+          config: {
+            settings: datum.config.settings,
+            editable: datum.config.editable,
+          },
+        },
+      ]);
+
+      return {
+        ...rest,
+        fidgetInstanceDatums: Object.fromEntries(
+          normalizedEntries,
+        ) as UpdatableDatabaseWritableSpaceSaveConfig["fidgetInstanceDatums"],
+      };
+    },
+    [],
+  );
+
+  const fallbackConfig = useMemo<ServerTabConfig>(
+    () => ({ ...cloneDeep(spacePageData.config) }),
     [spacePageData.config],
   );
 
-  const config = useMemo(
+  const config = useMemo<SpaceConfig>(
     () => ({
       ...(cachedTabConfig ?? fallbackConfig),
       isEditable,
@@ -838,8 +900,10 @@ export default function PublicSpace({
       );
     }
 
+    const sourceConfig = sanitized ?? fallbackConfig;
+
     const configToSave = {
-      ...(sanitized ?? fallbackConfig),
+      ...toSavableTabConfig(sourceConfig),
       isPrivate: false,
     };
 
@@ -851,6 +915,7 @@ export default function PublicSpace({
     getCurrentTabName,
     sanitizeTabConfig,
     fallbackConfig,
+    toSavableTabConfig,
   ]);
 
   // Tab switching function with proper memoization
@@ -887,7 +952,11 @@ export default function PublicSpace({
             );
           } else {
             await Promise.all([
-              saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
+              saveLocalSpaceTab(
+                currentSpaceId,
+                currentTabName,
+                toSavableTabConfig(resolvedConfig),
+              ),
               commitSpaceTab(
                 currentSpaceId,
                 currentTabName,
@@ -946,6 +1015,7 @@ export default function PublicSpace({
     config,
     setCurrentTabName,
     isMountedRef,
+    toSavableTabConfig,
   ]);
 
   // Debounce tab switching to prevent rapid clicks
@@ -1016,12 +1086,12 @@ export default function PublicSpace({
               return undefined;
             }
 
-            return saveLocalSpaceTab(
-              currentSpaceId,
-              oldName,
-              resolvedConfig,
-              newName,
-            );
+              return saveLocalSpaceTab(
+                currentSpaceId,
+                oldName,
+                toSavableTabConfig(resolvedConfig),
+                newName,
+              );
           }
         }
         return undefined;
