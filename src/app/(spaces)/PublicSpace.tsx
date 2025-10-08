@@ -563,15 +563,17 @@ export default function PublicSpace({
         return undefined;
       }
 
-      const { fidgetInstanceDatums, layoutDetails, theme } = candidate;
+      const { fidgetInstanceDatums, layoutDetails, theme } = candidate as {
+        fidgetInstanceDatums?: unknown;
+        layoutDetails?: unknown;
+        theme?: unknown;
+      };
 
-      const hasInvalidShape = (
-        fidgetInstanceDatums != null && !isPlainObject(fidgetInstanceDatums)
-      ) ||
+      if (
+        (fidgetInstanceDatums != null && !isPlainObject(fidgetInstanceDatums)) ||
         (layoutDetails != null && !isPlainObject(layoutDetails)) ||
-        (theme != null && !isPlainObject(theme));
-
-      if (hasInvalidShape) {
+        (theme != null && !isPlainObject(theme))
+      ) {
         console.warn(
           "Ignoring cached tab config because it is missing required plain-object fields",
           resolvedTabName,
@@ -579,36 +581,32 @@ export default function PublicSpace({
         return undefined;
       }
 
-      const sanitized = cloneDeep(candidate) as ServerTabConfig;
+      if (isPlainObject(fidgetInstanceDatums)) {
+        for (const [key, datum] of Object.entries(
+          fidgetInstanceDatums as Record<string, unknown>,
+        )) {
+          if (!isPlainObject(datum)) {
+            console.warn(
+              "Ignoring cached tab config because fidget datum is not a plain object",
+              resolvedTabName,
+              key,
+            );
+            return undefined;
+          }
 
-      const normalizedEntries = Object.entries(
-        sanitized.fidgetInstanceDatums ?? {},
-      ).map(([key, datum]) => {
-        const configWithData = {
-          ...datum.config,
-          data:
-            isPlainObject((datum as { config?: { data?: unknown } }).config?.data) &&
-            !isNil((datum as { config?: { data?: unknown } }).config?.data)
-              ? (datum as { config?: { data?: unknown } }).config?.data
-              : {},
-        };
+          const configValue = (datum as { config?: unknown }).config;
+          if (configValue != null && !isPlainObject(configValue)) {
+            console.warn(
+              "Ignoring cached tab config because fidget config is not a plain object",
+              resolvedTabName,
+              key,
+            );
+            return undefined;
+          }
+        }
+      }
 
-        return [
-          key,
-          {
-            ...datum,
-            config: configWithData,
-          },
-        ];
-      });
-
-      sanitized.fidgetInstanceDatums = Object.fromEntries(
-        normalizedEntries,
-      ) as ServerTabConfig["fidgetInstanceDatums"];
-
-      delete (sanitized as { isPrivate?: boolean }).isPrivate;
-
-      return sanitized;
+      return cloneDeep(candidate) as ServerTabConfig;
     },
     [resolvedTabName],
   );
@@ -622,36 +620,6 @@ export default function PublicSpace({
 
     return sanitizeTabConfig(candidate);
   }, [hasMatchingSpace, currentConfig, resolvedTabName, sanitizeTabConfig]);
-
-  const toSavableTabConfig = useCallback(
-    (
-      tabConfig: ServerTabConfig,
-    ): UpdatableDatabaseWritableSpaceSaveConfig => {
-      const cloned = cloneDeep(tabConfig);
-      const { isEditable: _ignoredEditable, ...rest } = cloned;
-
-      const normalizedEntries = Object.entries(
-        rest.fidgetInstanceDatums ?? {},
-      ).map(([key, datum]) => [
-        key,
-        {
-          ...datum,
-          config: {
-            settings: datum.config.settings,
-            editable: datum.config.editable,
-          },
-        },
-      ]);
-
-      return {
-        ...rest,
-        fidgetInstanceDatums: Object.fromEntries(
-          normalizedEntries,
-        ) as UpdatableDatabaseWritableSpaceSaveConfig["fidgetInstanceDatums"],
-      };
-    },
-    [],
-  );
 
   const fallbackConfig = useMemo<ServerTabConfig>(
     () => ({ ...cloneDeep(spacePageData.config) }),
@@ -901,11 +869,14 @@ export default function PublicSpace({
     }
 
     const sourceConfig = sanitized ?? fallbackConfig;
+    const rawConfig = cloneDeep(sourceConfig) as {
+      isEditable?: boolean;
+    } & UpdatableDatabaseWritableSpaceSaveConfig;
+    const { isEditable: _ignoredEditable, ...configToSave } = rawConfig;
 
-    const configToSave = {
-      ...toSavableTabConfig(sourceConfig),
-      isPrivate: false,
-    };
+    if (isNil(configToSave.isPrivate)) {
+      configToSave.isPrivate = false;
+    }
 
     saveLocalSpaceTab(currentSpaceId, currentTabName, configToSave);
   }, [
@@ -915,7 +886,6 @@ export default function PublicSpace({
     getCurrentTabName,
     sanitizeTabConfig,
     fallbackConfig,
-    toSavableTabConfig,
   ]);
 
   // Tab switching function with proper memoization
@@ -951,11 +921,20 @@ export default function PublicSpace({
               currentTabName,
             );
           } else {
+            const rawConfig = cloneDeep(resolvedConfig) as {
+              isEditable?: boolean;
+            } & UpdatableDatabaseWritableSpaceSaveConfig;
+            const { isEditable: _ignoredEditable, ...configToPersist } = rawConfig;
+
+            if (isNil(configToPersist.isPrivate)) {
+              configToPersist.isPrivate = false;
+            }
+
             await Promise.all([
               saveLocalSpaceTab(
                 currentSpaceId,
                 currentTabName,
-                toSavableTabConfig(resolvedConfig),
+                configToPersist,
               ),
               commitSpaceTab(
                 currentSpaceId,
@@ -1015,7 +994,6 @@ export default function PublicSpace({
     config,
     setCurrentTabName,
     isMountedRef,
-    toSavableTabConfig,
   ]);
 
   // Debounce tab switching to prevent rapid clicks
@@ -1086,12 +1064,21 @@ export default function PublicSpace({
               return undefined;
             }
 
-              return saveLocalSpaceTab(
-                currentSpaceId,
-                oldName,
-                toSavableTabConfig(resolvedConfig),
-                newName,
-              );
+            const rawConfig = cloneDeep(resolvedConfig) as {
+              isEditable?: boolean;
+            } & UpdatableDatabaseWritableSpaceSaveConfig;
+            const { isEditable: _ignoredEditable, ...configToPersist } = rawConfig;
+
+            if (isNil(configToPersist.isPrivate)) {
+              configToPersist.isPrivate = false;
+            }
+
+            return saveLocalSpaceTab(
+              currentSpaceId,
+              oldName,
+              configToPersist,
+              newName,
+            );
           }
         }
         return undefined;
