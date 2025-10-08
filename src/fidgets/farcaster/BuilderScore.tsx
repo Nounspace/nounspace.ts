@@ -51,7 +51,7 @@ const builderScoreProperties: FidgetProperties = {
     ...defaultStyleFields,
   ],
   size: {
-    minHeight: 3,
+    minHeight: 2,
     maxHeight: 36,
     minWidth: 3,
     maxWidth: 36,
