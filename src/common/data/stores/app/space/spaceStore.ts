@@ -4,7 +4,6 @@ import {
 } from "@/app/(spaces)/Space";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import { showTooltipError } from "@/common/lib/utils/showTooltipError";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
@@ -190,34 +189,48 @@ export const spaceStoreprofiles: SpaceState = {
   localSpaces: {},
 };
 
+const showTooltipError = (title: string, description: string) => {
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return;
+  }
+
+  const errorContainer = document.createElement("div");
+  errorContainer.style.position = "fixed";
+  errorContainer.style.top = "20px";
+  errorContainer.style.right = "20px";
+  errorContainer.style.zIndex = "9999";
+  errorContainer.style.backgroundColor = "#ef4444";
+  errorContainer.style.color = "white";
+  errorContainer.style.padding = "16px";
+  errorContainer.style.borderRadius = "6px";
+  errorContainer.style.boxShadow =
+    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
+  errorContainer.style.maxWidth = "400px";
+
+  const titleElement = document.createElement("h3");
+  titleElement.style.fontWeight = "bold";
+  titleElement.style.marginBottom = "4px";
+  titleElement.textContent = title;
+
+  const descriptionElement = document.createElement("p");
+  descriptionElement.textContent = description;
+
+  errorContainer.appendChild(titleElement);
+  errorContainer.appendChild(descriptionElement);
+  document.body.appendChild(errorContainer);
+
+  setTimeout(() => {
+    if (errorContainer.parentElement) {
+      errorContainer.parentElement.removeChild(errorContainer);
+    }
+  }, 4000);
+};
+
 // Add validation function
 const validateTabName = (tabName: string): string | null => {
   if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
     return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
   }
-  return null;
-};
-
-const ensureUniqueTabName = (
-  desiredName: string,
-  takenNames: Set<string>,
-): string | null => {
-  if (!takenNames.has(desiredName)) {
-    return desiredName;
-  }
-
-  let attempt = 1;
-  while (attempt <= 100) {
-    const candidate = `${desiredName} - ${attempt}`;
-    if (!takenNames.has(candidate)) {
-      const validationError = validateTabName(candidate);
-      if (!validationError) {
-        return candidate;
-      }
-    }
-    attempt += 1;
-  }
-
   return null;
 };
 
@@ -501,35 +514,15 @@ export const createSpaceStoreFunc = (
     }
 
     const localSpaceBefore = get().space.localSpaces[spaceId];
-    const remoteSpace = get().space.remoteSpaces[spaceId];
-    const reservedNames = new Set<string>();
-    if (localSpaceBefore) {
-      Object.keys(localSpaceBefore.tabs || {}).forEach((name) =>
-        reservedNames.add(name),
-      );
-      Object.keys(localSpaceBefore.changedNames || {}).forEach((name) =>
-        reservedNames.add(name),
-      );
-    }
-    if (remoteSpace) {
-      Object.keys(remoteSpace.tabs || {}).forEach((name) =>
-        reservedNames.add(name),
-      );
-    }
-
-    let finalTabName = trimmedTabName;
-    const resolvedUniqueName = ensureUniqueTabName(trimmedTabName, reservedNames);
-    if (!resolvedUniqueName) {
+    if (localSpaceBefore?.tabs?.[trimmedTabName]) {
       showTooltipError(
         "Tab Name In Use",
-        "We couldn't find a unique name for that tab. Please try a different name.",
+        "Another tab already has that name. Please choose a different one.",
       );
       const error = new Error("Duplicate tab name");
       (error as any).status = 400;
       throw error;
     }
-
-    finalTabName = resolvedUniqueName;
 
     if (isNil(initialConfig)) {
       initialConfig = INITIAL_SPACE_CONFIG_EMPTY;
@@ -557,18 +550,18 @@ export const createSpaceStoreFunc = (
         };
       }
 
-      draft.space.localSpaces[spaceId].tabs[finalTabName] = {
+      draft.space.localSpaces[spaceId].tabs[trimmedTabName] = {
         ...cloneDeep(initialConfig!),
         theme: {
           ...cloneDeep(initialConfig!.theme),
-          id: `${spaceId}-${finalTabName}-theme`,
-          name: `${spaceId}-${finalTabName}-theme`,
+          id: `${spaceId}-${trimmedTabName}-theme`,
+          name: `${spaceId}-${trimmedTabName}-theme`,
         },
         isPrivate: false,
         timestamp: moment().toISOString(),
       };
 
-      draft.space.localSpaces[spaceId].order.push(finalTabName);
+      draft.space.localSpaces[spaceId].order.push(trimmedTabName);
       const timestampNow = moment().toISOString();
       draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
       draft.space.localSpaces[spaceId].updatedAt = timestampNow;
@@ -576,14 +569,14 @@ export const createSpaceStoreFunc = (
     analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
     // Return the tabName immediately so UI can switch to it
-    const result = { tabName: finalTabName };
+    const result = { tabName: trimmedTabName };
 
     // Then make the remote API call in the background
     const unsignedRequest: UnsignedSpaceTabRegistration = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       timestamp: moment().toISOString(),
       spaceId,
-      tabName: finalTabName,
+      tabName: trimmedTabName,
       initialConfig,
       network,
     };
@@ -600,19 +593,19 @@ export const createSpaceStoreFunc = (
 
       // Create a signed file for the initial configuration
       const localCopy = cloneDeep(
-        get().space.localSpaces[spaceId].tabs[finalTabName],
+        get().space.localSpaces[spaceId].tabs[trimmedTabName],
       );
       const file = await get().account.createSignedFile(
         stringify(localCopy),
         "json",
-        { fileName: finalTabName },
+        { fileName: trimmedTabName },
       );
 
       // Commit both the order and the tab content immediately
       await Promise.all([
         get().space.commitSpaceOrderToDatabase(spaceId, network),
         axiosBackend.post(
-          `/api/space/registry/${spaceId}/tabs/${finalTabName}`,
+          `/api/space/registry/${spaceId}/tabs/${trimmedTabName}`,
           { ...file, network },
         ),
       ]);
@@ -622,7 +615,7 @@ export const createSpaceStoreFunc = (
       console.error("Failed to create space tab:", {
         error: e,
         spaceId,
-        tabName: finalTabName,
+        tabName: trimmedTabName,
         network,
         request: {
           identityPublicKey: unsignedRequest.identityPublicKey,
@@ -650,7 +643,7 @@ export const createSpaceStoreFunc = (
       if (axios.isAxiosError(e) && e.response?.status === 429) {
         console.warn("Rate limit hit, attempting retry after delay", {
           spaceId,
-          tabName: finalTabName,
+          tabName: trimmedTabName,
           network,
           retryAfter: e.response?.headers?.["retry-after"],
           rateLimitRemaining: e.response?.headers?.["x-ratelimit-remaining"],
@@ -669,7 +662,7 @@ export const createSpaceStoreFunc = (
           console.error("Failed to create space tab after retry:", {
             error: retryError,
             spaceId,
-            tabName: finalTabName,
+            tabName: trimmedTabName,
             network,
             originalError: e,
           });
