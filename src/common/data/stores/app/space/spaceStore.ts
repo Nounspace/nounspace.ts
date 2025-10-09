@@ -347,16 +347,17 @@ export const createSpaceStoreFunc = (
       ? cloneDeep(existingSpace.tabs[tabName])
       : undefined;
 
-    if (renameRequested && existingSpace) {
+    if (renameRequested && existingSpace && sanitizedNewName) {
+      const normalizedNewName = sanitizedNewName.toLowerCase();
+
       const duplicateName = previousOrder
         .filter((name) => name !== tabName)
-        .some(
-          (name) =>
-            name.toLowerCase() === (sanitizedNewName as string).toLowerCase(),
-        );
+        .some((name) => name.toLowerCase() === normalizedNewName);
 
-      const duplicateTabEntry =
-        sanitizedNewName in existingSpace.tabs && sanitizedNewName !== tabName;
+      const duplicateTabEntry = Object.prototype.hasOwnProperty.call(
+        existingSpace.tabs,
+        sanitizedNewName,
+      );
 
       if (duplicateName || duplicateTabEntry) {
         showTooltipError(
