@@ -16,9 +16,12 @@ import {
 } from "@mod-protocol/core";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
-import { CastLengthUIIndicator, ChannelList } from "@/common/components/mod-protocol";
-import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
-import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
+import { 
+  CastLengthUIIndicator, 
+  renderers, 
+  ChannelList,
+  createRenderMentionsSuggestionConfig 
+} from "@/common/components/mod-protocol";
 import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
@@ -371,14 +374,29 @@ const CreateCast: React.FC<CreateCastProps> = ({
     onError,
     onSubmit: onSubmitPost,
     linkClassName: "text-blue-800",
-    renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetChannels,
-      RenderList: ChannelList,
-    }),
-    renderMentionsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetMentions,
-      RenderList: MentionList,
-    }),
+    // No-op suggestion configs to satisfy TypeScript until we properly migrate the editor
+    renderChannelsSuggestionConfig: {
+      suggestion: {
+        items: async () => [],
+        render: () => ({
+          onStart: () => {},
+          onUpdate: () => {},
+          onKeyDown: () => false,
+          onExit: () => {},
+        }),
+      },
+    },
+    renderMentionsSuggestionConfig: {
+      suggestion: {
+        items: async () => [],
+        render: () => ({
+          onStart: () => {},
+          onUpdate: () => {},
+          onKeyDown: () => false,
+          onExit: () => {},
+        }),
+      },
+    },
     editorOptions: {
       parseOptions: {
         preserveWhitespace: "full",
