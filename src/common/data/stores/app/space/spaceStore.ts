@@ -1367,6 +1367,8 @@ export const createSpaceStoreFunc = (
                 tabs: draft.space.localSpaces[spaceInfo.spaceId]?.tabs || {},
                 order: draft.space.localSpaces[spaceInfo.spaceId]?.order || [],
                 changedNames: draft.space.localSpaces[spaceInfo.spaceId]?.changedNames || {},
+                pendingRenames:
+                  draft.space.localSpaces[spaceInfo.spaceId]?.pendingRenames || {},
                 contractAddress: spaceInfo.contractAddress,
                 network: spaceInfo.network,
                 fid: spaceInfo.fid,
