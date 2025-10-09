@@ -192,12 +192,31 @@ export default function PublicSpace({
   }, [matchingSpace]);
 
   const resolvedTabName = useMemo(() => {
-    if (hasMatchingSpace && currentConfig?.tabs?.[requestedTabName]) {
+    if (!hasMatchingSpace) {
+      return spacePageData.defaultTab;
+    }
+
+    if (!requestedTabName) {
+      return spacePageData.defaultTab;
+    }
+
+    const pendingOriginalName = matchingSpace?.changedNames?.[requestedTabName];
+    const tabExistsLocally = Boolean(currentConfig?.tabs?.[requestedTabName]);
+    const isInOrder = matchingSpace?.order?.includes(requestedTabName);
+
+    if (tabExistsLocally || isInOrder || pendingOriginalName) {
       return requestedTabName;
     }
 
     return spacePageData.defaultTab;
-  }, [currentConfig?.tabs, hasMatchingSpace, requestedTabName, spacePageData.defaultTab]);
+  }, [
+    currentConfig?.tabs,
+    hasMatchingSpace,
+    matchingSpace?.changedNames,
+    matchingSpace?.order,
+    requestedTabName,
+    spacePageData.defaultTab,
+  ]);
 
   useEffect(() => {
     const currentId = getCurrentSpaceId();
@@ -439,10 +458,14 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
+  const activeTabKey = resolvedTabName ?? spacePageData.defaultTab;
+  const pendingOriginalName = matchingSpace?.changedNames?.[activeTabKey];
+  const activeTabConfig =
+    currentConfig?.tabs?.[activeTabKey] ??
+    (pendingOriginalName ? currentConfig?.tabs?.[pendingOriginalName] : undefined);
+
   const config = {
-    ...(currentConfig?.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
-      ? currentConfig.tabs[getCurrentTabName() ?? spacePageData.defaultTab]
-      : { ...spacePageData.config }),
+    ...(activeTabConfig ? activeTabConfig : { ...spacePageData.config }),
     isEditable,
   };
 

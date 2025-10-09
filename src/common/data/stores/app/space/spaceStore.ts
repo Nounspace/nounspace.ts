@@ -4,6 +4,7 @@ import {
 } from "@/app/(spaces)/Space";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
+import { showTooltipError } from "@/common/lib/utils/showTooltipError";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
@@ -189,47 +190,34 @@ export const spaceStoreprofiles: SpaceState = {
   localSpaces: {},
 };
 
-// Function to show tooltip using React components
-const showTooltipError = (title: string, description: string) => {
-  // Only run in browser environment
-  if (typeof document === 'undefined' || typeof window === 'undefined') return;
-
-  // Create a simple error message element instead of using the tooltip components
-  const errorContainer = document.createElement('div');
-  errorContainer.style.position = 'fixed';
-  errorContainer.style.top = '20px';
-  errorContainer.style.right = '20px';
-  errorContainer.style.zIndex = '9999';
-  errorContainer.style.backgroundColor = '#ef4444'; // red-500
-  errorContainer.style.color = 'white';
-  errorContainer.style.padding = '16px';
-  errorContainer.style.borderRadius = '6px';
-  errorContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-  errorContainer.style.maxWidth = '400px';
-
-  const titleElement = document.createElement('h3');
-  titleElement.style.fontWeight = 'bold';
-  titleElement.style.marginBottom = '4px';
-  titleElement.textContent = title;
-
-  const descriptionElement = document.createElement('p');
-  descriptionElement.textContent = description;
-
-  errorContainer.appendChild(titleElement);
-  errorContainer.appendChild(descriptionElement);
-  document.body.appendChild(errorContainer);
-
-  // Remove after timeout
-  setTimeout(() => {
-    document.body.removeChild(errorContainer);
-  }, 4000);
-};
-
 // Add validation function
 const validateTabName = (tabName: string): string | null => {
   if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
     return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
   }
+  return null;
+};
+
+const ensureUniqueTabName = (
+  desiredName: string,
+  takenNames: Set<string>,
+): string | null => {
+  if (!takenNames.has(desiredName)) {
+    return desiredName;
+  }
+
+  let attempt = 1;
+  while (attempt <= 100) {
+    const candidate = `${desiredName} - ${attempt}`;
+    if (!takenNames.has(candidate)) {
+      const validationError = validateTabName(candidate);
+      if (!validationError) {
+        return candidate;
+      }
+    }
+    attempt += 1;
+  }
+
   return null;
 };
 
@@ -496,15 +484,15 @@ export const createSpaceStoreFunc = (
     initialConfig?: Omit<SpaceConfig, "isEditable">,
     network?: EtherScanChainName,
   ) => {
-    const sanitizedTabName = tabName.trim();
-    if (!sanitizedTabName) {
+    const trimmedTabName = tabName.trim();
+    if (!trimmedTabName) {
       const message = "Tab name cannot be empty.";
       showTooltipError("Invalid Tab Name", message);
       const error = new Error(message);
       (error as any).status = 400;
       throw error;
     }
-    const validationError = validateTabName(sanitizedTabName);
+    const validationError = validateTabName(trimmedTabName);
     if (validationError) {
       showTooltipError("Invalid Tab Name", validationError);
       const error = new Error(validationError);
@@ -529,15 +517,19 @@ export const createSpaceStoreFunc = (
       );
     }
 
-    if (reservedNames.has(sanitizedTabName)) {
+    let finalTabName = trimmedTabName;
+    const resolvedUniqueName = ensureUniqueTabName(trimmedTabName, reservedNames);
+    if (!resolvedUniqueName) {
       showTooltipError(
         "Tab Name In Use",
-        "Another tab already has that name. Please choose a different one.",
+        "We couldn't find a unique name for that tab. Please try a different name.",
       );
       const error = new Error("Duplicate tab name");
       (error as any).status = 400;
       throw error;
     }
+
+    finalTabName = resolvedUniqueName;
 
     if (isNil(initialConfig)) {
       initialConfig = INITIAL_SPACE_CONFIG_EMPTY;
@@ -565,18 +557,18 @@ export const createSpaceStoreFunc = (
         };
       }
 
-      draft.space.localSpaces[spaceId].tabs[sanitizedTabName] = {
+      draft.space.localSpaces[spaceId].tabs[finalTabName] = {
         ...cloneDeep(initialConfig!),
         theme: {
           ...cloneDeep(initialConfig!.theme),
-          id: `${spaceId}-${sanitizedTabName}-theme`,
-          name: `${spaceId}-${sanitizedTabName}-theme`,
+          id: `${spaceId}-${finalTabName}-theme`,
+          name: `${spaceId}-${finalTabName}-theme`,
         },
         isPrivate: false,
         timestamp: moment().toISOString(),
       };
 
-      draft.space.localSpaces[spaceId].order.push(sanitizedTabName);
+      draft.space.localSpaces[spaceId].order.push(finalTabName);
       const timestampNow = moment().toISOString();
       draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
       draft.space.localSpaces[spaceId].updatedAt = timestampNow;
@@ -584,14 +576,14 @@ export const createSpaceStoreFunc = (
     analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
     // Return the tabName immediately so UI can switch to it
-    const result = { tabName: sanitizedTabName };
+    const result = { tabName: finalTabName };
 
     // Then make the remote API call in the background
     const unsignedRequest: UnsignedSpaceTabRegistration = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       timestamp: moment().toISOString(),
       spaceId,
-      tabName: sanitizedTabName,
+      tabName: finalTabName,
       initialConfig,
       network,
     };
@@ -608,19 +600,19 @@ export const createSpaceStoreFunc = (
 
       // Create a signed file for the initial configuration
       const localCopy = cloneDeep(
-        get().space.localSpaces[spaceId].tabs[sanitizedTabName],
+        get().space.localSpaces[spaceId].tabs[finalTabName],
       );
       const file = await get().account.createSignedFile(
         stringify(localCopy),
         "json",
-        { fileName: sanitizedTabName },
+        { fileName: finalTabName },
       );
 
       // Commit both the order and the tab content immediately
       await Promise.all([
         get().space.commitSpaceOrderToDatabase(spaceId, network),
         axiosBackend.post(
-          `/api/space/registry/${spaceId}/tabs/${sanitizedTabName}`,
+          `/api/space/registry/${spaceId}/tabs/${finalTabName}`,
           { ...file, network },
         ),
       ]);
@@ -630,7 +622,7 @@ export const createSpaceStoreFunc = (
       console.error("Failed to create space tab:", {
         error: e,
         spaceId,
-        tabName: sanitizedTabName,
+        tabName: finalTabName,
         network,
         request: {
           identityPublicKey: unsignedRequest.identityPublicKey,
@@ -658,7 +650,7 @@ export const createSpaceStoreFunc = (
       if (axios.isAxiosError(e) && e.response?.status === 429) {
         console.warn("Rate limit hit, attempting retry after delay", {
           spaceId,
-          tabName: sanitizedTabName,
+          tabName: finalTabName,
           network,
           retryAfter: e.response?.headers?.["retry-after"],
           rateLimitRemaining: e.response?.headers?.["x-ratelimit-remaining"],
@@ -677,7 +669,7 @@ export const createSpaceStoreFunc = (
           console.error("Failed to create space tab after retry:", {
             error: retryError,
             spaceId,
-            tabName: sanitizedTabName,
+            tabName: finalTabName,
             network,
             originalError: e,
           });
