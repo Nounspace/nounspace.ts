@@ -346,20 +346,20 @@ export const createSpaceStoreFunc = (
     const previousTabSnapshot = existingSpace?.tabs?.[tabName]
       ? cloneDeep(existingSpace.tabs[tabName])
       : undefined;
+    const previousRemoteName = existingSpace?.changedNames?.[tabName] || tabName;
 
-    if (renameRequested && existingSpace && sanitizedNewName) {
+    if (renameRequested && sanitizedNewName && existingSpace) {
       const normalizedNewName = sanitizedNewName.toLowerCase();
 
-      const duplicateName = previousOrder
+      const duplicateInOrder = existingSpace.order
         .filter((name) => name !== tabName)
         .some((name) => name.toLowerCase() === normalizedNewName);
 
-      const duplicateTabEntry = Object.prototype.hasOwnProperty.call(
-        existingSpace.tabs,
-        sanitizedNewName,
-      );
+      const duplicateTabEntry = Object.keys(existingSpace.tabs || {})
+        .filter((name) => name !== tabName)
+        .some((name) => name.toLowerCase() === normalizedNewName);
 
-      if (duplicateName || duplicateTabEntry) {
+      if (duplicateInOrder || duplicateTabEntry) {
         showTooltipError(
           "Tab Name Already In Use",
           "Please choose a different name. Each tab must have a unique name.",
@@ -387,6 +387,73 @@ export const createSpaceStoreFunc = (
       localCopy.timestamp = newTimestamp;
     }
 
+    if (renameRequested && sanitizedNewName) {
+      set((draft) => {
+        if (!draft.space.localSpaces[spaceId]) {
+          draft.space.localSpaces[spaceId] = {
+            id: spaceId,
+            updatedAt: moment().toISOString(),
+            tabs: {},
+            order: [],
+            changedNames: {},
+            pendingRenames: {},
+          };
+        }
+
+        const spaceDraft = draft.space.localSpaces[spaceId];
+
+        if (!spaceDraft.pendingRenames) {
+          spaceDraft.pendingRenames = {};
+        }
+
+        const orderSnapshot =
+          previousOrder.length > 0
+            ? previousOrder
+            : spaceDraft.order.length > 0
+            ? cloneDeep(spaceDraft.order)
+            : Object.keys(spaceDraft.tabs || {});
+
+        if (spaceDraft.pendingRenames[tabName]) {
+          delete spaceDraft.pendingRenames[tabName];
+        }
+
+        spaceDraft.pendingRenames[sanitizedNewName] = {
+          previousName: tabName,
+          previousOrder: orderSnapshot,
+          tabSnapshot: previousTabSnapshot
+            ? cloneDeep(previousTabSnapshot)
+            : spaceDraft.tabs[tabName]
+            ? cloneDeep(spaceDraft.tabs[tabName])
+            : undefined,
+        };
+
+        spaceDraft.changedNames[sanitizedNewName] = previousRemoteName;
+        delete spaceDraft.changedNames[tabName];
+
+        spaceDraft.tabs[sanitizedNewName] = localCopy;
+        delete spaceDraft.tabs[tabName];
+
+        const renamedOrder = orderSnapshot.map((name) =>
+          name === tabName ? sanitizedNewName : name,
+        );
+
+        if (!renamedOrder.includes(sanitizedNewName)) {
+          renamedOrder.push(sanitizedNewName);
+        }
+
+        spaceDraft.order = renamedOrder;
+
+        const timestamp = moment().toISOString();
+        spaceDraft.orderUpdatedAt = timestamp;
+        spaceDraft.updatedAt = timestamp;
+
+        if (draft.currentSpace.currentTabName === tabName) {
+          draft.currentSpace.currentTabName = sanitizedNewName;
+        }
+      }, "saveLocalSpaceTabRename");
+      return;
+    }
+
     set((draft) => {
       if (!draft.space.localSpaces[spaceId]) {
         draft.space.localSpaces[spaceId] = {
@@ -400,47 +467,8 @@ export const createSpaceStoreFunc = (
       }
 
       const spaceDraft = draft.space.localSpaces[spaceId];
-
-      if (!spaceDraft.pendingRenames) {
-        spaceDraft.pendingRenames = {};
-      }
-
-      if (renameRequested && sanitizedNewName) {
-        spaceDraft.pendingRenames[sanitizedNewName] = {
-          previousName: tabName,
-          previousOrder:
-            previousOrder.length > 0
-              ? previousOrder
-              : cloneDeep(spaceDraft.order),
-          tabSnapshot: previousTabSnapshot
-            ? cloneDeep(previousTabSnapshot)
-            : undefined,
-        };
-
-        spaceDraft.changedNames[sanitizedNewName] = tabName;
-        delete spaceDraft.changedNames[tabName];
-
-        spaceDraft.tabs[sanitizedNewName] = localCopy;
-        delete spaceDraft.tabs[tabName];
-
-        const baseOrder =
-          previousOrder.length > 0 ? previousOrder : cloneDeep(spaceDraft.order);
-
-        spaceDraft.order = baseOrder.map((name) =>
-          name === tabName ? sanitizedNewName : name,
-        );
-
-        if (!spaceDraft.order.includes(sanitizedNewName)) {
-          spaceDraft.order.push(sanitizedNewName);
-        }
-
-        const timestamp = moment().toISOString();
-        spaceDraft.orderUpdatedAt = timestamp;
-        spaceDraft.updatedAt = timestamp;
-      } else {
-        spaceDraft.tabs[tabName] = localCopy;
-        spaceDraft.updatedAt = moment().toISOString();
-      }
+      spaceDraft.tabs[tabName] = localCopy;
+      spaceDraft.updatedAt = moment().toISOString();
     }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: async (
