@@ -213,7 +213,7 @@ function TabBar({
         renameTab(tabName, uniqueName);
         const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
         updateTabOrder(newOrder);
-        switchTabTo(uniqueName, false);
+        switchTabTo(uniqueName);
         commitTab(uniqueName);
         commitTabOrder();
         

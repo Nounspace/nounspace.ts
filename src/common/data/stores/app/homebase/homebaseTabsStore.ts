@@ -68,39 +68,37 @@ export const homeBaseStoreDefaults: HomeBaseTabStoreState = {
 
 // Function to show tooltip using DOM elements
 const showTooltipError = (title: string, description: string) => {
-  if (typeof document === "undefined" || typeof window === "undefined") {
-    return;
-  }
-
-  const errorContainer = document.createElement("div");
-  errorContainer.style.position = "fixed";
-  errorContainer.style.top = "20px";
-  errorContainer.style.right = "20px";
-  errorContainer.style.zIndex = "9999999999999999";
-  errorContainer.style.backgroundColor = "#ef4444";
-  errorContainer.style.color = "white";
-  errorContainer.style.padding = "16px";
-  errorContainer.style.borderRadius = "6px";
-  errorContainer.style.boxShadow =
-    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
-  errorContainer.style.maxWidth = "400px";
-
-  const titleElement = document.createElement("h3");
-  titleElement.style.fontWeight = "bold";
-  titleElement.style.marginBottom = "4px";
+  // Only run in browser environment
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  
+  // Create a simple error message element
+  const errorContainer = document.createElement('div');
+  errorContainer.style.position = 'fixed';
+  errorContainer.style.top = '20px';
+  errorContainer.style.right = '20px';
+  errorContainer.style.zIndex = '9999999999999999';
+  errorContainer.style.backgroundColor = '#ef4444';
+  errorContainer.style.color = 'white';
+  errorContainer.style.padding = '16px';
+  errorContainer.style.borderRadius = '6px';
+  errorContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+  errorContainer.style.maxWidth = '400px';
+  
+  const titleElement = document.createElement('h3');
+  titleElement.style.fontWeight = 'bold';
+  titleElement.style.marginBottom = '4px';
   titleElement.textContent = title;
-
-  const descriptionElement = document.createElement("p");
+  
+  const descriptionElement = document.createElement('p');
   descriptionElement.textContent = description;
-
+  
   errorContainer.appendChild(titleElement);
   errorContainer.appendChild(descriptionElement);
   document.body.appendChild(errorContainer);
-
+  
+  // Remove after timeout
   setTimeout(() => {
-    if (errorContainer.parentElement) {
-      errorContainer.parentElement.removeChild(errorContainer);
-    }
+    document.body.removeChild(errorContainer);
   }, 4000);
 };
 
@@ -376,49 +374,51 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   async renameTab(tabName, newName) {
-    // console.log('Renaming tab:', { from: tabName, to: newName });
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
 
     const sanitizedNewName = newName.trim();
+    if (!sanitizedNewName || sanitizedNewName === tabName) {
+      return;
+    }
 
     if (/[^a-zA-Z0-9-_ ]/.test(sanitizedNewName)) {
       showTooltipError(
         "Invalid Tab Name",
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.",
       );
 
       const error = new Error(
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.",
       );
       (error as any).status = 400;
       throw error;
     }
 
-    if (sanitizedNewName === tabName) {
-      return;
-    }
-
-    if (get().homebase.tabs[sanitizedNewName]) {
+    const existingTabs = get().homebase.tabOrdering.local;
+    const duplicateName = existingTabs
+      .filter((name) => name !== tabName)
+      .some((name) => name.toLowerCase() === sanitizedNewName.toLowerCase());
+    if (duplicateName) {
       showTooltipError(
-        "Tab Name In Use",
-        "Another tab already has that name. Please choose a different one."
+        "Tab Name Already In Use",
+        "Please choose a different name. Each tab must have a unique name.",
       );
-      const error = new Error("Duplicate tab name");
-      (error as any).status = 400;
-      throw error;
-    }
-
-    const previousTabData = get().homebase.tabs[tabName];
-    if (!previousTabData) {
-      console.warn('Attempted to rename missing tab', { tabName, sanitizedNewName });
       return;
     }
 
-    const previousOrdering = cloneDeep(get().homebase.tabOrdering.local);
+    const previousOrderLocal = cloneDeep(existingTabs);
+    const previousOrderRemote = cloneDeep(get().homebase.tabOrdering.remote);
+    const previousTabState = cloneDeep(get().homebase.tabs[tabName]);
 
-    // Optimistically update local state so UI routing and configs stay in sync while
-    // the network request completes.
+    if (!previousTabState) {
+      return;
+    }
+
+    const updatedOrder = previousOrderLocal.map((name) =>
+      name === tabName ? sanitizedNewName : name,
+    );
+
     set((draft) => {
       const tabEntry = draft.homebase.tabs[tabName];
       if (!tabEntry) {
@@ -427,11 +427,8 @@ export const createHomeBaseTabStoreFunc = (
 
       draft.homebase.tabs[sanitizedNewName] = tabEntry;
       delete draft.homebase.tabs[tabName];
-
-      draft.homebase.tabOrdering.local = draft.homebase.tabOrdering.local.map((name) =>
-        name === tabName ? sanitizedNewName : name,
-      );
-    }, "renameHomebaseTab:optimistic");
+      draft.homebase.tabOrdering.local = updatedOrder;
+    }, "renameHomebaseTabOptimistic");
 
     const req: UnsignedManageHomebaseTabsRequest = {
       publicKey,
@@ -449,22 +446,32 @@ export const createHomeBaseTabStoreFunc = (
         "/api/space/homebase/tabs",
         { request: signedReq },
       );
-      if (data.result !== "success") {
-        throw new Error('Rename request failed');
+      if (data.result === "success") {
+        return;
       }
-    } catch (e) {
-      console.error('Failed to rename tab:', e);
 
-      // Roll back optimistic update so UI reflects the previous state.
+      throw new Error("Failed to rename tab");
+    } catch (e) {
+      console.error("Failed to rename tab:", e);
+      showTooltipError(
+        "Error Renaming Tab",
+        "We couldn't rename this tab. Your original tab name has been restored.",
+      );
+
       set((draft) => {
         if (draft.homebase.tabs[sanitizedNewName]) {
           draft.homebase.tabs[tabName] = draft.homebase.tabs[sanitizedNewName];
           delete draft.homebase.tabs[sanitizedNewName];
         } else {
-          draft.homebase.tabs[tabName] = cloneDeep(previousTabData);
+          draft.homebase.tabs[tabName] = cloneDeep(previousTabState);
         }
-        draft.homebase.tabOrdering.local = previousOrdering;
-      }, "renameHomebaseTab:rollback");
+        draft.homebase.tabOrdering.local = previousOrderLocal;
+        draft.homebase.tabOrdering.remote = previousOrderRemote;
+
+        if (draft.currentSpace.currentTabName === sanitizedNewName) {
+          draft.currentSpace.currentTabName = tabName;
+        }
+      }, "renameHomebaseTabRollback");
     }
   },
   async loadHomebaseTab(tabName) {
