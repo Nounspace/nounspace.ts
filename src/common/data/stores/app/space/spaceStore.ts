@@ -239,51 +239,140 @@ export const createSpaceStoreFunc = (
 ): SpaceStore => ({
   ...spaceStoreprofiles,
   commitSpaceTabToDatabase: async (spaceId: string, tabName: string, network?: string, isInitialCommit = false) => {
-    const localCopy = cloneDeep(
-      get().space.localSpaces[spaceId].tabs[tabName],
+    const localSpace = get().space.localSpaces[spaceId];
+    if (!localSpace) {
+      return;
+    }
+
+    const tabConfig = localSpace.tabs[tabName];
+    if (!tabConfig) {
+      return;
+    }
+
+    const localCopy = cloneDeep(tabConfig);
+    const oldTabName = localSpace.changedNames[tabName] || tabName;
+    const isRename = oldTabName !== tabName;
+    const remoteSpace = get().space.remoteSpaces[spaceId];
+    const rollbackTabData = cloneDeep(
+      remoteSpace?.tabs?.[oldTabName] ?? localCopy,
     );
-    const oldTabName =
-      get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
-    
-    if (localCopy) {
-      const file = await get().account.createSignedFile(
-        stringify(localCopy),
-        "json",
-        { fileName: tabName },
+
+    const file = await get().account.createSignedFile(
+      stringify(localCopy),
+      "json",
+      { fileName: tabName },
+    );
+
+    try {
+      await axiosBackend.post(
+        `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
+        { ...file, network },
       );
-      
-      try {
-        await axiosBackend.post(
-          `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
-          { ...file, network },
-        );
-        
+
+      set((draft) => {
+        if (!draft.space.remoteSpaces[spaceId]) {
+          draft.space.remoteSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            id: spaceId,
+          } as CachedSpace;
+        }
+
+        const remoteDraft = draft.space.remoteSpaces[spaceId];
+        remoteDraft.tabs[tabName] = cloneDeep(localCopy);
+        const commitTimestamp = moment().toISOString();
+        remoteDraft.updatedAt = commitTimestamp;
+
+        if (isRename && oldTabName !== tabName) {
+          delete remoteDraft.tabs[oldTabName];
+          remoteDraft.order = (remoteDraft.order || []).map((name) =>
+            name === oldTabName ? tabName : name,
+          );
+          if (!remoteDraft.order.includes(tabName)) {
+            remoteDraft.order.push(tabName);
+          }
+          remoteDraft.orderUpdatedAt = commitTimestamp;
+        }
+
+        const localDraft = draft.space.localSpaces[spaceId];
+        localDraft.tabs[tabName] = cloneDeep(localCopy);
+        delete localDraft.changedNames[tabName];
+      }, "commitSpaceTabToDatabase");
+    } catch (e) {
+      console.error("Failed to commit space tab:", e);
+
+      if (isRename) {
         set((draft) => {
-          draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
-          delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
-          delete draft.space.localSpaces[spaceId].changedNames[tabName];
-        }, "commitSpaceTabToDatabase");
-      } catch (e) {
-        console.error("Failed to commit space tab:", e);
-        throw e;
+          const spaceDraft = draft.space.localSpaces[spaceId];
+          if (!spaceDraft) {
+            return;
+          }
+
+          spaceDraft.tabs[oldTabName] = cloneDeep(rollbackTabData);
+          delete spaceDraft.tabs[tabName];
+          spaceDraft.order = (spaceDraft.order || []).map((name) =>
+            name === tabName ? oldTabName : name,
+          );
+          if (!spaceDraft.order.includes(oldTabName)) {
+            spaceDraft.order.push(oldTabName);
+          }
+          const rollbackTimestamp = moment().toISOString();
+          spaceDraft.orderUpdatedAt = rollbackTimestamp;
+          spaceDraft.updatedAt = rollbackTimestamp;
+          delete spaceDraft.changedNames[tabName];
+        }, "commitSpaceTabToDatabase:rollback");
       }
+
+      throw e;
     }
   },
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
-    // Check if the new name contains special characters
-    if (newName && /[^a-zA-Z0-9-_ ]/.test(newName as string)) {
-      // Show error tooltip
-      showTooltipError(
-        "Invalid Tab Name",
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
+    const sanitizedNewName =
+      typeof newName === "string" ? newName.trim() : undefined;
 
-      // Log error but don't crash the app
-      console.error("Invalid tab name characters:", newName);
-      
-      // Wait a bit to ensure tooltip shows, then exit
-      setTimeout(() => {}, 100);
-      return; // Exit safely instead of throwing
+    if (sanitizedNewName && sanitizedNewName.length > 0) {
+      const validationError = validateTabName(sanitizedNewName);
+      if (validationError) {
+        showTooltipError("Invalid Tab Name", validationError);
+        console.error("Invalid tab name characters:", sanitizedNewName);
+        return;
+      }
+    } else if (typeof newName === "string" && newName.trim().length === 0) {
+      // Treat empty string as no-op rename
+      return;
+    }
+
+    const localSpace = get().space.localSpaces[spaceId];
+    const remoteSpace = get().space.remoteSpaces[spaceId];
+    const originalTabName = localSpace?.changedNames?.[tabName] || tabName;
+    const isRenaming =
+      !!sanitizedNewName && sanitizedNewName.length > 0 && sanitizedNewName !== tabName;
+
+    if (isRenaming) {
+      const reservedNames = new Set<string>();
+      if (localSpace) {
+        Object.keys(localSpace.tabs || {}).forEach((name) => {
+          if (name !== tabName) reservedNames.add(name);
+        });
+        Object.keys(localSpace.changedNames || {}).forEach((name) => {
+          if (name !== tabName) reservedNames.add(name);
+        });
+      }
+      if (remoteSpace) {
+        Object.keys(remoteSpace.tabs || {}).forEach((name) => {
+          if (name !== originalTabName) reservedNames.add(name);
+        });
+      }
+
+      if (reservedNames.has(sanitizedNewName)) {
+        showTooltipError(
+          "Tab Name In Use",
+          "Another tab already has that name. Please choose a different one.",
+        );
+        console.error("Duplicate tab name attempted:", sanitizedNewName);
+        return;
+      }
     }
 
     // console.log("NewConfig", config);
@@ -321,11 +410,31 @@ export const createSpaceStoreFunc = (
           changedNames: {},
         };
       }
-      
-      if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
-        draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
-        draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
-        delete draft.space.localSpaces[spaceId].tabs[tabName];
+
+      if (isRenaming && sanitizedNewName) {
+        const spaceDraft = draft.space.localSpaces[spaceId];
+        const existingOriginalName =
+          spaceDraft.changedNames[tabName] || tabName;
+
+        if (spaceDraft.changedNames[tabName]) {
+          delete spaceDraft.changedNames[tabName];
+        }
+
+        delete spaceDraft.changedNames[sanitizedNewName];
+
+        if (sanitizedNewName !== existingOriginalName) {
+          spaceDraft.changedNames[sanitizedNewName] = existingOriginalName;
+        }
+
+        spaceDraft.tabs[sanitizedNewName] = localCopy;
+        delete spaceDraft.tabs[tabName];
+        spaceDraft.order = (spaceDraft.order || []).map((name) =>
+          name === tabName ? sanitizedNewName : name,
+        );
+        if (!spaceDraft.order.includes(sanitizedNewName)) {
+          spaceDraft.order.push(sanitizedNewName);
+        }
+        spaceDraft.orderUpdatedAt = moment().toISOString();
       } else {
         draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
       }
@@ -387,17 +496,63 @@ export const createSpaceStoreFunc = (
     initialConfig?: Omit<SpaceConfig, "isEditable">,
     network?: EtherScanChainName,
   ) => {
-    // Validate the tab name before proceeding
-    const validationError = validateTabName(tabName);
+    const sanitizedTabName = tabName.trim();
+    if (!sanitizedTabName) {
+      const message = "Tab name cannot be empty.";
+      showTooltipError("Invalid Tab Name", message);
+      const error = new Error(message);
+      (error as any).status = 400;
+      throw error;
+    }
+    const validationError = validateTabName(sanitizedTabName);
     if (validationError) {
-      console.error("Invalid tab name:", tabName, validationError);
-      // Use a safe fallback name instead of throwing
-      tabName = `Tab ${Date.now()}`;
+      showTooltipError("Invalid Tab Name", validationError);
+      const error = new Error(validationError);
+      (error as any).status = 400;
+      throw error;
+    }
+
+    const localSpaceBefore = get().space.localSpaces[spaceId];
+    const remoteSpace = get().space.remoteSpaces[spaceId];
+    const reservedNames = new Set<string>();
+    if (localSpaceBefore) {
+      Object.keys(localSpaceBefore.tabs || {}).forEach((name) =>
+        reservedNames.add(name),
+      );
+      Object.keys(localSpaceBefore.changedNames || {}).forEach((name) =>
+        reservedNames.add(name),
+      );
+    }
+    if (remoteSpace) {
+      Object.keys(remoteSpace.tabs || {}).forEach((name) =>
+        reservedNames.add(name),
+      );
+    }
+
+    if (reservedNames.has(sanitizedTabName)) {
+      showTooltipError(
+        "Tab Name In Use",
+        "Another tab already has that name. Please choose a different one.",
+      );
+      const error = new Error("Duplicate tab name");
+      (error as any).status = 400;
+      throw error;
     }
 
     if (isNil(initialConfig)) {
       initialConfig = INITIAL_SPACE_CONFIG_EMPTY;
     }
+
+    const previousLocalSpace = cloneDeep(localSpaceBefore);
+    const rollback = () => {
+      set((draft) => {
+        if (previousLocalSpace) {
+          draft.space.localSpaces[spaceId] = previousLocalSpace;
+        } else {
+          delete draft.space.localSpaces[spaceId];
+        }
+      }, "createSpaceTab:rollback");
+    };
 
     set((draft) => {
       if (isUndefined(draft.space.localSpaces[spaceId])) {
@@ -410,18 +565,18 @@ export const createSpaceStoreFunc = (
         };
       }
 
-      draft.space.localSpaces[spaceId].tabs[tabName] = {
+      draft.space.localSpaces[spaceId].tabs[sanitizedTabName] = {
         ...cloneDeep(initialConfig!),
         theme: {
           ...cloneDeep(initialConfig!.theme),
-          id: `${spaceId}-${tabName}-theme`,
-          name: `${spaceId}-${tabName}-theme`,
+          id: `${spaceId}-${sanitizedTabName}-theme`,
+          name: `${spaceId}-${sanitizedTabName}-theme`,
         },
         isPrivate: false,
         timestamp: moment().toISOString(),
       };
 
-      draft.space.localSpaces[spaceId].order.push(tabName);
+      draft.space.localSpaces[spaceId].order.push(sanitizedTabName);
       const timestampNow = moment().toISOString();
       draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
       draft.space.localSpaces[spaceId].updatedAt = timestampNow;
@@ -429,14 +584,14 @@ export const createSpaceStoreFunc = (
     analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
     // Return the tabName immediately so UI can switch to it
-    const result = { tabName };
+    const result = { tabName: sanitizedTabName };
 
     // Then make the remote API call in the background
     const unsignedRequest: UnsignedSpaceTabRegistration = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       timestamp: moment().toISOString(),
       spaceId,
-      tabName,
+      tabName: sanitizedTabName,
       initialConfig,
       network,
     };
@@ -450,63 +605,67 @@ export const createSpaceStoreFunc = (
         `/api/space/registry/${spaceId}/tabs`,
         signedRequest,
       );
-      
+
       // Create a signed file for the initial configuration
-      const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+      const localCopy = cloneDeep(
+        get().space.localSpaces[spaceId].tabs[sanitizedTabName],
+      );
       const file = await get().account.createSignedFile(
         stringify(localCopy),
         "json",
-        { fileName: tabName },
+        { fileName: sanitizedTabName },
       );
-      
+
       // Commit both the order and the tab content immediately
       await Promise.all([
         get().space.commitSpaceOrderToDatabase(spaceId, network),
         axiosBackend.post(
-          `/api/space/registry/${spaceId}/tabs/${tabName}`,
+          `/api/space/registry/${spaceId}/tabs/${sanitizedTabName}`,
           { ...file, network },
-        )
+        ),
       ]);
-      
+
       return result;
     } catch (e) {
       console.error("Failed to create space tab:", {
         error: e,
         spaceId,
-        tabName,
+        tabName: sanitizedTabName,
         network,
         request: {
           identityPublicKey: unsignedRequest.identityPublicKey,
           timestamp: unsignedRequest.timestamp,
           initialConfig: initialConfig,
-          network: network
+          network: network,
         },
-        response: axios.isAxiosError(e) ? {
-          status: e.response?.status,
-          statusText: e.response?.statusText,
-          data: e.response?.data,
-          headers: e.response?.headers
-        } : null,
+        response: axios.isAxiosError(e)
+          ? {
+              status: e.response?.status,
+              statusText: e.response?.statusText,
+              data: e.response?.data,
+              headers: e.response?.headers,
+            }
+          : null,
         stack: e instanceof Error ? e.stack : undefined,
         localState: {
           tabs: get().space.localSpaces[spaceId]?.tabs,
           order: get().space.localSpaces[spaceId]?.order,
-          changedNames: get().space.localSpaces[spaceId]?.changedNames
-        }
+          changedNames: get().space.localSpaces[spaceId]?.changedNames,
+        },
       });
-      
+
       // Check if it's a rate limit error
       if (axios.isAxiosError(e) && e.response?.status === 429) {
         console.warn("Rate limit hit, attempting retry after delay", {
           spaceId,
-          tabName,
+          tabName: sanitizedTabName,
           network,
-          retryAfter: e.response?.headers?.['retry-after'],
-          rateLimitRemaining: e.response?.headers?.['x-ratelimit-remaining']
+          retryAfter: e.response?.headers?.["retry-after"],
+          rateLimitRemaining: e.response?.headers?.["x-ratelimit-remaining"],
         });
-        
+
         // If it's a rate limit error, we'll retry after a delay
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         try {
           await axiosBackend.post<RegisterNewSpaceTabResponse>(
             `/api/space/registry/${spaceId}/tabs`,
@@ -518,27 +677,18 @@ export const createSpaceStoreFunc = (
           console.error("Failed to create space tab after retry:", {
             error: retryError,
             spaceId,
-            tabName,
+            tabName: sanitizedTabName,
             network,
-            originalError: e
+            originalError: e,
           });
-          // If retry fails, we'll keep the local state but show an error
-          throw new Error("Failed to create tab due to rate limiting. Please try again in a few seconds.");
+          rollback();
+          throw new Error(
+            "Failed to create tab due to rate limiting. Please try again in a few seconds.",
+          );
         }
       }
-      
-      // For other errors, roll back local changes
-      console.error("Rolling back local changes due to error:", {
-        error: e,
-        spaceId,
-        tabName,
-        network,
-        localState: {
-          tabs: get().space.localSpaces[spaceId]?.tabs,
-          order: get().space.localSpaces[spaceId]?.order
-        }
-      });
-      
+
+      rollback();
       throw e; // Re-throw to allow error handling in the UI
     }
   },

@@ -378,12 +378,14 @@ export const createHomeBaseTabStoreFunc = (
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
 
-    if (/[^a-zA-Z0-9-_ ]/.test(newName)) {
+    const sanitizedNewName = newName.trim();
+
+    if (/[^a-zA-Z0-9-_ ]/.test(sanitizedNewName)) {
       showTooltipError(
-        "Invalid Tab Name", 
+        "Invalid Tab Name",
         "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
       );
-      
+
       const error = new Error(
         "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
       );
@@ -391,31 +393,76 @@ export const createHomeBaseTabStoreFunc = (
       throw error;
     }
 
+    if (sanitizedNewName === tabName) {
+      return;
+    }
+
+    if (get().homebase.tabs[sanitizedNewName]) {
+      showTooltipError(
+        "Tab Name In Use",
+        "Another tab already has that name. Please choose a different one."
+      );
+      const error = new Error("Duplicate tab name");
+      (error as any).status = 400;
+      throw error;
+    }
+
+    const previousTabData = get().homebase.tabs[tabName];
+    if (!previousTabData) {
+      console.warn('Attempted to rename missing tab', { tabName, sanitizedNewName });
+      return;
+    }
+
+    const previousOrdering = cloneDeep(get().homebase.tabOrdering.local);
+
+    // Optimistically update local state so UI routing and configs stay in sync while
+    // the network request completes.
+    set((draft) => {
+      const tabEntry = draft.homebase.tabs[tabName];
+      if (!tabEntry) {
+        return;
+      }
+
+      draft.homebase.tabs[sanitizedNewName] = tabEntry;
+      delete draft.homebase.tabs[tabName];
+
+      draft.homebase.tabOrdering.local = draft.homebase.tabOrdering.local.map((name) =>
+        name === tabName ? sanitizedNewName : name,
+      );
+    }, "renameHomebaseTab:optimistic");
+
     const req: UnsignedManageHomebaseTabsRequest = {
       publicKey,
       type: "rename",
       tabName,
-      newName,
+      newName: sanitizedNewName,
     };
     const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
+
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
         { request: signedReq },
       );
-      if (data.result === "success") {
-        // console.log('Successfully renamed tab:', { from: tabName, to: newName });
-        const currentTabData = get().homebase.tabs[tabName];
-        set((draft) => {
-          delete draft.homebase.tabs[tabName];
-          draft.homebase.tabs[newName] = currentTabData;
-        }, "renameHomebaseTab");
+      if (data.result !== "success") {
+        throw new Error('Rename request failed');
       }
     } catch (e) {
       console.error('Failed to rename tab:', e);
+
+      // Roll back optimistic update so UI reflects the previous state.
+      set((draft) => {
+        if (draft.homebase.tabs[sanitizedNewName]) {
+          draft.homebase.tabs[tabName] = draft.homebase.tabs[sanitizedNewName];
+          delete draft.homebase.tabs[sanitizedNewName];
+        } else {
+          draft.homebase.tabs[tabName] = cloneDeep(previousTabData);
+        }
+        draft.homebase.tabOrdering.local = previousOrdering;
+      }, "renameHomebaseTab:rollback");
     }
   },
   async loadHomebaseTab(tabName) {
