@@ -135,12 +135,6 @@ interface SpaceActions {
     config: UpdatableDatabaseWritableSpaceSaveConfig,
     newName?: string,
   ) => Promise<void>;
-  renameSpaceTab: (
-    spaceId: string,
-    tabName: string,
-    newName: string,
-    network?: EtherScanChainName,
-  ) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
   loadSpaceTabOrder: (spaceId: string) => Promise<void>;
   loadSpaceTab: (
@@ -327,133 +321,6 @@ export const createSpaceStoreFunc = (
       }
     }
   },
-  renameSpaceTab: async (spaceId, tabName, newName, _network) => {
-    const sanitizedNewName = newName.trim();
-
-    if (!sanitizedNewName || sanitizedNewName === tabName) {
-      return;
-    }
-
-    const validationError = validateTabName(sanitizedNewName);
-    if (validationError) {
-      showTooltipError("Invalid Tab Name", validationError);
-      console.error("Invalid tab name characters:", sanitizedNewName);
-      return;
-    }
-
-    const existingSpace = get().space.localSpaces[spaceId];
-
-    if (!existingSpace) {
-      console.warn("Attempted to rename tab in unknown space", {
-        spaceId,
-        tabName,
-        newName,
-      });
-      return;
-    }
-
-    const normalizedNewName = sanitizedNewName.toLowerCase();
-
-    const duplicateInOrder = existingSpace.order
-      .filter((name) => name !== tabName)
-      .some((name) => name.toLowerCase() === normalizedNewName);
-
-    const duplicateTabEntry = Object.keys(existingSpace.tabs || {})
-      .filter((name) => name !== tabName)
-      .some((name) => name.toLowerCase() === normalizedNewName);
-
-    if (duplicateInOrder || duplicateTabEntry) {
-      showTooltipError(
-        "Tab Name Already In Use",
-        "Please choose a different name. Each tab must have a unique name.",
-      );
-      return;
-    }
-
-    const originalTabConfig = existingSpace.tabs?.[tabName];
-
-    if (!originalTabConfig) {
-      console.error("Attempted to rename missing tab", {
-        spaceId,
-        tabName,
-        newName,
-      });
-      return;
-    }
-
-    const orderSnapshot = existingSpace.order.length
-      ? cloneDeep(existingSpace.order)
-      : Object.keys(existingSpace.tabs || {});
-
-    const previousRemoteName =
-      existingSpace.changedNames?.[tabName] || tabName;
-
-    const newTimestamp = moment().toISOString();
-    const renamedConfig = cloneDeep(originalTabConfig);
-    renamedConfig.timestamp = newTimestamp;
-
-    set((draft) => {
-      const spaceDraft = draft.space.localSpaces[spaceId];
-      if (!spaceDraft) {
-        return;
-      }
-
-      if (!spaceDraft.pendingRenames) {
-        spaceDraft.pendingRenames = {};
-      }
-
-      if (spaceDraft.pendingRenames[tabName]) {
-        delete spaceDraft.pendingRenames[tabName];
-      }
-
-      spaceDraft.pendingRenames[sanitizedNewName] = {
-        previousName: tabName,
-        previousOrder: cloneDeep(orderSnapshot),
-        tabSnapshot: cloneDeep(originalTabConfig),
-      };
-
-      spaceDraft.changedNames[sanitizedNewName] = previousRemoteName;
-      delete spaceDraft.changedNames[tabName];
-
-      spaceDraft.tabs[sanitizedNewName] = renamedConfig;
-      delete spaceDraft.tabs[tabName];
-
-      const renamedOrder = orderSnapshot.map((name) =>
-        name === tabName ? sanitizedNewName : name,
-      );
-
-      if (!renamedOrder.includes(sanitizedNewName)) {
-        renamedOrder.push(sanitizedNewName);
-      }
-
-      spaceDraft.order = renamedOrder;
-
-      spaceDraft.updatedAt = newTimestamp;
-      spaceDraft.orderUpdatedAt = newTimestamp;
-
-      if (draft.currentSpace.currentTabName === tabName) {
-        draft.currentSpace.currentTabName = sanitizedNewName;
-      }
-    }, "renameSpaceTab");
-
-    const resolvedNetwork =
-      _network ??
-      (existingSpace.network ?? undefined) ??
-      (get().space.remoteSpaces[spaceId]?.network ?? undefined);
-
-    const commitPromise = get().space.commitSpaceTabToDatabase(
-      spaceId,
-      sanitizedNewName,
-      resolvedNetwork,
-    );
-
-    if (commitPromise) {
-      commitPromise.catch((error) => {
-        console.error("Failed to persist public space tab rename:", error);
-      });
-    }
-
-  },
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
     const sanitizedNewName =
       typeof newName === "string" ? newName.trim() : undefined;
@@ -463,18 +330,52 @@ export const createSpaceStoreFunc = (
 
     const existingSpace = get().space.localSpaces[spaceId];
 
-    if (renameRequested && sanitizedNewName && existingSpace) {
-      await get().space.renameSpaceTab(
+    if (renameRequested && !existingSpace) {
+      console.warn("Attempted to rename tab in unknown space", {
         spaceId,
         tabName,
-        sanitizedNewName,
-        existingSpace.network as EtherScanChainName | undefined,
-      );
+        newName,
+      });
       return;
     }
 
-    let localCopy;
+    if (renameRequested && sanitizedNewName) {
+      const validationError = validateTabName(sanitizedNewName);
+      if (validationError) {
+        showTooltipError("Invalid Tab Name", validationError);
+        console.error("Invalid tab name characters:", sanitizedNewName);
+        return;
+      }
+
+      const normalizedNewName = sanitizedNewName.toLowerCase();
+      const duplicateInOrder = (existingSpace?.order || [])
+        .filter((name) => name !== tabName)
+        .some((name) => name.toLowerCase() === normalizedNewName);
+
+      const duplicateTabEntry = Object.keys(existingSpace?.tabs || {})
+        .filter((name) => name !== tabName)
+        .some((name) => name.toLowerCase() === normalizedNewName);
+
+      if (duplicateInOrder || duplicateTabEntry) {
+        showTooltipError(
+          "Tab Name Already In Use",
+          "Please choose a different name. Each tab must have a unique name.",
+        );
+        return;
+      }
+
+      if (!existingSpace?.tabs?.[tabName]) {
+        console.error("Attempted to rename missing tab", {
+          spaceId,
+          tabName,
+          newName,
+        });
+        return;
+      }
+    }
+
     const newTimestamp = moment().toISOString();
+    let localCopy;
 
     if (!existingSpace?.tabs?.[tabName]) {
       localCopy = {
@@ -492,6 +393,21 @@ export const createSpaceStoreFunc = (
       localCopy.timestamp = newTimestamp;
     }
 
+    const orderSnapshot =
+      renameRequested && existingSpace
+        ? existingSpace.order.length
+          ? cloneDeep(existingSpace.order)
+          : Object.keys(existingSpace.tabs || {})
+        : undefined;
+
+    const previousRemoteName =
+      renameRequested && existingSpace
+        ? existingSpace.changedNames?.[tabName] || tabName
+        : undefined;
+
+    const originalTabConfig =
+      renameRequested && existingSpace ? existingSpace.tabs?.[tabName] : undefined;
+
     set((draft) => {
       if (!draft.space.localSpaces[spaceId]) {
         draft.space.localSpaces[spaceId] = {
@@ -505,9 +421,77 @@ export const createSpaceStoreFunc = (
       }
 
       const spaceDraft = draft.space.localSpaces[spaceId];
-      spaceDraft.tabs[tabName] = localCopy;
-      spaceDraft.updatedAt = moment().toISOString();
+
+      if (renameRequested && sanitizedNewName) {
+        if (!spaceDraft.pendingRenames) {
+          spaceDraft.pendingRenames = {};
+        }
+
+        if (spaceDraft.pendingRenames[tabName]) {
+          delete spaceDraft.pendingRenames[tabName];
+        }
+
+        const baselineOrder = orderSnapshot
+          ? cloneDeep(orderSnapshot)
+          : spaceDraft.order.length
+          ? cloneDeep(spaceDraft.order)
+          : Object.keys(spaceDraft.tabs || {});
+
+        const tabSnapshotSource =
+          originalTabConfig ?? spaceDraft.tabs[tabName];
+
+        spaceDraft.pendingRenames[sanitizedNewName] = {
+          previousName: tabName,
+          previousOrder: cloneDeep(baselineOrder),
+          tabSnapshot: tabSnapshotSource
+            ? cloneDeep(tabSnapshotSource)
+            : undefined,
+        };
+
+        spaceDraft.changedNames[sanitizedNewName] = previousRemoteName || tabName;
+        delete spaceDraft.changedNames[tabName];
+
+        spaceDraft.tabs[sanitizedNewName] = cloneDeep(localCopy);
+        delete spaceDraft.tabs[tabName];
+
+        const renamedOrder = baselineOrder.map((name) =>
+          name === tabName ? sanitizedNewName : name,
+        );
+
+        if (!renamedOrder.includes(sanitizedNewName)) {
+          renamedOrder.push(sanitizedNewName);
+        }
+
+        spaceDraft.order = renamedOrder;
+        spaceDraft.updatedAt = newTimestamp;
+        spaceDraft.orderUpdatedAt = newTimestamp;
+
+        if (draft.currentSpace.currentTabName === tabName) {
+          draft.currentSpace.currentTabName = sanitizedNewName;
+        }
+      } else {
+        spaceDraft.tabs[tabName] = localCopy;
+        spaceDraft.updatedAt = newTimestamp;
+      }
     }, "saveLocalSpaceTab");
+
+    if (renameRequested && sanitizedNewName) {
+      const resolvedNetwork =
+        (existingSpace?.network ?? undefined) ??
+        (get().space.remoteSpaces[spaceId]?.network ?? undefined);
+
+      const commitPromise = get().space.commitSpaceTabToDatabase(
+        spaceId,
+        sanitizedNewName,
+        resolvedNetwork,
+      );
+
+      if (commitPromise) {
+        commitPromise.catch((error) => {
+          console.error("Failed to persist public space tab rename:", error);
+        });
+      }
+    }
   },
   deleteSpaceTab: async (
     spaceId,
