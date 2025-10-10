@@ -56,6 +56,7 @@ export default function PublicSpace({
     remoteSpaces,
     loadSpaceTab,
     saveLocalSpaceTab,
+    renameSpaceTab,
     commitSpaceTab,
     loadSpaceTabOrder,
     updateSpaceTabOrder,
@@ -81,6 +82,7 @@ export default function PublicSpace({
     createSpaceTab: state.space.createSpaceTab,
     deleteSpaceTab: state.space.deleteSpaceTab,
     saveLocalSpaceTab: state.space.saveLocalSpaceTab,
+    renameSpaceTab: state.space.renameSpaceTab,
     commitSpaceTab: state.space.commitSpaceTabToDatabase,
     loadSpaceTabOrder: state.space.loadSpaceTabOrder,
     updateSpaceTabOrder: state.space.updateLocalSpaceOrder,
@@ -825,11 +827,14 @@ export default function PublicSpace({
         }
 
         const resolvedConfig = await config;
-        return saveLocalSpaceTab(
+        return renameSpaceTab(
           currentSpaceId,
           oldName,
-          resolvedConfig,
           newName,
+          resolvedConfig,
+          isTokenSpace(spacePageData)
+            ? (spacePageData.tokenData?.network as EtherScanChainName)
+            : undefined,
         );
       }}
       commitTab={async (tabName) => {

@@ -25,7 +25,7 @@ interface TabBarProps {
   switchTabTo: (tabName: string, shouldSave?: boolean) => void;
   deleteTab: (tabName: string) => void;
   createTab: (tabName: string) => Promise<{ tabName: string } | undefined>;
-  renameTab: (tabName: string, newName: string) => void;
+  renameTab: (tabName: string, newName: string) => Promise<void> | void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
@@ -210,7 +210,7 @@ function TabBar({
           return;
         }
         
-        renameTab(tabName, uniqueName);
+        await renameTab(tabName, uniqueName);
         const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
         updateTabOrder(newOrder);
         switchTabTo(uniqueName);
