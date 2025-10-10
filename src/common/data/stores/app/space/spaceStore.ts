@@ -419,8 +419,9 @@ export const createSpaceStoreFunc = (
       }
     }, "renameSpaceTabOptimistic");
 
-    const resolvedNetwork =
+    const resolvedNetworkCandidate =
       network ?? existingSpace.network ?? get().space.remoteSpaces[spaceId]?.network;
+    const resolvedNetwork = resolvedNetworkCandidate ?? undefined;
 
     try {
       const commitPromise = get().space.commitSpaceTabToDatabase(
