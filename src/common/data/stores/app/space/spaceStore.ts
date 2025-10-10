@@ -359,7 +359,9 @@ export const createSpaceStoreFunc = (
         "Tab Name Already In Use",
         "Please choose a different name. Each tab must have a unique name.",
       );
-      return;
+      const error = new Error("DuplicateTabName");
+      error.name = "DuplicateTabName";
+      throw error;
     }
 
     const previousTabState = existingSpace.tabs?.[tabName];

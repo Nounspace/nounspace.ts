@@ -404,7 +404,9 @@ export const createHomeBaseTabStoreFunc = (
         "Tab Name Already In Use",
         "Please choose a different name. Each tab must have a unique name.",
       );
-      return;
+      const error = new Error("DuplicateTabName");
+      error.name = "DuplicateTabName";
+      throw error;
     }
 
     const previousOrderLocal = cloneDeep(existingTabs);
