@@ -11,6 +11,7 @@ export const DEFAULT_FIDGET_ICON_MAP: Record<string, string> = {
   Market: 'BsBarChart',
   Portfolio: 'GiTwoCoins',
   Chat: 'BsChatDots',
+  Top8: 'BsPeople',
   profile: 'BsPerson',
 };
 
