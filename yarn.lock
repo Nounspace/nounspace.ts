@@ -138,10 +138,10 @@
     viem "^2.31.7"
     zustand "5.0.3"
 
-"@cloudflare/workers-types@^4.20250927.0":
-  version "4.20250927.0"
-  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-4.20250927.0.tgz#eac821a086fccc6f9efb204aabf0c0bbfaacbcd0"
-  integrity sha512-XcFVTMNhHROLQ+AbmK6KQuis72iGCdQXrjVl2xX98ac7w3fzUiNfTsu+SKBXN9dSEjgJEhhj0EXSAXh0b8lSww==
+"@cloudflare/workers-types@^4.20251011.0":
+  version "4.20251011.0"
+  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-4.20251011.0.tgz#03a6e76c2aaacf3b3dbe40397354cb043824005a"
+  integrity sha512-gQpih+pbq3sP4uXltUeCSbPgZxTNp2gQd8639SaIbQMwgA6oJNHLhIART1fWy6DQACngiRzDVULA2x0ohmkGTQ==
 
 "@coinbase/onchainkit@^0.38.19":
   version "0.38.19"
