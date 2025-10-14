@@ -169,6 +169,8 @@ const useMobileAppsManager = (
 
   return { miniApps, handleUpdateMiniApp, handleReorderMiniApps };
 };
+// Persistence of the selected tab
+const LOCAL_STORAGE_KEY = 'themeEditorTab';
 
 export function ThemeSettingsEditor({
   theme = DEFAULT_THEME,
@@ -182,8 +184,6 @@ export function ThemeSettingsEditor({
   onApplySpaceConfig,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
-  // Persistence of the selected tab
-  const LOCAL_STORAGE_KEY = 'themeEditorTab';
   const { mobilePreview, setMobilePreview } = useMobilePreview();
   // Retrieve from localStorage or context
   const getInitialTab = () => {
@@ -194,18 +194,17 @@ export function ThemeSettingsEditor({
     return mobilePreview ? ThemeEditorTab.MOBILE : ThemeEditorTab.SPACE;
   };
   const [tabValue, setTabValue] = useState<ThemeEditorTab>(getInitialTab());
-  const tabValueRef = React.useRef(tabValue);
 
   useEffect(() => {
-    tabValueRef.current = tabValue;
     // Save to localStorage whenever it changes
     if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_KEY, tabValue);
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, tabValue);
+      } catch {
+        // Intentionally ignore localStorage errors
+      }
     }
-  }, [tabValue]);
-
-  useEffect(() => {
-    setMobilePreview(tabValueRef.current === ThemeEditorTab.MOBILE);
+    setMobilePreview(tabValue === ThemeEditorTab.MOBILE);
   }, [tabValue, setMobilePreview]);
 
   const [showVibeEditor, setShowVibeEditor] = useState(false);
@@ -366,7 +365,7 @@ export function ThemeSettingsEditor({
 
             {/* Templates Dropdown */}
             <div className="min-w-0">
-              <Tabs value={String(tabValue)} onValueChange={(value) => {
+              <Tabs value={tabValue} onValueChange={(value) => {
                 if (Object.values(ThemeEditorTab).includes(value as ThemeEditorTab)) {
                   setTabValue(value as ThemeEditorTab);
                 }
