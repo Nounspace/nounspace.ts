@@ -51,6 +51,7 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
   readonly displayName?: string;
   readonly displayNameHint?: string;
   readonly validator?: (value) => boolean;
+  readonly errorMessage?: string;
   readonly inputSelector:
     | typeof TextInput
     | typeof ColorSelector
