@@ -11,7 +11,7 @@ import {
 import { tokenRequestorFromContractAddress, TokenOwnerLookup } from "@/common/data/queries/clanker";
 import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
-import { Address } from "viem";
+import { Address, getAddress, isAddress } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { TokenSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import { MasterToken as _MasterToken } from "@/common/providers/TokenProvider";
@@ -223,8 +223,22 @@ export const loadTokenSpacePageData = async (
   const casterFid = String(tokenData?.clankerData?.requestor_fid || "");
   const isClankerToken = !!tokenData?.clankerData;
 
-  const resolvedOwnerAddress =
-    finalOwnerType === 'address' && finalOwnerId ? finalOwnerId : "";
+  const ownerAddressCandidates: Array<string | null | undefined> = [
+    tokenData?.empireData?.owner,
+    tokenData?.clankerData?.admin,
+    ownership.ownerIdType === 'address' ? ownership.ownerId : null,
+  ];
+
+  const resolvedOwnerAddressCandidate = ownerAddressCandidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === 'string' && isAddress(candidate as `0x${string}`),
+  );
+
+  const normalizedOwnerAddress: Address | null = resolvedOwnerAddressCandidate
+    ? getAddress(resolvedOwnerAddressCandidate as `0x${string}`)
+    : null;
+
+  const resolvedOwnerAddress = normalizedOwnerAddress ?? "";
 
   // Create space config
   const config = {
@@ -242,9 +256,8 @@ export const loadTokenSpacePageData = async (
 
   // Convert ownerId to the appropriate type based on ownerIdType
   const spaceOwnerFid = finalOwnerType === 'fid' ? Number(finalOwnerId) : undefined;
-  const spaceOwnerAddress = resolvedOwnerAddress
-    ? (resolvedOwnerAddress as Address)
-    : ("0x0000000000000000000000000000000000000000" as Address);
+  const spaceOwnerAddress: Address =
+    normalizedOwnerAddress ?? ("0x0000000000000000000000000000000000000000" as Address);
     
   return {
     spaceId: internalData.spaceId,

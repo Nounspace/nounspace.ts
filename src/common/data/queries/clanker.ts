@@ -16,6 +16,7 @@ export interface ClankerToken {
   cast_hash: string | null;
   type: "clanker_v2" | null;
   pair: string | null;
+  admin?: string | null;
 }
 
 const CLANKER_API_URL = `https://www.clanker.world/api/get-clanker-by-address`;
