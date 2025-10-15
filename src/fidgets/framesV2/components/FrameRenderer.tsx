@@ -304,6 +304,7 @@ export default function FrameRenderer({
           background: "#fff",
           position: "relative",
           overflow: "hidden",
+          zIndex: 0,
         }}
       >
         {/* Frame image (responsive, fills container) */}
@@ -313,7 +314,7 @@ export default function FrameRenderer({
               position: "relative",
               width: "100%",
               height: "100%",
-              zIndex: -1,
+              zIndex: 0,
             }}
           >
             <Image
