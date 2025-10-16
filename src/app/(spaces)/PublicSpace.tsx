@@ -70,7 +70,7 @@ export default function PublicSpace({
     getCurrentTabName: state.currentSpace.getCurrentTabName,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
     currentSpaceId: state.currentSpace.currentSpaceId,
-    currentTabName: state.currentSpace.currentTabName ? state.currentSpace.currentTabName : spacePageData.defaultTab,
+    currentTabName: state.currentSpace.currentTabName,
     localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     loadEditableSpaces: state.space.loadEditableSpaces,
@@ -107,7 +107,7 @@ export default function PublicSpace({
   }, [getCurrentSpaceConfig, currentSpaceId, currentTabName]);
 
   const currentConfig = getConfig();
-
+  
   // Identity states
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
@@ -178,13 +178,19 @@ export default function PublicSpace({
     return result;
   }, [spacePageData, currentUserFid, wallets, isSignedIntoFarcaster]);
 
-  
-  const config = {
-    ...(currentConfig?.tabs?.[currentTabName]
-      ? currentConfig.tabs[currentTabName]
-      : { ...spacePageData.config }),
-    isEditable,
-  };
+  // Config logic:
+  // - If tab is loaded in store, use it
+  // - If space is not registered (viewing someone else's space), use default config
+  // - Otherwise, return undefined to trigger Suspense while loading
+  const config = currentTabName ? (
+    currentConfig?.tabs?.[currentTabName] ? {
+      ...currentConfig.tabs[currentTabName],
+      isEditable,
+    } : !currentSpaceId ? {
+      ...spacePageData.config,
+      isEditable,
+    } : undefined
+  ) : undefined;
 
   // Register the space if it doesn't exist
   useEffect(() => {
@@ -324,8 +330,8 @@ export default function PublicSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      if (isNil(currentSpaceId)) {
-        throw new Error("Cannot save config until space is registered");
+      if (isNil(currentSpaceId) || isNil(currentTabName)) {
+        throw new Error("Cannot save config until space and tab are initialized");
       }
       const saveableConfig = {
         ...spaceConfig,
@@ -342,17 +348,17 @@ export default function PublicSpace({
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
     },
-    [currentSpaceId, currentTabName, saveLocalSpaceTab, config.fidgetInstanceDatums]
+    [currentSpaceId, currentTabName, saveLocalSpaceTab, config?.fidgetInstanceDatums]
   );
 
   const commitConfig = useCallback(async () => {
-    if (isNil(currentSpaceId)) return;
+    if (isNil(currentSpaceId) || isNil(currentTabName)) return;
     const network = isTokenSpace(spacePageData) ? spacePageData.tokenData?.network : undefined;
     commitSpaceTab(currentSpaceId, currentTabName, network);
   }, [currentSpaceId, currentTabName, spacePageData, commitSpaceTab]);
 
   const resetConfig = useCallback(async () => {
-    if (isNil(currentSpaceId)) return;
+    if (isNil(currentSpaceId) || isNil(currentTabName)) return;
     
     let configToSave;
     if (isNil(remoteSpaces[currentSpaceId])) {
@@ -376,7 +382,7 @@ export default function PublicSpace({
     <TabBar
       isTokenPage={isTokenSpace(spacePageData)}
       inHomebase={false}
-      currentTab={currentTabName}
+      currentTab={currentTabName || spacePageData.defaultTab}
       tabList={
         currentSpaceId && localSpaces[currentSpaceId]?.order
           ? localSpaces[currentSpaceId].order
