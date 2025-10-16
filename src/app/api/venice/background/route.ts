@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek-coder-v2-lite",
+        model: "qwen3-235b",
         messages: [
           {
             role: "system",
