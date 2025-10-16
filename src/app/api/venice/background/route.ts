@@ -14,6 +14,15 @@ export async function POST(request: Request) {
     return new Response("User input is missing", { status: 400 });
   }
 
+  // Models in the order requested by the user
+  const models = [
+    "mistral-31-24b",
+    "qwen3-coder-480b-a35b-instruct",
+    "llama-3.3-70b"
+  ];
+
+let lastError;
+for (const model of models) {
   try {
     const options = {
       method: "POST",
@@ -22,7 +31,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "qwen3-235b",
+        model,
         messages: [
           {
             role: "system",
@@ -39,15 +48,27 @@ export async function POST(request: Request) {
       "https://api.venice.ai/api/v1/chat/completions",
       options,
     );
+    if (!fetchResponse.ok) {
+      lastError = await fetchResponse.text();
+      continue;
+    }
     const result = await fetchResponse.json();
 
-    const choice = result.choices[0].message.content;
+    const choice = result.choices?.[0]?.message?.content;
+    if (!choice) {
+      lastError = result;
+      continue;
+    }
     const htmlMatch = choice.match(/(<html[\s\S]*<\/html>)/i);
-    return Response.json({ response: htmlMatch ? htmlMatch[1] : choice });
+    return Response.json({ response: htmlMatch ? htmlMatch[1] : choice, model });
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw new Error("Failed to fetch data");
+    console.error(`Error fetching data for model ${model}:`, error);
+    lastError = error;
+    continue;
   }
+}
+  console.error("All models failed:", lastError);
+  return new Response("All models failed", { status: 500 });
 }
 
 const PROMPT = `\
