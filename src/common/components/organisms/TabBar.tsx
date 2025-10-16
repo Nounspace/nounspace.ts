@@ -7,7 +7,6 @@ import React from "react";
 import { FaPaintbrush, FaPlus } from "react-icons/fa6";
 import { toast } from "sonner";
 import { Address } from "viem";
-import { useRouter } from "next/navigation";
 import { Button } from "../atoms/button";
 import { Tab } from "../atoms/reorderable-tab";
 import { TooltipProvider } from "../atoms/tooltip";
@@ -17,7 +16,6 @@ import TokenDataHeader from "./TokenDataHeader";
 import { validateTabName } from "@/common/utils/tabUtils";
 
 interface TabBarProps {
-  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
@@ -39,11 +37,10 @@ const isEditableTab = (tabName: string, defaultTab: string) =>
   tabName !== defaultTab;
 
 function TabBar({
-  inHome,
   inHomebase,
   inEditMode,
   currentTab,
-  tabList = ["Profile"],
+  tabList,
   defaultTab,
   updateTabOrder,
   commitTabOrder,
@@ -57,7 +54,6 @@ function TabBar({
   isEditable
 }: TabBarProps) {
   const isMobile = useIsMobile();
-  const router = useRouter();
   const { setEditMode } = useSidebarContext();
 
   const { getIsLoggedIn, getIsInitializing, homebaseLoadTab, setCurrentTabName } = useAppStore((state) => ({
@@ -70,7 +66,8 @@ function TabBar({
 
   function switchTabTo(tabName: string, shouldSave: boolean = true) {
     setCurrentTabName(tabName);
-    router.replace(getSpacePageUrl(tabName));
+    const url = getSpacePageUrl(tabName);
+    window.history.replaceState(null, '', url);
   }
 
   // Function to calculate next tab after deletion
@@ -82,35 +79,31 @@ function TabBar({
     return futureTabList[Math.min(index, futureTabList.length - 1)];
   }, [tabList, defaultTab]);
 
-  // Helper to update URL without triggering navigation
-  const updateUrl = React.useCallback((tabName: string) => {
-    try {
-      const url = getSpacePageUrl(encodeURIComponent(tabName));
-      router.replace(url);
-    } catch (error) {
-      console.error("Error updating URL:", error);
-    }
-  }, [getSpacePageUrl, router]);
-
   const debouncedCreateTab = React.useCallback(
     debounce(async (tabName: string) => {
       if (!tabName?.trim()) return;
       
-      try {
-        const cleanTabName = tabName.trim();
-        
-        if (tabList.includes(cleanTabName)) {
-          switchTabTo(cleanTabName, true);
-          return;
-        }
+      const cleanTabName = tabName.trim();
+      
+      // If tab already exists, just switch to it
+      if (tabList.includes(cleanTabName)) {
+        switchTabTo(cleanTabName, true);
+        return;
+      }
 
+      try {
+        // createTab already optimistically adds to the order, so we just call it
         const result = await createTab(cleanTabName);
         const finalTabName = result?.tabName || cleanTabName;
         
-        switchTabTo(finalTabName, true);
+        // Switch to the new tab
+        switchTabTo(finalTabName, false);
+        
+        // Commit the order (createTab already updated local state)
         commitTabOrder();
       } catch (error) {
         console.error("Error creating tab:", error);
+        toast.error("Failed to create tab. Please try again.");
       }
     }, 300),
     [tabList, createTab, commitTabOrder, switchTabTo]
@@ -137,7 +130,6 @@ function TabBar({
         
         // Switch to next tab after successful deletion
         if (shouldSwitch && nextTab) {
-          updateUrl(nextTab);
           switchTabTo(nextTab, true);
         }
         
@@ -147,7 +139,7 @@ function TabBar({
         toast.error("Error deleting tab. Please try again.");
       }
     }, 300),
-    [tabList, deleteTab, currentTab, nextClosestTab, defaultTab, updateUrl, switchTabTo]
+    [tabList, deleteTab, currentTab, nextClosestTab, defaultTab, switchTabTo]
   );
 
   const debouncedRenameTab = React.useCallback(
@@ -177,8 +169,7 @@ function TabBar({
         const renamePromise = renameTab(tabName, uniqueName);
         
         // Update current tab name in store and URL
-        setCurrentTabName(uniqueName);
-        updateUrl(uniqueName);
+        switchTabTo(encodeURIComponent(uniqueName), false);
         
         // Wait for rename to complete, then commit
         await renamePromise;
@@ -189,7 +180,7 @@ function TabBar({
         console.error("Error in handleRenameTab:", error);
       }
     }, 300),
-    [renameTab, setCurrentTabName, updateUrl, commitTab, commitTabOrder, tabList]
+    [renameTab, switchTabTo, commitTab, commitTabOrder, tabList]
   );
 
   function generateNewTabName(): string {
@@ -225,9 +216,8 @@ function TabBar({
 
     if (currentTab === tabName) return;
     
-    updateUrl(tabName);
     switchTabTo(tabName, true);
-  }, [currentTab, updateUrl, switchTabTo]);
+  }, [currentTab, switchTabTo]);
 
   // Function to preload tab data (only for homebase tabs)
   const preloadTabData = React.useCallback((tabName: string) => {
