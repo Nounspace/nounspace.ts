@@ -185,10 +185,10 @@ export default function PublicSpace({
   const config = currentTabName && currentConfig?.tabs?.[currentTabName] ? {
     ...currentConfig.tabs[currentTabName],
     isEditable,
-  } : !currentSpaceId ? {
+  } : {
     ...spacePageData.config,
     isEditable,
-  } : undefined;
+  };
 
   // Register the space if it doesn't exist
   useEffect(() => {
