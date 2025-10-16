@@ -101,21 +101,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     }
   }, [tabName, setCurrentSpaceId, setCurrentTabName, homebaseConfig, loadFeedConfig, loadTab]);
 
-  // Function to switch to a different tab
-  async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
-    // Save config changes in background
-    if (shouldSave) {
-      startTransition(() => {
-        commitConfigHandler();
-      });
-    }
-
-    // Updates the route immediately
-    setCurrentTabName(newTabName);
-    // Update URL without causing a reload
-    const newUrl = newTabName === "Feed" ? `/homebase` : `/homebase/${newTabName}`;
-    router.replace(newUrl);
-  }
 
   // Function to get the URL for a given tab
   function getSpacePageUrl(tabName: string) {
@@ -173,7 +158,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
       currentTab={currentTabName || tabName}
       tabList={tabOrdering.local}
       defaultTab="Feed"
-      switchTabTo={switchTabTo}
       updateTabOrder={updateTabOrderWithCommit}
       inEditMode={editMode}
       deleteTab={deleteTab}

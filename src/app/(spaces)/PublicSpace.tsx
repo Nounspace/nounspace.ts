@@ -92,11 +92,14 @@ export default function PublicSpace({
 
   const router = useRouter();
 
-  // Set the current space and tab name when the component mounts
+  // Set the current space and tab name when space data changes
   useEffect(() => {
-    setCurrentSpaceId(spacePageData.spaceId ?? null);
-    setCurrentTabName(providedTabName || spacePageData.defaultTab);
-  }, []);
+    const newSpaceId = spacePageData.spaceId ?? null;
+    const newTabName = providedTabName || spacePageData.defaultTab;
+    
+    setCurrentSpaceId(newSpaceId);
+    setCurrentTabName(newTabName);
+  }, [spacePageData.spaceId, providedTabName, spacePageData.defaultTab, setCurrentSpaceId, setCurrentTabName]);
 
   // Get the current config using the store's getter
   const getConfig = useCallback(() => {
@@ -139,6 +142,31 @@ export default function PublicSpace({
       }
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
+
+  // Load editable spaces when user signs in
+  useEffect(() => {
+    if (!currentUserFid) return;
+    
+    loadEditableSpaces().catch(error => {
+      console.error("Error loading editable spaces:", error);
+    });
+  }, [currentUserFid, loadEditableSpaces]);
+
+  // Load space data when IDs are set
+  useEffect(() => {
+    if (!currentSpaceId || !currentTabName) return;
+
+    const loadSpace = async () => {
+      try {
+        await loadSpaceTabOrder(currentSpaceId);
+        await loadSpaceTab(currentSpaceId, currentTabName);
+      } catch (error) {
+        console.error("Error loading space:", error);
+      }
+    };
+
+    loadSpace();
+  }, [currentSpaceId, currentTabName, loadSpaceTabOrder, loadSpaceTab]);
 
   // Use isEditable logic from spaceData
   const isEditable = useMemo(() => {
@@ -350,8 +378,8 @@ export default function PublicSpace({
       inHomebase={false}
       currentTab={currentTabName}
       tabList={
-        currentSpaceId
-          ? localSpaces[currentSpaceId]?.order
+        currentSpaceId && localSpaces[currentSpaceId]?.order
+          ? localSpaces[currentSpaceId].order
           : [spacePageData.defaultTab]
       }
       defaultTab={spacePageData.defaultTab}

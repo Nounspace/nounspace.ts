@@ -686,7 +686,7 @@ export const createSpaceStoreFunc = (
     },
     1000,
   ),
-  loadSpaceTab: async (spaceId, tabName, fid) => {
+  loadSpaceTab: async (spaceId, tabName) => {
     const supabase = createClient();
     try {
       // Fetch the public URL for the space tab file
