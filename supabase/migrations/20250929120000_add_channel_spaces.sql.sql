@@ -12,10 +12,7 @@ ALTER TABLE "public"."spaceRegistrations"
     );
 
 -- Prevent duplicate registrations for the same channel
+-- Using a partial unique index allows NULLs while ensuring uniqueness for non-NULL values
 CREATE UNIQUE INDEX IF NOT EXISTS "spaceRegistrations_channelId_key"
     ON public."spaceRegistrations" ("channelId")
     WHERE "channelId" IS NOT NULL;
-
-ALTER TABLE "public"."spaceRegistrations"
-    ADD CONSTRAINT "spaceRegistrations_channelId_key" UNIQUE
-    USING INDEX "spaceRegistrations_channelId_key";

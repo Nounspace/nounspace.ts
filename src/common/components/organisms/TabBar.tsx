@@ -13,6 +13,7 @@ import { TooltipProvider } from "../atoms/tooltip";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import { useSidebarContext } from "./Sidebar";
 import TokenDataHeader from "./TokenDataHeader";
+import { validateTabName } from "@/common/utils/tabUtils";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -25,7 +26,7 @@ interface TabBarProps {
   switchTabTo: (tabName: string, shouldSave?: boolean) => void;
   deleteTab: (tabName: string) => void;
   createTab: (tabName: string) => Promise<{ tabName: string } | undefined>;
-  renameTab: (tabName: string, newName: string) => void;
+  renameTab: (tabName: string, newName: string) => Promise<void> | void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
@@ -33,16 +34,10 @@ interface TabBarProps {
   isEditable?: boolean;
 }
 
-const PERMANENT_TABS = ["Feed", "Profile"];
-const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
-
-// Add validation function
-const validateTabName = (tabName: string): string | null => {
-  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
-  }
-  return null;
-};
+const getPermanentTabs = (inHomebase: boolean) => 
+  inHomebase ? ["Feed"] : ["Feed", "Profile"];
+const isEditableTab = (tabName: string, inHomebase: boolean) => 
+  !getPermanentTabs(inHomebase).includes(tabName);
 
 function TabBar({
   inHome,
@@ -65,11 +60,12 @@ function TabBar({
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
 
-  const { getIsLoggedIn, getIsInitializing, homebaseLoadTab } = useAppStore((state) => ({
+  const { getIsLoggedIn, getIsInitializing, homebaseLoadTab, setCurrentTabName } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     homebaseLoadTab: state.homebase.loadHomebaseTab,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
   }));
 
   const [isOperating, setIsOperating] = React.useState(false);
@@ -156,7 +152,7 @@ function TabBar({
       if (isOperating) return;
       setIsOperating(true);
       try {
-        if (!isEditableTab(tabName)) {
+        if (!isEditableTab(tabName, inHomebase)) {
           toast.error("Cannot delete this tab.");
           return;
         }
@@ -210,10 +206,20 @@ function TabBar({
           return;
         }
         
-        renameTab(tabName, uniqueName);
-        const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
-        updateTabOrder(newOrder);
-        switchTabTo(uniqueName);
+        // Fire off rename (optimistic update happens immediately and handles order update)
+        const renamePromise = renameTab(tabName, uniqueName);
+        
+        // Update current tab name in store
+        setCurrentTabName(uniqueName);
+        
+        // Update URL without triggering navigation/reload
+        if (typeof window !== 'undefined' && window.history) {
+          const newUrl = getSpacePageUrl(uniqueName);
+          window.history.replaceState(window.history.state, '', newUrl);
+        }
+        
+        // Wait for rename to complete, then commit
+        await renamePromise;
         commitTab(uniqueName);
         commitTabOrder();
         
@@ -223,7 +229,7 @@ function TabBar({
         setIsOperating(false);
       }
     }, 300),
-    [isOperating, renameTab, updateTabOrder, switchTabTo, commitTab, commitTabOrder, tabList]
+    [isOperating, renameTab, setCurrentTabName, getSpacePageUrl, commitTab, commitTabOrder, tabList]
   );
 
   function generateNewTabName(): string {
@@ -320,7 +326,7 @@ function TabBar({
           if (typeof getSpacePageUrl === 'function') {
             const url = getSpacePageUrl(encodeURIComponent(pendingTabSwitch));
             if (url && typeof url === 'string') {
-              window.history.pushState({}, '', url);
+              window.history.replaceState(window.history.state, '', url);
             }
           }
         } catch (urlError) {
@@ -355,7 +361,7 @@ function TabBar({
     try {
       if (typeof getSpacePageUrl === 'function') {
         const url = getSpacePageUrl(encodeURIComponent(tabName));
-        window.history.pushState({}, '', url);
+        window.history.replaceState(window.history.state, '', url);
       }
     } catch (error) {
       console.error("Error updating URL:", error);
@@ -417,9 +423,9 @@ function TabBar({
                       inEditMode={inEditMode}
                       isSelected={currentTab === tabName}
                       onClick={() => handleTabClick(tabName)}
-                      removeable={isEditableTab(tabName)}
+                      removeable={isEditableTab(tabName, inHomebase)}
                       draggable={inEditMode}
-                      renameable={isEditableTab(tabName)}
+                      renameable={isEditableTab(tabName, inHomebase)}
                       onRemove={() => debouncedDeleteTab(tabName)}
                       renameTab={(tab, newName) => debouncedRenameTab(tab, newName)}
                       preloadTabData={preloadTabData}
