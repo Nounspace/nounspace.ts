@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/common/components/atoms/button";
 import { FaFloppyDisk } from "react-icons/fa6";
-import BackgroundGenerator from "../BackgroundGenerator";
+import {BackgroundGenerator} from "../BackgroundGenerator";
 
 interface CodeTabContentProps {
   backgroundHTML: string;
