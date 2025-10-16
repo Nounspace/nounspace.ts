@@ -21,6 +21,7 @@ interface TabBarProps {
   inEditMode: boolean;
   currentTab: string;
   tabList: string[];
+  defaultTab: string;
   updateTabOrder: (newOrder: string[]) => void;
   commitTabOrder: () => void;
   switchTabTo: (tabName: string, shouldSave?: boolean) => void;
@@ -34,10 +35,8 @@ interface TabBarProps {
   isEditable?: boolean;
 }
 
-const getPermanentTabs = (inHomebase: boolean) => 
-  inHomebase ? ["Feed"] : ["Feed", "Profile"];
-const isEditableTab = (tabName: string, inHomebase: boolean) => 
-  !getPermanentTabs(inHomebase).includes(tabName);
+const isEditableTab = (tabName: string, defaultTab: string) => 
+  tabName !== defaultTab;
 
 function TabBar({
   inHome,
@@ -45,6 +44,7 @@ function TabBar({
   inEditMode,
   currentTab,
   tabList = ["Profile"],
+  defaultTab,
   switchTabTo,
   updateTabOrder,
   commitTabOrder,
@@ -79,7 +79,7 @@ function TabBar({
     const futureTabList = tabList.filter(tab => tab !== tabName);
     
     if (futureTabList.length === 0) {
-      return inHomebase ? "Feed" : "Profile";
+      return defaultTab;
     }
     
     if (index === tabList.length - 1 && index > 0) {
@@ -92,9 +92,9 @@ function TabBar({
       return futureTabList[futureTabList.length - 1];
     }
     else {
-      return inHomebase ? "Feed" : "Profile";
+      return defaultTab;
     }
-  }, [tabList, inHomebase]);
+  }, [tabList, defaultTab]);
 
   // Simple debounced functions without complex optimizations
   const debouncedCreateTab = React.useCallback(
@@ -152,7 +152,7 @@ function TabBar({
       if (isOperating) return;
       setIsOperating(true);
       try {
-        if (!isEditableTab(tabName, inHomebase)) {
+        if (!isEditableTab(tabName, defaultTab)) {
           toast.error("Cannot delete this tab.");
           return;
         }
@@ -310,7 +310,7 @@ function TabBar({
   React.useEffect(() => {
     if (!pendingTabSwitch) return;
     if (!tabList.includes(pendingTabSwitch)) {
-      const fallbackTab = tabList[0] || (inHomebase ? "Feed" : "Profile");
+      const fallbackTab = tabList[0] || defaultTab;
       if (fallbackTab) {
         console.warn("Target tab no longer exists. Redirecting to:", fallbackTab);
         safeSwitchTabTo(fallbackTab);
@@ -339,7 +339,7 @@ function TabBar({
       }
     }, 50);
     return () => clearTimeout(timeoutId);
-  }, [tabList, pendingTabSwitch, safeSwitchTabTo, getSpacePageUrl, inHomebase]);
+  }, [tabList, pendingTabSwitch, safeSwitchTabTo, getSpacePageUrl, defaultTab]);
 
   // Releases the ref whenever the tab actually changes
   React.useEffect(() => {
@@ -423,9 +423,9 @@ function TabBar({
                       inEditMode={inEditMode}
                       isSelected={currentTab === tabName}
                       onClick={() => handleTabClick(tabName)}
-                      removeable={isEditableTab(tabName, inHomebase)}
+                      removeable={isEditableTab(tabName, defaultTab)}
                       draggable={inEditMode}
-                      renameable={isEditableTab(tabName, inHomebase)}
+                      renameable={isEditableTab(tabName, defaultTab)}
                       onRemove={() => debouncedDeleteTab(tabName)}
                       renameTab={(tab, newName) => debouncedRenameTab(tab, newName)}
                       preloadTabData={preloadTabData}

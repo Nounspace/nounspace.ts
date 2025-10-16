@@ -172,6 +172,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
       inHomebase={true}
       currentTab={currentTabName || tabName}
       tabList={tabOrdering.local}
+      defaultTab="Feed"
       switchTabTo={switchTabTo}
       updateTabOrder={updateTabOrderWithCommit}
       inEditMode={editMode}
