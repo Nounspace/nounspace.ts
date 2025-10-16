@@ -29,7 +29,7 @@ import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useState } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
-import BackgroundGenerator from "./BackgroundGenerator";
+import { BackgroundGenerator } from "./BackgroundGenerator";
 import CodeTabContent from "./components/CodeTabContent";
 import MobileTabContent from "./components/MobileTabContent";
 import SpaceTabContent from "./components/SpaceTabContent";
