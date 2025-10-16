@@ -790,6 +790,7 @@ export default function PublicSpace({
           ? localSpaces[activeSpaceId]?.order
           : [spacePageData.defaultTab]
       }
+      defaultTab={spacePageData.defaultTab}
       contractAddress={isTokenSpace(spacePageData) ? spacePageData.contractAddress as Address : undefined}
       switchTabTo={debouncedSwitchTabTo}
       updateTabOrder={async (newOrder) => {
