@@ -179,18 +179,16 @@ export default function PublicSpace({
   }, [spacePageData, currentUserFid, wallets, isSignedIntoFarcaster]);
 
   // Config logic:
-  // - If tab is loaded in store, use it
-  // - If space is not registered (viewing someone else's space), use default config
+  // - If we have currentTabName and the tab is loaded in store, use it
+  // - If we don't have currentSpaceId (viewing someone else's space), use default config
   // - Otherwise, return undefined to trigger Suspense while loading
-  const config = currentTabName ? (
-    currentConfig?.tabs?.[currentTabName] ? {
-      ...currentConfig.tabs[currentTabName],
-      isEditable,
-    } : !currentSpaceId ? {
-      ...spacePageData.config,
-      isEditable,
-    } : undefined
-  ) : undefined;
+  const config = currentTabName && currentConfig?.tabs?.[currentTabName] ? {
+    ...currentConfig.tabs[currentTabName],
+    isEditable,
+  } : !currentSpaceId ? {
+    ...spacePageData.config,
+    isEditable,
+  } : undefined;
 
   // Register the space if it doesn't exist
   useEffect(() => {

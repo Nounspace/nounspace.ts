@@ -80,12 +80,12 @@ const Home = () => {
       inHomebase={false}
       currentTab={tabName}
       tabList={tabOrdering}
-      switchTabTo={switchTabTo}
+      defaultTab={"Nouns"}
       inEditMode={false}
       updateTabOrder={async () => Promise.resolve()}
       deleteTab={async () => Promise.resolve()}
       createTab={async () => Promise.resolve({ tabName })}
-      renameTab={async () => Promise.resolve({ tabName })}
+      renameTab={async () => Promise.resolve(void 0)}
       commitTab={async () => Promise.resolve()}
       commitTabOrder={async () => Promise.resolve()}
       isEditable={false}
