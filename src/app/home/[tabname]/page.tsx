@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
@@ -40,17 +40,17 @@ const getTabConfig = (tabName: string) => {
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const { getIsAccountReady, getIsInitializing, setCurrentTabName } = useAppStore((state) => ({
+  const { getIsAccountReady, getIsInitializing, setCurrentTabName, currentTabName } = useAppStore((state) => ({
     getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
+    currentTabName: state.currentSpace.currentTabName,
   }));
   const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
 
-  // Local state to manage current tab name and ordering
+  // Tab ordering for homepage
   const tabOrdering = ["Nouns", "Social", "Governance", "Resources", "Funded Works", "Places"];
-  const [tabName, setTabName] = useState<string>("Nouns");
 
   const { setFrameReady, isFrameReady } = useMiniKit();
 
@@ -63,10 +63,8 @@ const Home = () => {
       ? decodeURIComponent(params.tabname as string)
       : "Nouns";
 
-    setTabName(newTabName);
-    // Also update the global store to keep it in sync
     setCurrentTabName(newTabName);
-  }, [params?.tabname, setCurrentTabName]); // Added params.tabname to dependencies
+  }, [params?.tabname, setCurrentTabName]);
 
   function switchTabTo(newTabName: string) {
     // Update the store immediately for better responsiveness
@@ -78,13 +76,13 @@ const Home = () => {
     <TabBar
       getSpacePageUrl={(tab) => `/home/${tab}`}
       inHomebase={false}
-      currentTab={tabName}
+      currentTab={currentTabName ?? "Nouns"}
       tabList={tabOrdering}
       defaultTab={"Nouns"}
       inEditMode={false}
       updateTabOrder={async () => Promise.resolve()}
       deleteTab={async () => Promise.resolve()}
-      createTab={async () => Promise.resolve({ tabName })}
+      createTab={async () => Promise.resolve({ tabName: currentTabName ?? "Nouns" })}
       renameTab={async () => Promise.resolve(void 0)}
       commitTab={async () => Promise.resolve()}
       commitTabOrder={async () => Promise.resolve()}
@@ -92,34 +90,16 @@ const Home = () => {
     />
   );
 
-  const args: SpacePageArgs = isInitializing
-    ? {
-        config: { ...INITIAL_SPACE_CONFIG_EMPTY, isEditable: false } as SpaceConfig,
-        saveConfig: async () => {},
-        commitConfig: async () => {},
-        resetConfig: async () => {},
-        tabBar: tabBar,
-        showFeedOnMobile: false,
-      }
-    : !isLoggedIn
-      ? {
-          config: getTabConfig(tabName) as SpaceConfig,
-          saveConfig: async () => {},
-          commitConfig: async () => {},
-          resetConfig: async () => {},
-          tabBar: tabBar,
-          showFeedOnMobile: false,
-        }
-      : {
-          config: getTabConfig(tabName) as SpaceConfig,
-          saveConfig: async () => {},
-          commitConfig: async () => {},
-          resetConfig: async () => {},
-          tabBar: tabBar,
-          showFeedOnMobile: false,
-        };
+  const args: SpacePageArgs = {
+    config: getTabConfig(currentTabName ?? "Nouns") as SpaceConfig,
+    saveConfig: async () => {},
+    commitConfig: async () => {},
+    resetConfig: async () => {},
+    tabBar: tabBar,
+    showFeedOnMobile: false,
+  };
 
-  return <SpacePage key={tabName} {...args} />;
+  return <SpacePage key={currentTabName} {...args} />;
 };
 
 export default Home;

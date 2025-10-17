@@ -91,19 +91,25 @@ function TabBar({
         return;
       }
 
+      // Optimistically update UI immediately
+      switchTabTo(cleanTabName, false);
+
       try {
-        // createTab already optimistically adds to the order, so we just call it
+        // Call createTab in the background (it already optimistically adds to the order)
         const result = await createTab(cleanTabName);
         const finalTabName = result?.tabName || cleanTabName;
         
-        // Switch to the new tab
-        switchTabTo(finalTabName, false);
+        // If the final tab name is different (e.g., due to deduplication), switch to it
+        if (finalTabName !== cleanTabName) {
+          switchTabTo(finalTabName, false);
+        }
         
         // Commit the order (createTab already updated local state)
         commitTabOrder();
       } catch (error) {
         console.error("Error creating tab:", error);
         toast.error("Failed to create tab. Please try again.");
+        // TODO: Rollback optimistic changes if needed
       }
     }, 300),
     [tabList, createTab, commitTabOrder, switchTabTo]
