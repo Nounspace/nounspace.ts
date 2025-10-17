@@ -31,6 +31,9 @@ import {
   withOptimisticUpdate,
 } from "@/common/utils/tabUtils";
 
+// Default tab for homebase
+export const HOMEBASE_DEFAULT_TAB = "Feed";
+
 interface HomeBaseTabStoreState {
   tabs: {
     [tabName: string]: {
@@ -132,7 +135,7 @@ export const createHomeBaseTabStoreFunc = (
   commitTabOrderingToDatabase: debounce(async () => {
     const localCopy = cloneDeep(
       get().homebase.tabOrdering.local.filter((name, i, arr) =>
-        name !== "Feed" && arr.indexOf(name) === i,
+        name !== HOMEBASE_DEFAULT_TAB && arr.indexOf(name) === i,
       ),
     );
     if (localCopy) {
@@ -402,6 +405,10 @@ export const createHomeBaseTabStoreFunc = (
           draft.homebase.tabs[sanitizedNewName] = tabEntry;
           delete draft.homebase.tabs[tabName];
           draft.homebase.tabOrdering.local = updatedOrder;
+
+          if (draft.currentSpace.currentTabName === tabName) {
+            draft.currentSpace.currentTabName = sanitizedNewName;
+          }
         }, "renameHomebaseTabOptimistic");
       },
       commitFn: async () => {
