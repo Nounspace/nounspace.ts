@@ -12,6 +12,7 @@ import VersionCheckProivder from "./VersionCheckProvider";
 import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
 import AnalyticsProvider from "./AnalyticsProvider";
 import { ToastProvider } from "../components/atoms/Toast";
+import MiniAppReady from "../components/utilities/MiniAppReady";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
 import MobilePreviewProvider from "./MobilePreviewProvider";
 import { SharedDataProvider } from "./SharedDataProvider";
@@ -28,7 +29,10 @@ const RarelyUpdatedProviders = React.memo(
         <AnalyticsProvider>
           <MiniAppSdkProvider>
             <SharedDataProvider>
-              <ToastProvider>{children}</ToastProvider>
+              <ToastProvider>
+                <MiniAppReady />
+                {children}
+              </ToastProvider>
             </SharedDataProvider>
           </MiniAppSdkProvider>
         </AnalyticsProvider>
