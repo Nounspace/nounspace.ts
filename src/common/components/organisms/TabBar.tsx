@@ -1,6 +1,5 @@
 "use client";
 import { useAppStore } from "@/common/data/stores/app";
-import { HOMEBASE_DEFAULT_TAB } from "@/common/data/stores/app/homebase/homebaseTabsStore";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { Reorder } from "framer-motion";
 import { debounce, map } from "lodash";
@@ -264,7 +263,7 @@ function TabBar({
                 values={tabList}
               >
                 {map(
-                  inHomebase ? [HOMEBASE_DEFAULT_TAB, ...tabList] : tabList,
+                  tabList,
                   (tabName: string) => (
                     <Tab
                       key={`tab-${tabName}`}
