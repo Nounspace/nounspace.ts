@@ -1,5 +1,6 @@
 "use client";
 import { useAppStore } from "@/common/data/stores/app";
+import { HOMEBASE_DEFAULT_TAB } from "@/common/data/stores/app/homebase/homebaseTabsStore";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { Reorder } from "framer-motion";
 import { debounce, map } from "lodash";
@@ -175,7 +176,7 @@ function TabBar({
         const renamePromise = renameTab(tabName, uniqueName);
         
         // Update current tab name in store and URL
-        switchTabTo(encodeURIComponent(uniqueName), false);
+        switchTabTo(uniqueName);
         
         // Wait for rename to complete, then commit
         await renamePromise;
@@ -263,7 +264,7 @@ function TabBar({
                 values={tabList}
               >
                 {map(
-                  inHomebase ? ["Feed", ...tabList] : tabList,
+                  inHomebase ? [HOMEBASE_DEFAULT_TAB, ...tabList] : tabList,
                   (tabName: string) => (
                     <Tab
                       key={`tab-${tabName}`}
