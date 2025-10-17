@@ -4,19 +4,17 @@ import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import { useAppStore } from "@/common/data/stores/app";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import Profile from "@/fidgets/ui/profile";
 import Channel from "@/fidgets/ui/channel";
 import { useWallets } from "@privy-io/react-auth";
-import { indexOf, isNil, mapValues, noop, debounce } from "lodash";
+import { indexOf, isNil, mapValues, noop} from "lodash";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
-import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
 import {
   SpacePageData,
@@ -287,15 +285,7 @@ export default function PublicSpace({
             await loadEditableSpaces(); // First load
             await loadSpaceTab(newSpaceId, spacePageData.defaultTab);
 
-            // Load remaining tabs - get fresh reference after loading operations
-            const freshLocalSpaces = useAppStore((state) => state.space.localSpaces);
-            const tabOrder = freshLocalSpaces[newSpaceId]?.order || [];
-            for (const tabName of tabOrder) {
-              if (tabName !== spacePageData.defaultTab) {
-                await loadSpaceTab(newSpaceId, tabName);
-              }
-            }
-
+            
             // Invalidate cache by reloading editable spaces
             await loadEditableSpaces(); // Second load to invalidate cache
 
