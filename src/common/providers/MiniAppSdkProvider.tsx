@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useMemo, useState } from "react";
 import { sdk as frameSdk, Context } from "@farcaster/frame-sdk";
+import MiniAppReady from "../components/utilities/MiniAppReady";
 
 export const MINI_APP_PROVIDER_METADATA = {
   uuid: "nounspace-miniapp-eth-provider",
@@ -23,7 +24,7 @@ declare global {
 }
 
 // Types for the context
-type MiniAppContext = {
+type MiniAppContextState = {
   isInitializing: boolean;
   isReady: boolean;
   error: Error | null;
@@ -31,18 +32,27 @@ type MiniAppContext = {
   frameContext: Context.FrameContext | null;
 };
 
-export const MiniAppSdkContext = createContext<MiniAppContext>({
+type MiniAppContextValue = MiniAppContextState & {
+  setContextState: React.Dispatch<React.SetStateAction<MiniAppContextState>>;
+};
+
+const noop: React.Dispatch<React.SetStateAction<MiniAppContextState>> = () => {
+  // no-op used for default context setter
+};
+
+export const MiniAppSdkContext = createContext<MiniAppContextValue>({
   isInitializing: true,
   isReady: false,
   error: null,
   sdk: null,
   frameContext: null,
+  setContextState: noop,
 });
 
 export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [state, setState] = useState<MiniAppContext>({
+  const [state, setState] = useState<MiniAppContextState>({
     isInitializing: true,
     isReady: false,
     error: null,
@@ -51,41 +61,53 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   useEffect(() => {
-    // Only initialize on client side
-    // if (typeof window === "undefined") {
-    //   return;
-    // }
+    let isMounted = true;
+
+    setState((prev) => ({
+      ...prev,
+      sdk: frameSdk,
+    }));
 
     const initializeSdk = async () => {
       try {
-        // Initialize the frame SDK
-        await frameSdk.actions.ready();
-
-        // Store the sdk reference
-        // Get initial frame context - it's a Promise
         const initialFrameContext = await frameSdk.context;
 
-        // console.log("Frame SDK initialized successfully.", initialFrameContext);
+        if (!isMounted) {
+          return;
+        }
 
         setState((prev) => ({
           ...prev,
-          sdk: frameSdk,
           frameContext: initialFrameContext,
-          isInitializing: false,
-          isReady: true,
+          error: null,
         }));
       } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+
         console.error("Failed to initialize Frame SDK:", err);
         setState((prev) => ({
           ...prev,
-          isInitializing: false,
           error: err instanceof Error ? err : new Error(String(err)),
         }));
       }
     };
 
-    initializeSdk();
+    void initializeSdk();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      setContextState: setState,
+    }),
+    [state],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -165,7 +187,8 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [state.isReady, state.sdk]);
 
   return (
-    <MiniAppSdkContext.Provider value={state}>
+    <MiniAppSdkContext.Provider value={contextValue}>
+      <MiniAppReady />
       {children}
     </MiniAppSdkContext.Provider>
   );
