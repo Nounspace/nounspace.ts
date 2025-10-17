@@ -11,7 +11,7 @@ import {
 import { tokenRequestorFromContractAddress, TokenOwnerLookup } from "@/common/data/queries/clanker";
 import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
-import { Address } from "viem";
+import { Address, getAddress, isAddress } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { TokenSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import { MasterToken as _MasterToken } from "@/common/providers/TokenProvider";
@@ -196,10 +196,10 @@ export const loadTokenSpacePageData = async (
     ? String(internalData.registeredFid) 
     : ownership.ownerId;
   
-  const finalOwnerType = !isNil(internalData.registeredFid) 
-    ? "fid" as OwnerType 
+  const finalOwnerType = !isNil(internalData.registeredFid)
+    ? "fid" as OwnerType
     : ownership.ownerIdType;
-    
+
   console.log('[loadTokenSpacePageData] Final ownership resolution:', {
     finalOwnerId,
     finalOwnerType,
@@ -207,7 +207,7 @@ export const loadTokenSpacePageData = async (
     ownershipOwnerId: ownership.ownerId,
     ownershipOwnerIdType: ownership.ownerIdType
   });
-  
+
   // Add identityPublicKey to owningIdentities if not already included
   const finalOwningIdentities = [...ownership.owningIdentities];
   if (internalData.identityPublicKey && !finalOwningIdentities.includes(internalData.identityPublicKey)) {
@@ -222,7 +222,24 @@ export const loadTokenSpacePageData = async (
   const castHash = tokenData?.clankerData?.cast_hash || "";
   const casterFid = String(tokenData?.clankerData?.requestor_fid || "");
   const isClankerToken = !!tokenData?.clankerData;
-  
+
+  const ownerAddressCandidates: Array<string | null | undefined> = [
+    tokenData?.empireData?.owner,
+    tokenData?.clankerData?.admin,
+    ownership.ownerIdType === 'address' ? ownership.ownerId : null,
+  ];
+
+  const resolvedOwnerAddressCandidate = ownerAddressCandidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === 'string' && isAddress(candidate as `0x${string}`),
+  );
+
+  const normalizedOwnerAddress: Address | null = resolvedOwnerAddressCandidate
+    ? getAddress(resolvedOwnerAddressCandidate as `0x${string}`)
+    : null;
+
+  const resolvedOwnerAddress = normalizedOwnerAddress ?? "";
+
   // Create space config
   const config = {
     ...createInitialTokenSpaceConfigForAddress(
@@ -231,16 +248,16 @@ export const loadTokenSpacePageData = async (
       casterFid,
       symbol,
       isClankerToken,
-      network as EtherScanChainName
+      network as EtherScanChainName,
+      resolvedOwnerAddress
     ),
     timestamp: new Date().toISOString(),
   };
-  
+
   // Convert ownerId to the appropriate type based on ownerIdType
   const spaceOwnerFid = finalOwnerType === 'fid' ? Number(finalOwnerId) : undefined;
-  const spaceOwnerAddress = finalOwnerType === 'address' && finalOwnerId ? 
-    finalOwnerId as Address : 
-    "0x0000000000000000000000000000000000000000" as Address;
+  const spaceOwnerAddress: Address =
+    normalizedOwnerAddress ?? ("0x0000000000000000000000000000000000000000" as Address);
     
   return {
     spaceId: internalData.spaceId,

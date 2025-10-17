@@ -8,11 +8,25 @@ import {
 } from "@/common/fidgets";
 import { defaultStyleFields, ErrorWrapper, WithMargin } from "@/fidgets/helpers";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
+import { isAddress } from "viem";
 
 export type ChatFidgetSettings = {
   roomName: string;
+  roomOwnerAddress?: string;
   size: number;
 } & FidgetSettingsStyle;
+
+const isValidEthereumAddress = (value: unknown): boolean => {
+  if (!value || (typeof value === "string" && value.trim() === "")) {
+    return true;
+  }
+
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  return isAddress(value as `0x${string}`);
+};
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Chat",
@@ -33,6 +47,22 @@ const frameConfig: FidgetProperties = {
       ),
       group: "settings",
     },
+    {
+      fieldName: "roomOwnerAddress",
+      displayName: "Room Owner Address",
+      displayNameHint:
+        "When creating a new room, set the room owner by inputting the Ethereum address of the wallet they'll use to update the room. Room owners can update the room's avatar and token gate settings.",
+      validator: isValidEthereumAddress,
+      errorMessage: "Owner must be an Ethereum address",
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      default: "",
+      required: false,
+      group: "settings",
+    },
     ...defaultStyleFields,
   ],
   size: {
@@ -46,7 +76,10 @@ const frameConfig: FidgetProperties = {
 const Chat: React.FC<
   FidgetArgs<ChatFidgetSettings> & { inEditMode: boolean }
 > = ({
-  settings: { roomName = "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" },
+  settings: {
+    roomName = "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
+    roomOwnerAddress,
+  },
 }) => {
     // console.log("Room name:", roomName);
 
@@ -59,7 +92,12 @@ const Chat: React.FC<
       );
     }
 
-    const url = `https://chat-fidget.vercel.app/?room=${roomName}`;
+    const ownerQuery =
+      roomOwnerAddress && isValidEthereumAddress(roomOwnerAddress)
+        ? `&owner=${roomOwnerAddress}`
+        : "";
+
+    const url = `https://chat-fidget.vercel.app/?room=${roomName}${ownerQuery}`;
 
     return (
       <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">

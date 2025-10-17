@@ -105,6 +105,9 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
             !isValid && "border-red-500"
           )}
         />
+        {!isValid && field.errorMessage && (
+          <p className="mt-1 text-xs text-red-500">{field.errorMessage}</p>
+        )}
       </div>
     </div>
   );
