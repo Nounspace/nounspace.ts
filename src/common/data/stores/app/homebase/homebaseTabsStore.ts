@@ -465,6 +465,14 @@ export const createHomeBaseTabStoreFunc = (
             tabEntry.remoteConfig = cloneDeep(tabEntry.config);
           }
         }, "updateRemoteConfigAfterRename");
+
+        // Update remote ordering to match the new local ordering
+        set((draft) => {
+          draft.homebase.tabOrdering.remote = cloneDeep(updatedOrder);
+        }, "updateRemoteOrderingAfterRename");
+
+        // Persist the updated ordering to the backend
+        await get().homebase.commitTabOrderingToDatabase();
       },
       rollbackFn: () => {
         set((draft) => {
