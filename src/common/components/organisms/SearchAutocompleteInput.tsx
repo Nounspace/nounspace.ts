@@ -1,4 +1,10 @@
-import React, { useState, useCallback, Suspense } from "react";
+import React, {
+  useState,
+  useCallback,
+  Suspense,
+  useRef,
+  useEffect,
+} from "react";
 import { useRouter } from "next/navigation";
 import useSearchUsers from "@/common/lib/hooks/useSearchUsers";
 import useSearchTokens, { TokenResult } from "@/common/lib/hooks/useSearchTokens";
@@ -34,23 +40,38 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
 }) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [query, setQuery] = useState<string | null>(null);
   const { users, loading: loadingUsers } = useSearchUsers(query);
   const { tokens, loading: loadingTokens } = useSearchTokens(query);
   const { channels, loading: loadingChannels } = useSearchChannels(query);
   const loading = loadingUsers || loadingTokens || loadingChannels;
 
-  const handleFocus = useCallback(() => {
-    setIsFocused(true);
+  const clearBlurTimeout = useCallback(() => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
+    }
   }, []);
+
+  const handleFocus = useCallback(() => {
+    clearBlurTimeout();
+    setIsFocused(true);
+  }, [clearBlurTimeout]);
 
   const handleBlur = useCallback(() => {
-    setIsFocused(false);
-  }, []);
+    clearBlurTimeout();
+    blurTimeoutRef.current = setTimeout(() => {
+      setIsFocused(false);
+      blurTimeoutRef.current = null;
+    }, 150);
+  }, [clearBlurTimeout]);
 
-  const handlePreventBlur = useCallback((event: React.MouseEvent) => {
-    event?.preventDefault();
-  }, []);
+  useEffect(() => {
+    return () => {
+      clearBlurTimeout();
+    };
+  }, [clearBlurTimeout]);
 
   const onSelectQuery = useCallback(() => {
     router.push(`/search?q=${query}`);
@@ -90,7 +111,7 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
         />
       </div>
       {isFocused && (
-        <CommandList onMouseDown={handlePreventBlur} className="max-h-[500px]">
+        <CommandList className="max-h-[500px]">
           {false && (
             <CommandItem
               onSelect={onSelectQuery}
