@@ -8,7 +8,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 import { useMiniApp } from "@/common/utils/useMiniApp";
@@ -89,58 +89,410 @@ const resolveAllowedEmbedSrc = (src?: string | null): string | null => {
 
 type IframeAttributeMap = Record<string, string>;
 
-const createMiniAppBootstrapSrcDoc = (targetUrl: string) => {
-  const safeTargetUrl = sanitizeMiniAppNavigationTarget(targetUrl);
-  const iconPath = MINI_APP_PROVIDER_METADATA.iconPath;
-  const providerInfoScript = `
-        var providerInfo = parentWindow.__nounspaceMiniAppProviderInfo;
-        if (!providerInfo) {
-          var icon;
-          try {
-            icon = new URL(${JSON.stringify(iconPath)}, (window.parent && window.parent.location ? window.parent.location.origin : window.location.origin)).toString();
-          } catch (err) {
-            icon = ${JSON.stringify(iconPath)};
-          }
-          providerInfo = {
-            uuid: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.uuid)},
-            name: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.name)},
-            icon: icon,
-            rdns: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.rdns)}
-          };
-        }
-      `;
+type MiniAppEthereumProvider = {
+  request?: (args: { method: string; params?: unknown }) => Promise<unknown>;
+  on?: (event: string, listener: (...args: unknown[]) => void) => void;
+  removeListener?: (event: string, listener: (...args: unknown[]) => void) => void;
+};
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body><script>(function(){
-      try {
-        var parentWindow = window.parent;
-        if (!parentWindow) {
-          return;
-        }
-        var provider = parentWindow.__nounspaceMiniAppEthProvider;
-        if (provider) {
-          window.ethereum = provider;
-          ${providerInfoScript}
-          var announce = function() {
-            var detail = {
-              info: providerInfo,
-              provider: provider
-            };
-            window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: detail }));
-          };
-          window.dispatchEvent(new Event("ethereum#initialized"));
-          announce();
-          window.addEventListener("eip6963:requestProvider", announce);
-        }
-      } catch (err) {
-        console.error("Mini app provider bootstrap failed", err);
-      }
-      setTimeout(function(){
-        var target = ${JSON.stringify(safeTargetUrl)};
-        if (target) {
-          window.location.replace(target);
-        }
-      }, 0);
-    })();</script></body></html>`;
+type MiniAppProviderInfo = NonNullable<Window["__nounspaceMiniAppProviderInfo"]>;
+
+const createMiniAppBootstrapSrcDoc = (targetUrl: string, bridgeId: string) => {
+  const safeTargetUrl = sanitizeMiniAppNavigationTarget(targetUrl);
+  const scriptLines = [
+    "(function(){",
+    "  try {",
+    `    var BRIDGE_ID = ${JSON.stringify(bridgeId)};`,
+    `    var TARGET_URL = ${JSON.stringify(safeTargetUrl)};`,
+    "    var parentWindow = null;",
+    "    try { parentWindow = window.parent; } catch (err) {}",
+    "    var navigateToTarget = function() {",
+    "      if (!TARGET_URL) { return; }",
+    "      try {",
+    "        window.location.replace(TARGET_URL);",
+    "      } catch (replaceErr) {",
+    "        try {",
+    "          window.location.href = TARGET_URL;",
+    "        } catch (hrefErr) {}",
+    "      }",
+    "    };",
+    "    if (!parentWindow) {",
+    "      navigateToTarget();",
+    "      return;",
+    "    }",
+    "",
+    "    var computeDefaultProviderInfo = function() {",
+    `      var icon = ${JSON.stringify(MINI_APP_PROVIDER_METADATA.iconPath)};`,
+    "      try {",
+    "        var baseOrigin = (window.parent && window.parent.location) ? window.parent.location.origin : window.location.origin;",
+    `        icon = new URL(${JSON.stringify(MINI_APP_PROVIDER_METADATA.iconPath)}, baseOrigin).toString();`,
+    "      } catch (err) {}",
+    "      return {",
+    `        uuid: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.uuid)},`,
+    `        name: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.name)},`,
+    "        icon: icon,",
+    `        rdns: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.rdns)}`,
+    "      };",
+    "    };",
+    "",
+    "    var providerProxy = {};",
+    "    var pendingRequests = {};",
+    "    var pendingTimeouts = {};",
+    "    var nextRequestId = 1;",
+    "    var readyWaiters = [];",
+    "    var isReady = false;",
+    "    var listenerCounts = {};",
+    "    var localListeners = {};",
+    "    var providerInfo = computeDefaultProviderInfo();",
+    "    var providerProperties = {};",
+    "    var MAX_REQUEST_TIMEOUT = 60000;",
+    "    var READY_TIMEOUT = 15000;",
+    "",
+    "    var rejectReadyWaiters = function(message) {",
+    "      var error = new Error(message || 'Wallet provider unavailable');",
+    "      var waiters = readyWaiters.slice();",
+    "      readyWaiters.length = 0;",
+    "      for (var i = 0; i < waiters.length; i++) {",
+    "        try { waiters[i].reject(error); } catch (err) {}",
+    "      }",
+    "    };",
+    "",
+    "    var fulfillReady = function() {",
+    "      if (isReady) { return; }",
+    "      isReady = true;",
+    "      var waiters = readyWaiters.slice();",
+    "      readyWaiters.length = 0;",
+    "      for (var i = 0; i < waiters.length; i++) {",
+    "        try { waiters[i].resolve(); } catch (err) {}",
+    "      }",
+    "    };",
+    "",
+    "    var resetReady = function() {",
+    "      isReady = false;",
+    "    };",
+    "",
+    "    var waitForReady = function() {",
+    "      if (isReady) {",
+    "        return Promise.resolve();",
+    "      }",
+    "      return new Promise(function(resolve, reject) {",
+    "        var timeoutId = setTimeout(function() {",
+    "          reject(new Error('Wallet provider not available'));",
+    "        }, READY_TIMEOUT);",
+    "        readyWaiters.push({",
+    "          resolve: function() {",
+    "            clearTimeout(timeoutId);",
+    "            resolve();",
+    "          },",
+    "          reject: function(error) {",
+    "            clearTimeout(timeoutId);",
+    "            reject(error);",
+    "          }",
+    "        });",
+    "      });",
+    "    };",
+    "",
+    "    var sendMessage = function(type, payload) {",
+    "      try {",
+    "        parentWindow.postMessage({",
+    "          __nounspaceMiniApp: true,",
+    "          bridgeId: BRIDGE_ID,",
+    "          type: type,",
+    "          payload: payload || {}",
+    "        }, '*');",
+    "      } catch (err) {}",
+    "    };",
+    "",
+    "    var clearPendingRequest = function(requestId) {",
+    "      if (pendingTimeouts[requestId]) {",
+    "        clearTimeout(pendingTimeouts[requestId]);",
+    "        delete pendingTimeouts[requestId];",
+    "      }",
+    "      if (pendingRequests[requestId]) {",
+    "        delete pendingRequests[requestId];",
+    "      }",
+    "    };",
+    "",
+    "    var applyProperties = function(properties) {",
+    "      if (!properties || typeof properties !== 'object') {",
+    "        return;",
+    "      }",
+    "      for (var key in properties) {",
+    "        if (!Object.prototype.hasOwnProperty.call(properties, key)) { continue; }",
+    "        try {",
+    "          providerProxy[key] = properties[key];",
+    "        } catch (err) {}",
+    "      }",
+    "    };",
+    "",
+    "    var announceProvider = function() {",
+    "      try {",
+    "        window.dispatchEvent(new CustomEvent('eip6963:announceProvider', {",
+    "          detail: { info: providerInfo, provider: providerProxy }",
+    "        }));",
+    "      } catch (err) {}",
+    "    };",
+    "",
+    "    var ensureListenerArray = function(eventName) {",
+    "      if (!localListeners[eventName]) {",
+    "        localListeners[eventName] = [];",
+    "      }",
+    "      return localListeners[eventName];",
+    "    };",
+    "",
+    "    var subscribeRemote = function(eventName) {",
+    "      if (listenerCounts[eventName] > 0) {",
+    "        return;",
+    "      }",
+    "      sendMessage('subscribe', { event: eventName });",
+    "    };",
+    "",
+    "    var unsubscribeRemote = function(eventName) {",
+    "      if (listenerCounts[eventName] > 0) {",
+    "        return;",
+    "      }",
+    "      sendMessage('unsubscribe', { event: eventName });",
+    "    };",
+    "",
+    "    var emitEvent = function(eventName, args) {",
+    "      var listeners = ensureListenerArray(eventName);",
+    "      if (!listeners.length) {",
+    "        return;",
+    "      }",
+    "      var safeArgs = Array.isArray(args) ? args : [args];",
+    "      listeners.slice().forEach(function(listener) {",
+    "        try {",
+    "          listener.apply(providerProxy, safeArgs);",
+    "        } catch (err) {",
+    "          try {",
+    "            console.error('Mini app provider listener error', err);",
+    "          } catch (innerErr) {}",
+    "        }",
+    "      });",
+    "    };",
+    "",
+    "    var addListener = function(eventName, listener) {",
+    "      if (typeof eventName !== 'string' || typeof listener !== 'function') {",
+    "        return providerProxy;",
+    "      }",
+    "      var listeners = ensureListenerArray(eventName);",
+    "      listeners.push(listener);",
+    "      listenerCounts[eventName] = (listenerCounts[eventName] || 0) + 1;",
+    "      if (listenerCounts[eventName] === 1) {",
+    "        subscribeRemote(eventName);",
+    "      }",
+    "      return providerProxy;",
+    "    };",
+    "",
+    "    var removeListener = function(eventName, listener) {",
+    "      if (typeof eventName !== 'string') {",
+    "        return providerProxy;",
+    "      }",
+    "      var listeners = ensureListenerArray(eventName);",
+    "      if (typeof listener === 'function') {",
+    "        for (var i = listeners.length - 1; i >= 0; i--) {",
+    "          if (listeners[i] === listener) {",
+    "            listeners.splice(i, 1);",
+    "            listenerCounts[eventName] = Math.max((listenerCounts[eventName] || 1) - 1, 0);",
+    "          }",
+    "        }",
+    "      } else {",
+    "        listenerCounts[eventName] = 0;",
+    "        listeners.length = 0;",
+    "      }",
+    "      if ((listenerCounts[eventName] || 0) === 0) {",
+    "        listeners.length = 0;",
+    "        unsubscribeRemote(eventName);",
+    "      }",
+    "      return providerProxy;",
+    "    };",
+    "",
+    "    providerProxy.on = addListener;",
+    "    providerProxy.addListener = addListener;",
+    "    providerProxy.off = removeListener;",
+    "    providerProxy.removeListener = removeListener;",
+    "    providerProxy.removeAllListeners = function(eventName) {",
+    "      removeListener(eventName);",
+    "      return providerProxy;",
+    "    };",
+    "    providerProxy.once = function(eventName, listener) {",
+    "      if (typeof eventName !== 'string' || typeof listener !== 'function') {",
+    "        return providerProxy;",
+    "      }",
+    "      var onceListener = function() {",
+    "        removeListener(eventName, onceListener);",
+    "        listener.apply(providerProxy, arguments);",
+    "      };",
+    "      addListener(eventName, onceListener);",
+    "      return providerProxy;",
+    "    };",
+    "    providerProxy.emit = function(eventName) {",
+    "      var args = [].slice.call(arguments, 1);",
+    "      emitEvent(eventName, args);",
+    "      return providerProxy;",
+    "    };",
+    "",
+    "    providerProxy.request = function(args) {",
+    "      if (!args || typeof args !== 'object') {",
+    "        return Promise.reject(new Error('Invalid request arguments'));",
+    "      }",
+    "      var method = args.method;",
+    "      if (typeof method !== 'string') {",
+    "        return Promise.reject(new Error('Invalid request method'));",
+    "      }",
+    "      var params = args.params;",
+    "      return waitForReady().then(function() {",
+    "        return new Promise(function(resolve, reject) {",
+    "          var requestId = BRIDGE_ID + ':' + (nextRequestId++);",
+    "          pendingRequests[requestId] = { resolve: resolve, reject: reject };",
+    "          var timeoutId = setTimeout(function() {",
+    "            if (pendingRequests[requestId]) {",
+    "              delete pendingRequests[requestId];",
+    "              reject(new Error('Wallet request timed out'));",
+    "            }",
+    "          }, MAX_REQUEST_TIMEOUT);",
+    "          pendingTimeouts[requestId] = timeoutId;",
+    "          sendMessage('request', { requestId: requestId, method: method, params: params });",
+    "        });",
+    "      });",
+    "    };",
+    "",
+    "    providerProxy.send = function(methodOrPayload, paramsOrCallback) {",
+    "      if (typeof methodOrPayload === 'string') {",
+    "        return providerProxy.request({ method: methodOrPayload, params: paramsOrCallback });",
+    "      }",
+    "      var payload = methodOrPayload || {};",
+    "      if (typeof paramsOrCallback === 'function') {",
+    "        providerProxy.request({ method: payload.method, params: payload.params })",
+    "          .then(function(result) {",
+    "            paramsOrCallback(null, { jsonrpc: payload.jsonrpc || '2.0', id: payload.id, result: result });",
+    "          })",
+    "          .catch(function(error) {",
+    "            paramsOrCallback(error, null);",
+    "          });",
+    "        return;",
+    "      }",
+    "      return providerProxy.request(payload);",
+    "    };",
+    "",
+    "    providerProxy.sendAsync = function(payload, callback) {",
+    "      if (typeof callback === 'function') {",
+    "        providerProxy.send(payload, callback);",
+    "        return;",
+    "      }",
+    "      return providerProxy.send(payload);",
+    "    };",
+    "",
+    "    providerProxy.isMiniAppProvider = true;",
+    "    providerProxy.isNounspaceMiniAppProvider = true;",
+    "",
+    "    try {",
+    "      Object.defineProperty(providerProxy, 'providers', {",
+    "        configurable: true,",
+    "        enumerable: false,",
+    "        get: function() {",
+    "          return [providerProxy];",
+    "        }",
+    "      });",
+    "    } catch (err) {",
+    "      providerProxy.providers = [providerProxy];",
+    "    }",
+    "",
+    "    var handleResponse = function(message) {",
+    "      var payload = message && message.payload ? message.payload : {};",
+    "      var requestId = payload.requestId;",
+    "      if (!requestId || !pendingRequests[requestId]) {",
+    "        return;",
+    "      }",
+    "      var pending = pendingRequests[requestId];",
+    "      clearPendingRequest(requestId);",
+    "      if (payload.error) {",
+    "        var error = new Error(payload.error.message || 'Request failed');",
+    "        if (typeof payload.error.code !== 'undefined') {",
+    "          error.code = payload.error.code;",
+    "        }",
+    "        if (typeof payload.error.data !== 'undefined') {",
+    "          error.data = payload.error.data;",
+    "        }",
+    "        pending.reject(error);",
+    "        return;",
+    "      }",
+    "      pending.resolve(payload.result);",
+    "    };",
+    "",
+    "    window.addEventListener('message', function(event) {",
+    "      if (!event || !event.data || typeof event.data !== 'object') {",
+    "        return;",
+    "      }",
+    "      var message = event.data;",
+    "      if (!message.__nounspaceMiniApp || message.bridgeId !== BRIDGE_ID) {",
+    "        return;",
+    "      }",
+    "      if (message.type === 'providerReady') {",
+    "        providerInfo = message.payload && message.payload.providerInfo ? message.payload.providerInfo : providerInfo;",
+    "        providerProperties = message.payload && message.payload.properties ? message.payload.properties : providerProperties;",
+    "        applyProperties(providerProperties);",
+    "        fulfillReady();",
+    "        try { window.dispatchEvent(new Event('ethereum#initialized')); } catch (err) {}",
+    "        announceProvider();",
+    "      } else if (message.type === 'providerUnavailable') {",
+    "        resetReady();",
+    "        rejectReadyWaiters('Wallet provider unavailable');",
+    "      } else if (message.type === 'response') {",
+    "        handleResponse(message);",
+    "      } else if (message.type === 'event') {",
+    "        var payload = message.payload || {};",
+    "        emitEvent(payload.event, payload.args);",
+    "      }",
+    "    });",
+    "",
+    "    window.addEventListener('eip6963:requestProvider', function() {",
+    "      if (isReady) {",
+    "        announceProvider();",
+    "      } else {",
+    "        sendMessage('requestAnnounce', {});",
+    "      }",
+    "    });",
+    "",
+    "    try {",
+    "      Object.defineProperty(window, 'ethereum', {",
+    "        configurable: true,",
+    "        enumerable: false,",
+    "        writable: true,",
+    "        value: providerProxy",
+    "      });",
+    "    } catch (err) {",
+    "      window.ethereum = providerProxy;",
+    "    }",
+    "",
+    "    try {",
+    "      if (!Array.isArray(window.ethereum.providers) || window.ethereum.providers.indexOf(providerProxy) === -1) {",
+    "        window.ethereum.providers = [providerProxy];",
+    "      }",
+    "    } catch (err) {}",
+    "",
+    "    sendMessage('init', {});",
+    "    sendMessage('requestAnnounce', {});",
+    "",
+    "    setTimeout(navigateToTarget, 0);",
+    "  } catch (err) {",
+    "    try {",
+    "      console.error('Mini app provider bootstrap failed', err);",
+    "    } catch (innerErr) {}",
+    "    try {",
+    "      setTimeout(navigateToTarget, 0);",
+    "    } catch (scheduleErr) {",
+    "      try {",
+    "        navigateToTarget();",
+    "      } catch (fallbackErr) {}",
+    "    }",
+    "  }",
+    "})();",
+  ];
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body><script>${scriptLines.join(
+    "\\n",
+  )}</script></body></html>`;
 };
 
 const parseIframeAttributes = (html: string | null): IframeAttributeMap | null => {
@@ -317,6 +669,516 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const [iframelyEmbedAttributes, setIframelyEmbedAttributes] =
     useState<IframeAttributeMap | null>(null);
 
+  const [bridgeId] = useState(
+    () =>
+      `nounspace-miniapp-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`,
+  );
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const iframeWindowRef = useRef<Window | null>(null);
+  const pendingBridgeMessagesRef = useRef<Array<Record<string, unknown>>>([]);
+  const iframeLoadListenerRef = useRef<((event: Event) => void) | null>(null);
+  const providerRef = useRef<MiniAppEthereumProvider | null>(null);
+  const providerInfoRef = useRef<MiniAppProviderInfo | null>(null);
+  const activeSubscriptionsRef = useRef(new Set<string>());
+  const subscriptionHandlersRef = useRef(
+    new Map<string, (...args: unknown[]) => void>(),
+  );
+
+  const deliverBridgeMessage = useCallback(
+    (targetWindow: Window, message: Record<string, unknown>) => {
+      try {
+        targetWindow.postMessage(
+          {
+            __nounspaceMiniApp: true,
+            bridgeId,
+            ...message,
+          },
+          "*",
+        );
+      } catch (error) {
+        console.warn("Failed to post message to mini app iframe", error);
+      }
+    },
+    [bridgeId],
+  );
+
+  const flushPendingBridgeMessages = useCallback(() => {
+    const targetWindow =
+      iframeWindowRef.current ?? iframeRef.current?.contentWindow ?? null;
+
+    if (!targetWindow) {
+      return false;
+    }
+
+    iframeWindowRef.current = targetWindow;
+
+    if (pendingBridgeMessagesRef.current.length === 0) {
+      return true;
+    }
+
+    const pending = pendingBridgeMessagesRef.current;
+    pendingBridgeMessagesRef.current = [];
+
+    pending.forEach((message) => {
+      deliverBridgeMessage(targetWindow, message);
+    });
+
+    return true;
+  }, [deliverBridgeMessage]);
+
+  const getDefaultProviderInfo = useCallback((): MiniAppProviderInfo => {
+    let icon = MINI_APP_PROVIDER_METADATA.iconPath;
+
+    if (typeof window !== "undefined") {
+      try {
+        icon = new URL(
+          MINI_APP_PROVIDER_METADATA.iconPath,
+          window.location.origin,
+        ).toString();
+      } catch (error) {
+        console.warn("Failed to resolve mini app provider icon", error);
+      }
+    }
+
+    return {
+      uuid: MINI_APP_PROVIDER_METADATA.uuid,
+      name: MINI_APP_PROVIDER_METADATA.name,
+      icon,
+      rdns: MINI_APP_PROVIDER_METADATA.rdns,
+    };
+  }, []);
+
+  const postToIframe = useCallback(
+    (message: Record<string, unknown>) => {
+      const targetWindow =
+        iframeWindowRef.current ?? iframeRef.current?.contentWindow ?? null;
+
+      if (!targetWindow) {
+        pendingBridgeMessagesRef.current.push(message);
+        return;
+      }
+
+      iframeWindowRef.current = targetWindow;
+
+      deliverBridgeMessage(targetWindow, message);
+    },
+    [deliverBridgeMessage],
+  );
+
+  const gatherProviderProperties = useCallback(
+    (provider: MiniAppEthereumProvider | null): Record<string, unknown> => {
+      if (!provider) {
+        return {};
+      }
+
+      const snapshot: Record<string, unknown> = {
+        isMiniAppProvider: true,
+        isNounspaceMiniAppProvider: true,
+      };
+
+      const propertyKeys = [
+        "isMetaMask",
+        "isCoinbaseWallet",
+        "isWalletConnect",
+        "isTrust",
+        "isLedger",
+        "isRainbow",
+        "isPhantom",
+        "chainId",
+        "selectedAddress",
+      ];
+
+      propertyKeys.forEach((key) => {
+        const value = (provider as Record<string, unknown>)[key];
+
+        if (
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean" ||
+          value === null
+        ) {
+          snapshot[key] = value;
+        }
+      });
+
+      return snapshot;
+    },
+    [],
+  );
+
+  const detachSubscription = useCallback((eventName: string) => {
+    const handler = subscriptionHandlersRef.current.get(eventName);
+    if (!handler) {
+      return;
+    }
+
+    const provider = providerRef.current;
+    if (provider && typeof provider.removeListener === "function") {
+      try {
+        provider.removeListener(eventName, handler);
+      } catch (error) {
+        console.warn("Failed to detach provider listener", eventName, error);
+      }
+    }
+
+    subscriptionHandlersRef.current.delete(eventName);
+  }, []);
+
+  const detachAllSubscriptions = useCallback(() => {
+    subscriptionHandlersRef.current.forEach((_handler, eventName) => {
+      detachSubscription(eventName);
+    });
+    subscriptionHandlersRef.current.clear();
+  }, [detachSubscription]);
+
+  const attachSubscription = useCallback(
+    (eventName: string) => {
+      const provider = providerRef.current;
+      if (!provider || typeof provider.on !== "function") {
+        return;
+      }
+
+      if (subscriptionHandlersRef.current.has(eventName)) {
+        return;
+      }
+
+      const handler = (...args: unknown[]) => {
+        postToIframe({
+          type: "event",
+          payload: { event: eventName, args },
+        });
+      };
+
+      try {
+        provider.on(eventName, handler);
+        subscriptionHandlersRef.current.set(eventName, handler);
+      } catch (error) {
+        console.warn("Failed to attach provider listener", eventName, error);
+      }
+    },
+    [postToIframe],
+  );
+
+  const announceProviderState = useCallback(
+    (forceUnavailable = false) => {
+      const provider = providerRef.current;
+
+      if (!provider) {
+        if (forceUnavailable) {
+          postToIframe({ type: "providerUnavailable" });
+        }
+        return;
+      }
+
+      const providerInfo = providerInfoRef.current ?? getDefaultProviderInfo();
+
+      postToIframe({
+        type: "providerReady",
+        payload: {
+          providerInfo,
+          properties: gatherProviderProperties(provider),
+        },
+      });
+    },
+    [gatherProviderProperties, getDefaultProviderInfo, postToIframe],
+  );
+
+  const setBridgeProvider = useCallback(
+    (
+      provider: MiniAppEthereumProvider | null,
+      info: MiniAppProviderInfo | null,
+    ) => {
+      if (providerRef.current === provider) {
+        providerInfoRef.current = info ?? providerInfoRef.current;
+        if (provider) {
+          announceProviderState();
+        } else {
+          announceProviderState(true);
+        }
+        return;
+      }
+
+      detachAllSubscriptions();
+      providerRef.current = provider;
+      providerInfoRef.current = info;
+
+      if (provider) {
+        activeSubscriptionsRef.current.forEach((eventName) => {
+          attachSubscription(eventName);
+        });
+        announceProviderState();
+      } else {
+        announceProviderState(true);
+      }
+    },
+    [announceProviderState, attachSubscription, detachAllSubscriptions],
+  );
+
+  const notifyIframeReady = useCallback(() => {
+    const hasWindow = flushPendingBridgeMessages();
+
+    if (hasWindow && providerRef.current) {
+      announceProviderState();
+    }
+  }, [announceProviderState, flushPendingBridgeMessages]);
+
+  const miniAppIframeRef = useCallback(
+    (node: HTMLIFrameElement | null) => {
+      if (iframeRef.current && iframeLoadListenerRef.current) {
+        iframeRef.current.removeEventListener(
+          "load",
+          iframeLoadListenerRef.current,
+        );
+        iframeLoadListenerRef.current = null;
+      }
+
+      iframeRef.current = node;
+      iframeWindowRef.current = node?.contentWindow ?? null;
+
+      if (!node) {
+        pendingBridgeMessagesRef.current = [];
+        iframeLoadListenerRef.current = null;
+        return;
+      }
+
+      notifyIframeReady();
+
+      const handleLoad = () => {
+        iframeWindowRef.current = node.contentWindow ?? null;
+        notifyIframeReady();
+      };
+
+      node.addEventListener("load", handleLoad);
+      iframeLoadListenerRef.current = handleLoad;
+    },
+    [notifyIframeReady],
+  );
+
+  const serializeProviderError = useCallback((error: unknown) => {
+    if (error && typeof error === "object") {
+      const result: Record<string, unknown> = {
+        message: String((error as { message?: unknown }).message ?? error),
+      };
+
+      if ("code" in (error as Record<string, unknown>)) {
+        result.code = (error as Record<string, unknown>).code;
+      }
+
+      if ("data" in (error as Record<string, unknown>)) {
+        result.data = (error as Record<string, unknown>).data;
+      }
+
+      return result;
+    }
+
+    return { message: String(error) };
+  }, []);
+
+  const handleBridgeRequest = useCallback(
+    (payload: unknown) => {
+      if (!payload || typeof payload !== "object") {
+        return;
+      }
+
+      const { requestId, method, params } = payload as {
+        requestId?: string;
+        method?: string;
+        params?: unknown;
+      };
+
+      if (!requestId || typeof requestId !== "string") {
+        return;
+      }
+
+      const provider = providerRef.current;
+      if (!provider || typeof provider.request !== "function" || typeof method !== "string") {
+        postToIframe({
+          type: "response",
+          payload: {
+            requestId,
+            error: {
+              message: "Wallet provider unavailable",
+            },
+          },
+        });
+        return;
+      }
+
+      Promise.resolve()
+        .then(() => provider.request!({ method, params }))
+        .then((result) => {
+          postToIframe({
+            type: "response",
+            payload: { requestId, result },
+          });
+        })
+        .catch((error) => {
+          postToIframe({
+            type: "response",
+            payload: {
+              requestId,
+              error: serializeProviderError(error),
+            },
+          });
+        });
+    },
+    [postToIframe, serializeProviderError],
+  );
+
+  const handleSubscribe = useCallback(
+    (payload: unknown) => {
+      const eventName = (payload as { event?: unknown })?.event;
+      if (typeof eventName !== "string" || !eventName) {
+        return;
+      }
+
+      activeSubscriptionsRef.current.add(eventName);
+      attachSubscription(eventName);
+    },
+    [attachSubscription],
+  );
+
+  const handleUnsubscribe = useCallback(
+    (payload: unknown) => {
+      const eventName = (payload as { event?: unknown })?.event;
+      if (typeof eventName !== "string" || !eventName) {
+        return;
+      }
+
+      activeSubscriptionsRef.current.delete(eventName);
+      detachSubscription(eventName);
+    },
+    [detachSubscription],
+  );
+
+  const handleBridgeMessage = useCallback(
+    (event: MessageEvent) => {
+      if (!isMiniAppEnvironment) {
+        return;
+      }
+
+      const message = event.data as
+        | {
+            __nounspaceMiniApp?: boolean;
+            bridgeId?: string;
+            type?: string;
+            payload?: unknown;
+          }
+        | undefined;
+
+      if (!message || !message.__nounspaceMiniApp || message.bridgeId !== bridgeId) {
+        return;
+      }
+
+      if (event.source && typeof (event.source as Window).postMessage === "function") {
+        iframeWindowRef.current = event.source as Window;
+      }
+
+      switch (message.type) {
+        case "init":
+          announceProviderState(true);
+          break;
+        case "request":
+          handleBridgeRequest(message.payload);
+          break;
+        case "subscribe":
+          handleSubscribe(message.payload);
+          break;
+        case "unsubscribe":
+          handleUnsubscribe(message.payload);
+          break;
+        case "requestAnnounce":
+          announceProviderState(true);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      announceProviderState,
+      bridgeId,
+      handleBridgeRequest,
+      handleSubscribe,
+      handleUnsubscribe,
+      isMiniAppEnvironment,
+    ],
+  );
+
+  useEffect(() => {
+    if (!isMiniAppEnvironment) {
+      return;
+    }
+
+    const listener = (event: MessageEvent) => {
+      handleBridgeMessage(event);
+    };
+
+    window.addEventListener("message", listener);
+
+    return () => {
+      window.removeEventListener("message", listener);
+    };
+  }, [handleBridgeMessage, isMiniAppEnvironment]);
+
+  useEffect(() => {
+    if (!isMiniAppEnvironment || typeof window === "undefined") {
+      return;
+    }
+
+    const win = window as Window & {
+      __nounspaceMiniAppEthProvider?: MiniAppEthereumProvider;
+      __nounspaceMiniAppProviderInfo?: MiniAppProviderInfo | null;
+    };
+
+    const currentProvider = win.__nounspaceMiniAppEthProvider ?? null;
+    const currentInfo = win.__nounspaceMiniAppProviderInfo ?? null;
+
+    setBridgeProvider(currentProvider ?? null, currentInfo ?? null);
+
+    const handleAnnounce = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      if (!detail || !detail.info) {
+        return;
+      }
+
+      if (
+        detail.info.uuid &&
+        detail.info.uuid !== MINI_APP_PROVIDER_METADATA.uuid
+      ) {
+        return;
+      }
+
+      setBridgeProvider(
+        (detail.provider as MiniAppEthereumProvider) ?? null,
+        detail.info ?? null,
+      );
+    };
+
+    window.addEventListener(
+      "eip6963:announceProvider",
+      handleAnnounce as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "eip6963:announceProvider",
+        handleAnnounce as EventListener,
+      );
+    };
+  }, [isMiniAppEnvironment, setBridgeProvider]);
+
+  useEffect(() => {
+    if (isMiniAppEnvironment) {
+      return;
+    }
+
+    activeSubscriptionsRef.current.clear();
+    detachAllSubscriptions();
+    providerRef.current = null;
+    providerInfoRef.current = null;
+    iframeWindowRef.current = null;
+  }, [detachAllSubscriptions, isMiniAppEnvironment]);
+
   const sanitizedEmbedScript = useMemo(() => {
     if (!embedScript) return null;
     const clean = DOMPurify.sanitize(embedScript, {
@@ -434,7 +1296,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       const sandboxRules = ensureSandboxRules(
         sanitizedEmbedAttributes.sandbox,
       );
-      const bootstrapDoc = createMiniAppBootstrapSrcDoc(allowedSrc);
+      const bootstrapDoc = createMiniAppBootstrapSrcDoc(allowedSrc, bridgeId);
 
       const widthAttr = sanitizedEmbedAttributes.width;
       const heightAttr = sanitizedEmbedAttributes.height;
@@ -464,6 +1326,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               overflow: isScrollable ? "auto" : "hidden",
             }}
             className="size-full"
+            ref={miniAppIframeRef}
           />
         </div>
       );
@@ -589,7 +1452,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   if (embedInfo.directEmbed && transformedUrl) {
     const miniAppBootstrapDoc = isMiniAppEnvironment
-      ? createMiniAppBootstrapSrcDoc(transformedUrl)
+      ? createMiniAppBootstrapSrcDoc(transformedUrl, bridgeId)
       : null;
 
     return (
@@ -623,6 +1486,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
                 overflow: isScrollable ? "auto" : "hidden",
               }}
               className="size-full"
+              ref={isMiniAppEnvironment ? miniAppIframeRef : undefined}
             />
           </div>
         ) : (
@@ -655,6 +1519,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
                   overflow: isScrollable ? "auto" : "hidden",
                 }}
                 className="size-full"
+                ref={isMiniAppEnvironment ? miniAppIframeRef : undefined}
               />
             </div>
           </div>
@@ -690,7 +1555,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
       const allowFullScreen = "allowfullscreen" in iframelyEmbedAttributes;
       const sandboxRules = ensureSandboxRules(iframelyEmbedAttributes.sandbox);
-      const bootstrapDoc = createMiniAppBootstrapSrcDoc(safeSrc);
+      const bootstrapDoc = createMiniAppBootstrapSrcDoc(safeSrc, bridgeId);
 
       const widthAttr = iframelyEmbedAttributes.width;
       const heightAttr = iframelyEmbedAttributes.height;
@@ -720,6 +1585,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               overflow: isScrollable ? "auto" : "hidden",
             }}
             className="size-full"
+            ref={miniAppIframeRef}
           />
         </div>
       );
