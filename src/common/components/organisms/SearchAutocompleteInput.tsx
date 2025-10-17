@@ -48,7 +48,7 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
     setIsFocused(false);
   }, []);
 
-  const handlePreventBlur = useCallback((event: React.PointerEvent) => {
+  const handlePreventBlur = useCallback((event: React.MouseEvent) => {
     event?.preventDefault();
   }, []);
 
@@ -90,10 +90,7 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
         />
       </div>
       {isFocused && (
-        <CommandList
-          onPointerDown={handlePreventBlur}
-          className="max-h-[500px]"
-        >
+        <CommandList onMouseDown={handlePreventBlur} className="max-h-[500px]">
           {false && (
             <CommandItem
               onSelect={onSelectQuery}
