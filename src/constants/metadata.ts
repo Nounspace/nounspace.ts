@@ -29,4 +29,5 @@ export const metadata = {
   APP_OG_TITLE: 'Nouns',
   APP_OG_DESCRIPTION: 'The social hub for Nouns',
   APP_OG_IMAGE: 'https://www.nounspace.com/images/icon-192x192.png',
+  APP_TAGS: ['nouns', 'client', 'customizable', 'social', 'link'],
 }
