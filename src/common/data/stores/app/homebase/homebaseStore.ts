@@ -70,11 +70,11 @@ export const createHomeBaseStoreFunc = (
       const currentHomebase = get().homebase.homebaseConfig;
       
       // This preserves local changes that haven't been committed yet
+      // If remote config has no timestamp, preserve local changes
       if (currentHomebase && 
           currentHomebase.timestamp && 
           spaceConfig && 
-          spaceConfig.timestamp &&
-          moment(currentHomebase.timestamp).isAfter(moment(spaceConfig.timestamp))) {
+          (!spaceConfig.timestamp || moment(currentHomebase.timestamp).isAfter(moment(spaceConfig.timestamp)))) {
         return cloneDeep(currentHomebase);
       }
       

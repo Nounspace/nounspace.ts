@@ -121,8 +121,21 @@ export const createHomeBaseTabStoreFunc = (
       // });
       
       set((draft) => {
+        // Ensure default tab is always first in the loaded order
+        const orderedTabs = clone(tabOrder);
+        if (!orderedTabs.includes(HOMEBASE_DEFAULT_TAB)) {
+          orderedTabs.unshift(HOMEBASE_DEFAULT_TAB);
+        } else {
+          // If default tab exists but isn't first, move it to the front
+          const defaultTabIndex = orderedTabs.indexOf(HOMEBASE_DEFAULT_TAB);
+          if (defaultTabIndex > 0) {
+            orderedTabs.splice(defaultTabIndex, 1);
+            orderedTabs.unshift(HOMEBASE_DEFAULT_TAB);
+          }
+        }
+        
         draft.homebase.tabOrdering = {
-          local: clone(tabOrder),
+          local: orderedTabs,
           remote: clone(tabOrder),
         };
       }, `loadHomebaseTabOrdering`);
@@ -135,7 +148,7 @@ export const createHomeBaseTabStoreFunc = (
   commitTabOrderingToDatabase: debounce(async () => {
     const localCopy = cloneDeep(
       get().homebase.tabOrdering.local.filter((name, i, arr) =>
-        name !== HOMEBASE_DEFAULT_TAB && arr.indexOf(name) === i,
+        arr.indexOf(name) === i,
       ),
     );
     if (localCopy) {
@@ -206,9 +219,21 @@ export const createHomeBaseTabStoreFunc = (
             tabName => validTabNames.includes(tabName)
           );
 
-          // Add back any valid tabs that aren't in the tab order
+          // Ensure default tab is always first in the order
+          if (!draft.homebase.tabOrdering.local.includes(HOMEBASE_DEFAULT_TAB)) {
+            draft.homebase.tabOrdering.local.unshift(HOMEBASE_DEFAULT_TAB);
+          } else {
+            // If default tab exists but isn't first, move it to the front
+            const defaultTabIndex = draft.homebase.tabOrdering.local.indexOf(HOMEBASE_DEFAULT_TAB);
+            if (defaultTabIndex > 0) {
+              draft.homebase.tabOrdering.local.splice(defaultTabIndex, 1);
+              draft.homebase.tabOrdering.local.unshift(HOMEBASE_DEFAULT_TAB);
+            }
+          }
+
+          // Add back any other valid tabs that aren't in the tab order
           validTabNames.forEach(tabName => {
-            if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+            if (tabName !== HOMEBASE_DEFAULT_TAB && !draft.homebase.tabOrdering.local.includes(tabName)) {
               draft.homebase.tabOrdering.local.push(tabName);
             }
           });
@@ -490,9 +515,9 @@ export const createHomeBaseTabStoreFunc = (
       const existingTab = get().homebase.tabs[tabName];
       
       // If we have a local config with a newer timestamp, keep it
+      // If remote config has no timestamp, preserve local changes
       if (existingTab?.config?.timestamp && 
-          remoteConfig.timestamp &&
-          moment(existingTab.config.timestamp).isAfter(moment(remoteConfig.timestamp))) {
+          (!remoteConfig.timestamp || moment(existingTab.config.timestamp).isAfter(moment(remoteConfig.timestamp)))) {
         // console.log('Local config is newer, keeping it:', {
         //   tabName,
         //   localTimestamp: existingTab.config.timestamp,

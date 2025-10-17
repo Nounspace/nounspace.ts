@@ -17,7 +17,6 @@ const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
 // Main component for the private space
 function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
-  const [_isPending, startTransition] = useTransition();
   
   // Destructure and retrieve various state and actions from the app store
   const {
@@ -71,7 +70,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     setModalOpen: state.setup.setModalOpen,
   }));
 
-  const router = useRouter(); // Hook for navigation
   const isLoggedIn = getIsAccountReady(); // Check if the user is logged in
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
@@ -90,6 +88,16 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     setCurrentSpaceId(HOMEBASE_ID);
     setCurrentTabName(tabName);
   }, [tabName, setCurrentSpaceId, setCurrentTabName]);
+
+  // Load tab ordering when component mounts
+  useEffect(() => {
+    loadTabOrder().catch(error => {
+      console.error("Error loading tab order:", error);
+    });
+    loadTabNames().catch(error => {
+      console.error("Error loading tab names:", error);
+    });
+  }, [loadTabOrder, loadTabNames]);
 
   // Load tab configuration when store values are set
   useEffect(() => {
