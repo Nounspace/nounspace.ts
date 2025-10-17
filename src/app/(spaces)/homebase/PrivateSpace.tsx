@@ -116,7 +116,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     if (tabName === HOMEBASE_DEFAULT_TAB) {
       return `/homebase`;
     }
-    return `/homebase/${tabName}`;
+    return `/homebase/${encodeURIComponent(tabName)}`;
   }
 
   // Handler to reset the configuration for the current tab

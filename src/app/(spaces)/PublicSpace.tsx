@@ -287,8 +287,9 @@ export default function PublicSpace({
             await loadEditableSpaces(); // First load
             await loadSpaceTab(newSpaceId, spacePageData.defaultTab);
 
-            // Load remaining tabs
-            const tabOrder = localSpaces[newSpaceId]?.order || [];
+            // Load remaining tabs - get fresh reference after loading operations
+            const freshLocalSpaces = useAppStore((state) => state.space.localSpaces);
+            const tabOrder = freshLocalSpaces[newSpaceId]?.order || [];
             for (const tabName of tabOrder) {
               if (tabName !== spacePageData.defaultTab) {
                 await loadSpaceTab(newSpaceId, tabName);
