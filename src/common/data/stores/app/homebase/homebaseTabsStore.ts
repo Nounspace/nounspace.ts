@@ -456,6 +456,15 @@ export const createHomeBaseTabStoreFunc = (
         if (data.result !== "success") {
           throw new Error("Failed to rename tab");
         }
+
+        // Update remoteConfig to reflect the new name after successful rename
+        set((draft) => {
+          const tabEntry = draft.homebase.tabs[sanitizedNewName];
+          if (tabEntry && tabEntry.config) {
+            // Update the remoteConfig to point to the new name
+            tabEntry.remoteConfig = cloneDeep(tabEntry.config);
+          }
+        }, "updateRemoteConfigAfterRename");
       },
       rollbackFn: () => {
         set((draft) => {
@@ -541,7 +550,17 @@ export const createHomeBaseTabStoreFunc = (
       }, `loadHomebaseTab:${tabName}-found`);
       return remoteConfig;
     } catch (e) {
-      // console.log('Failed to load tab config, using default:', { tabName });
+      // console.log('Failed to load tab config, checking for local config:', { tabName });
+      const existingTab = get().homebase.tabs[tabName];
+      
+      // If we have a local config, preserve it instead of falling back to default
+      if (existingTab?.config) {
+        // console.log('Preserving existing local config:', { tabName });
+        return existingTab.config;
+      }
+      
+      // Only fall back to default if no local config exists
+      // console.log('No local config found, using default:', { tabName });
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(
           INITIAL_HOMEBASE_CONFIG,
