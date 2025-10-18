@@ -35,6 +35,7 @@ import SpaceTabContent from "./components/SpaceTabContent";
 import StyleTabContent from "./components/StyleTabContent";
 import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
 import ThemeSettingsTooltip from "./components/ThemeSettingsTooltip";
+import React from "react";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -168,6 +169,8 @@ const useMobileAppsManager = (
 
   return { miniApps, handleUpdateMiniApp, handleReorderMiniApps };
 };
+// Persistence of the selected tab
+const LOCAL_STORAGE_KEY = 'themeEditorTab';
 
 export function ThemeSettingsEditor({
   theme = DEFAULT_THEME,
@@ -182,7 +185,28 @@ export function ThemeSettingsEditor({
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const { mobilePreview, setMobilePreview } = useMobilePreview();
-  const [tabValue, setTabValue] = useState(mobilePreview ? ThemeEditorTab.MOBILE : ThemeEditorTab.SPACE);
+  // Retrieve from localStorage or context
+  const getInitialTab = () => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
+    if (stored && Object.values(ThemeEditorTab).includes(stored as ThemeEditorTab)) {
+      return stored as ThemeEditorTab;
+    }
+    return mobilePreview ? ThemeEditorTab.MOBILE : ThemeEditorTab.SPACE;
+  };
+  const [tabValue, setTabValue] = useState<ThemeEditorTab>(getInitialTab());
+
+  useEffect(() => {
+    // Save to localStorage whenever it changes
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, tabValue);
+      } catch {
+        // Intentionally ignore localStorage errors
+      }
+    }
+    setMobilePreview(tabValue === ThemeEditorTab.MOBILE);
+  }, [tabValue, setMobilePreview]);
+
   const [showVibeEditor, setShowVibeEditor] = useState(false);
 
   // Our theme and mobile app helpers
@@ -209,10 +233,6 @@ export function ThemeSettingsEditor({
     }
     return { theme: theme };
   }, [getCurrentSpaceContext, theme]);
-
-  useEffect(() => {
-    setMobilePreview(tabValue === ThemeEditorTab.MOBILE);
-  }, [tabValue, setMobilePreview]);
 
   const {
     background,
@@ -345,7 +365,11 @@ export function ThemeSettingsEditor({
 
             {/* Templates Dropdown */}
             <div className="min-w-0">
-              <Tabs value={tabValue} onValueChange={(value) => setTabValue(value as ThemeEditorTab)}>
+              <Tabs value={tabValue} onValueChange={(value) => {
+                if (Object.values(ThemeEditorTab).includes(value as ThemeEditorTab)) {
+                  setTabValue(value as ThemeEditorTab);
+                }
+              }}>
                 {/* controlled Tabs */}
                 <ThemeSettingsTabs activeTab={tabValue} onTabChange={setTabValue} />
                 {/* Fonts */}
