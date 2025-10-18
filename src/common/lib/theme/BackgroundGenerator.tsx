@@ -19,10 +19,10 @@ interface BackgroundGeneratorProps {
   onChange: (value: string) => void;
 }
 
-export const BackgroundGenerator: React.FC<BackgroundGeneratorProps> = ({
+export const BackgroundGenerator = ({
   backgroundHTML,
   onChange,
-}) => {
+}: BackgroundGeneratorProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateText, setGenerateText] = useState("Generate");
   const [showBanner, setShowBanner] = useState(false);
@@ -188,5 +188,3 @@ export const BackgroundGenerator: React.FC<BackgroundGeneratorProps> = ({
     </div>
   );
 };
-
-export default BackgroundGenerator;

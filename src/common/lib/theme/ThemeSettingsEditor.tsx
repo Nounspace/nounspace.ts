@@ -29,6 +29,7 @@ import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useState } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
+import { BackgroundGenerator } from "./BackgroundGenerator";
 import CodeTabContent from "./components/CodeTabContent";
 import MobileTabContent from "./components/MobileTabContent";
 import SpaceTabContent from "./components/SpaceTabContent";
@@ -368,6 +369,13 @@ export function ThemeSettingsEditor({
                       initialVideoURL={theme.properties.musicURL}
                       onVideoSelect={themePropSetter("musicURL")}
                     />
+                    {/* Custom HTML/CSS Background Input & Generator Button */}
+                    <div className="flex flex-col gap-2 mt-4">
+                      <BackgroundGenerator
+                        backgroundHTML={backgroundHTML}
+                        onChange={themePropSetter("backgroundHTML")}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
                 {/* Style */}
