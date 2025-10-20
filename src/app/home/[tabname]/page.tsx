@@ -4,15 +4,19 @@ import HomePage from "../HomePage";
 
 const DEFAULT_TAB_NAME = "Nouns";
 
-type HomeTabPageProps = {
-  params: {
-    tabname?: string;
-  };
+type HomeTabPageParams = {
+  tabname?: string;
 };
 
-export default function HomeTabPage({ params }: HomeTabPageProps) {
-  const decodedTabName = params.tabname
-    ? decodeURIComponent(params.tabname)
+type HomeTabPageProps = {
+  params: Promise<HomeTabPageParams>;
+};
+
+export default async function HomeTabPage({ params }: HomeTabPageProps) {
+  const { tabname } = await params;
+
+  const decodedTabName = tabname
+    ? decodeURIComponent(tabname)
     : DEFAULT_TAB_NAME;
 
   return <HomePage tabNameFromPath={decodedTabName} />;
