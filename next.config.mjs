@@ -84,11 +84,6 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/home/Nouns",
-        permanent: true,
-      },
-      {
         source: "/signatures",
         destination:
           "https://docs.nounspace.com/nounspace-alpha/accounts/signatures",
