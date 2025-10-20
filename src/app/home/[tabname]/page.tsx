@@ -9,11 +9,11 @@ type HomeTabPageParams = {
 };
 
 type HomeTabPageProps = {
-  params: Promise<HomeTabPageParams>;
+  params: HomeTabPageParams;
 };
 
-export default async function HomeTabPage({ params }: HomeTabPageProps) {
-  const { tabname } = await params;
+export default function HomeTabPage({ params }: HomeTabPageProps) {
+  const { tabname } = params;
 
   const decodedTabName = tabname
     ? decodeURIComponent(tabname)

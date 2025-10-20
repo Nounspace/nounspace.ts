@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "Nounspace",
       images: [{ url: "https://nounspace.com/og.png" }],
     },
-    twitter: { card: "summary_large_image", site: "@yourhandle" },
+    twitter: { card: "summary_large_image", site: "@thenounspace" },
   };
 }
 
