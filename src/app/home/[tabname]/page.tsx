@@ -1,4 +1,5 @@
 import React from "react";
+import type { UnsafeUnwrappedParams } from "next/dist/server/request/params";
 
 import HomePage from "../HomePage";
 
@@ -9,11 +10,13 @@ type HomeTabPageParams = {
 };
 
 type HomeTabPageProps = {
-  params: HomeTabPageParams;
+  params: Promise<HomeTabPageParams>;
 };
 
+type UnwrappedHomeTabPageParams = UnsafeUnwrappedParams<HomeTabPageProps["params"]>;
+
 export default function HomeTabPage({ params }: HomeTabPageProps) {
-  const { tabname } = params;
+  const { tabname } = params as unknown as UnwrappedHomeTabPageParams;
 
   const decodedTabName = tabname
     ? decodeURIComponent(tabname)
