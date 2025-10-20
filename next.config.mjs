@@ -84,11 +84,6 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/home/Nouns",
-        permanent: true,
-      },
-      {
         source: "/signatures",
         destination:
           "https://docs.nounspace.com/nounspace-alpha/accounts/signatures",
@@ -103,6 +98,10 @@ const nextConfig = {
   },
   async rewrites() {
     return [
+      {
+        source: "/",
+        destination: "/home/Nouns",
+      },
       {
         source: "/home",
         destination: "/home/Nouns",
