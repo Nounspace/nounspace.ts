@@ -56,7 +56,10 @@ import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
 
 
-const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
+import { loadSystemConfig } from "@/config";
+
+const config = loadSystemConfig();
+const SPACE_CONTRACT_ADDR = config.community.contracts.space;
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;

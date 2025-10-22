@@ -1,7 +1,6 @@
 import { nounsBrand } from './brand/nouns.brand';
 import { nounsAssets } from './assets/nouns.assets';
 import { nounsTheme } from './theme/nouns.theme';
-import { nounsContent } from './content/nouns.content';
 import { nounsCommunity } from './community/nouns.community';
 import { nounsFidgets } from './fidgets/nouns.fidgets';
 import { nounsHomePage } from './spaces/nouns.home';
@@ -10,7 +9,6 @@ export interface SystemConfig {
   brand: BrandConfig;
   assets: AssetConfig;
   theme: ThemeConfig;
-  content: ContentConfig;
   community: CommunityConfig;
   fidgets: FidgetConfig;
   homePage: HomePageConfig;
@@ -67,94 +65,49 @@ export interface ThemeProperties {
   };
 }
 
-export interface ContentConfig {
-  faq: Array<{
-    question: string;
-    answer: string;
-  }>;
-  learning: Array<{
-    title: string;
-    href: string;
-    image: string;
-  }>;
-  tutorial: {
-    title: string;
-    text: string;
-    styling: {
-      fontFamily: string;
-      fontColor: string;
-      headingsFontFamily: string;
-      headingsFontColor: string;
-      backgroundColor: string;
-      borderColor: string;
-    };
-  };
-  sections: {
-    getANoun: Array<{
-      key: string;
-      title: string;
-      description: string;
-      buttonLabel: string;
-      href: string;
-      image: string;
-    }>;
-    alreadyOwn: Array<{
-      title: string;
-      description: string;
-      buttonLabel: string;
-      href: string;
-      image: string;
-    }>;
-    journey: Array<{
-      title: string;
-      description: string;
-      buttonLabel: string;
-      href: string;
-      image: string;
-      footer?: string;
-    }>;
-    fundedProjects: Array<{
-      title: string;
-      image: string;
-      href: string;
-    }>;
-    video: {
-      thumbnail: string;
-      url: string;
-    };
-    sampleNounIds: bigint[];
-  };
-}
 
 export interface CommunityConfig {
-  daos: Array<{
-    name: string;
-    contract: string;
-    graphUrl: string;
-    icon?: string;
-  }>;
+  type: string;
+  urls: {
+    website: string;
+    discord: string;
+    twitter: string;
+    github: string;
+    forum: string;
+  };
+  social: {
+    farcaster: string;
+    discord: string;
+    twitter: string;
+  };
+  governance: {
+    proposals: string;
+    delegates: string;
+    treasury: string;
+  };
+  tokens: {
+    noun: {
+      address: string;
+      symbol: string;
+      decimals: number;
+    };
+    nounsToken: {
+      address: string;
+      symbol: string;
+      decimals: number;
+    };
+  };
+  contracts: {
+    nouns: string;
+    auctionHouse: string;
+    space: string;
+    nogs: string;
+  };
 }
 
 export interface FidgetConfig {
   enabled: string[];
   disabled: string[];
-  custom: any[];
-  defaultLayout: {
-    layoutFidget: string;
-    layout: Array<{
-      w: number;
-      h: number;
-      x: number;
-      y: number;
-      i: string;
-      minW: number;
-      maxW: number;
-      minH: number;
-      maxH: number;
-      moved: boolean;
-      static: boolean;
-    }>;
-  };
 }
 
 export interface HomePageConfig {
@@ -226,7 +179,6 @@ export const nounsSystemConfig: SystemConfig = {
   brand: nounsBrand,
   assets: nounsAssets,
   theme: nounsTheme,
-  content: nounsContent,
   community: nounsCommunity,
   fidgets: nounsFidgets,
   homePage: nounsHomePage,

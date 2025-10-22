@@ -16,7 +16,6 @@ export type { SystemConfig };
 export { nounsBrand } from './brand/nouns.brand';
 export { nounsAssets } from './assets/nouns.assets';
 export { nounsTheme } from './theme/nouns.theme';
-export { nounsContent } from './content/nouns.content';
 export { nounsCommunity } from './community/nouns.community';
 export { nounsFidgets } from './fidgets/nouns.fidgets';
 export { nounsHomePage } from './spaces/nouns.home';
