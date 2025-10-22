@@ -1,5 +1,6 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+
 const tutorialText = `
 ### 🖌️ Click the paintbrush in the bottom-left corner to open Customization Mode
 

@@ -150,31 +150,4 @@ export const nounsCommunity = {
       icon: "https://nouns.build/_next/image?url=https%3A%2F%2Fipfs.decentralized-content.com%2Fipfs%2Fbafkreicjzqhdcrpn5zaqxafmsosg3suiyxfmg75sskbdlq5sqn4env5dm4&w=128&q=75",
     },
   ],
-  integrations: {
-    neynar: {
-      apiKey: process.env.NEYNAR_API_KEY,
-      baseUrl: "https://api.neynar.com",
-    },
-    supabase: {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    },
-    alchemy: {
-      apiKey: process.env.ALCHEMY_API_KEY,
-      baseUrl: "https://eth-mainnet.g.alchemy.com/v2",
-    },
-  },
-  social: {
-    farcaster: {
-      channel: "nouns",
-      url: "https://warpcast.com/~/channel/nouns",
-      followers: "100k+",
-    },
-    discord: {
-      url: "https://discord.gg/H8EYnEmj6q",
-    },
-    twitter: {
-      url: "https://x.com/nouns",
-    },
-  },
 };
