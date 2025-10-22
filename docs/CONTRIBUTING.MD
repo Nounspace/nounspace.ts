@@ -2,8 +2,8 @@
 
 To add any code to the `nounspace/Nounspace.ts` repo, you will need to open a PR.
 
-## Typescript
-Nounspace is written fully in typescript. At time of writing this (5/7/24), we are still in the process of fixing type errors that exist from the original codebase.
+## TypeScript
+Nounspace is written fully in TypeScript with strict type checking enabled.
 
 ## Steps to open a PR
 Nounspace expects its contributors to follow the "Fork and Pull" method to open PRs. Below is a TL;DR for this process
@@ -21,6 +21,7 @@ For more details on the "Fork and Pull" method, check out [Github's docs](https:
 
 ## PR Expectations
 - All commits follow [conventional commits](https://www.conventionalcommits.org/)
-- PR's titles begin with either "[FIDGET]" or "[CLIENT]" to show if the changes made are a Fidget submission or a change to the client code base
-- PR's bodies outline the changes made, and the rationale for them.
-- All PR's contain no new type errors and are fully valid typescript code
+- PR titles begin with either "[FIDGET]" or "[CLIENT]" to show if the changes made are a Fidget submission or a change to the client codebase
+- PR bodies outline the changes made and the rationale for them
+- All PRs contain no new type errors and are fully valid TypeScript code
+- Run `npm run lint` and `npm run check-types` before submitting
