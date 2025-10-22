@@ -15,6 +15,7 @@ import {
   GOVERNANCE_TAB_CONFIG,
   FUNDED_WORKS_TAB_CONFIG,
   PLACES_TAB_CONFIG,
+  NOUNS95_TAB_CONFIG,
 } from "./homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 
@@ -30,6 +31,8 @@ const getTabConfig = (tabName: string) => {
       return SOCIAL_TAB_CONFIG;
     case "Places":
       return PLACES_TAB_CONFIG;
+    case "Nouns95":
+      return NOUNS95_TAB_CONFIG;
     case "Nouns":
       return NOUNS_TAB_CONFIG;
     default:
@@ -50,7 +53,15 @@ const Home = () => {
   const isInitializing = getIsInitializing();
 
   // Tab ordering for homepage
-  const tabOrdering = ["Nouns", "Social", "Governance", "Resources", "Funded Works", "Places"];
+  const tabOrdering = [
+    "Nouns",
+    "Social",
+    "Governance",
+    "Resources",
+    "Funded Works",
+    "Places",
+    "Nouns95",
+  ];
 
   const { setFrameReady, isFrameReady } = useMiniKit();
 
