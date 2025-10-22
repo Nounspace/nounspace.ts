@@ -116,12 +116,7 @@ src/constants/
 ├── themes.ts                # Theme definitions
 ├── urls.ts                  # URL constants
 ├── initialSpaceConfig.ts    # Default space config
-├── initialProfileSpace.ts   # Profile space config
-├── initialProposalSpace.ts  # Proposal space config
-├── initialTokenSpace.ts     # Token space config
-├── initialChannelSpace.ts   # Channel space config
-├── intialHomebase.ts        # Homebase config (typo in filename)
-├── basedDaos.ts            # DAO configurations
+├── basedDaos.ts            # DAO configurations (fidget-specific)
 ├── nogs.ts                  # NOGs configuration
 ├── spaceToken.ts           # Space token config
 ├── requiredAuthenticators.ts # Auth requirements
@@ -134,14 +129,34 @@ src/constants/
 └── numericRange.d.ts        # Type definitions
 ```
 
-### 5. Blockchain Integration (`src/contracts/`)
+### 5. System Configuration (`src/config/`)
 
-Smart contract interfaces:
+Whitelabeling and system configuration for community customization:
 
 ```
-src/contracts/
-└── tokensABI.ts            # Token contract ABIs
+src/config/                  # System configuration
+├── brand/                   # Brand identity configuration
+│   └── nouns.brand.ts      # Nouns brand config (name, tagline, etc.)
+├── assets/                  # Asset configuration
+│   └── nouns.assets.ts     # Nouns asset config (logos, icons)
+├── theme/                   # Theme configuration
+│   └── nouns.theme.ts      # Nouns theme config (colors, fonts)
+├── community/               # Community-specific configuration
+│   └── nouns.community.ts  # Community URLs, contracts, tokens
+├── fidgets/                 # Fidget configuration
+│   └── nouns.fidgets.ts    # Enabled/disabled fidgets
+├── spaces/                  # Initial space configurations
+│   ├── nouns.home.ts       # Home page configuration
+│   └── initial*.ts         # Initial space templates
+└── systemConfig.ts          # Main system configuration interface
 ```
+
+**Key Features:**
+- **Whitelabeling Support**: Complete brand customization through configuration
+- **Community Integration**: URLs, social handles, governance links, contract addresses
+- **Theme System**: Customizable colors, fonts, and visual styling
+- **Fidget Management**: Enable/disable specific fidgets per community
+- **Space Templates**: Configurable initial space configurations
 
 ### 6. Mini-Applications (`src/fidgets/`)
 

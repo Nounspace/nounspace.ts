@@ -52,6 +52,7 @@ docs/
 - **README.md** - Main documentation hub with navigation
 - **GETTING_STARTED.md** - Setup and installation guide
 - **CONTRIBUTING.md** - Contributing guidelines
+- **WHITELABELING_SYSTEM.md** - Community customization and configuration system
 
 ### Architecture
 - **ARCHITECTURE/OVERVIEW.md** - High-level architecture with diagrams
