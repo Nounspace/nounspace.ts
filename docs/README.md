@@ -5,8 +5,10 @@ Nounspace is a highly customizable Farcaster client funded by Nouns DAO. This do
 ## Quick Start
 
 - [Getting Started](GETTING_STARTED.md) - Setup and development guide
+- [Project Structure](PROJECT_STRUCTURE.md) - Complete directory layout and organization
 - [Contributing](CONTRIBUTING.md) - How to contribute to the project
 - [Documentation Overview](DOCUMENTATION_OVERVIEW.md) - Complete documentation structure
+- [Cleanup TODO](CLEANUP_TODO.md) - Structural improvements and simplifications
 
 ## Architecture
 

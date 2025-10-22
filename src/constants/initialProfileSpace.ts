@@ -8,7 +8,7 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialSpaceConfig";
 const INITIAL_PROFILE_SPACE_CONFIG = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 INITIAL_PROFILE_SPACE_CONFIG.tabNames = ["Profile"];
 
-const createIntialProfileSpaceConfigForFid = (
+const createInitialProfileSpaceConfigForFid = (
   fid: number,
   username?: string,
 ): Omit<SpaceConfig, "isEditable"> => {
@@ -80,4 +80,4 @@ const createIntialProfileSpaceConfigForFid = (
   return config;
 };
 
-export default createIntialProfileSpaceConfigForFid;
+export default createInitialProfileSpaceConfigForFid;
