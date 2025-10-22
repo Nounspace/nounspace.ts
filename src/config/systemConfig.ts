@@ -1,9 +1,5 @@
-import { nounsBrand } from './brand/nouns.brand';
-import { nounsAssets } from './assets/nouns.assets';
-import { nounsTheme } from './theme/nouns.theme';
-import { nounsCommunity } from './community/nouns.community';
-import { nounsFidgets } from './fidgets/nouns.fidgets';
-import { nounsHomePage } from './spaces/nouns.home';
+// This file contains only the SystemConfig interface
+// Individual configurations are imported from their respective folders
 
 export interface SystemConfig {
   brand: BrandConfig;
@@ -174,12 +170,5 @@ export interface GridItem {
 }
 
 
-// Export the Nouns configuration
-export const nounsSystemConfig: SystemConfig = {
-  brand: nounsBrand,
-  assets: nounsAssets,
-  theme: nounsTheme,
-  community: nounsCommunity,
-  fidgets: nounsFidgets,
-  homePage: nounsHomePage,
-};
+// SystemConfig interface is exported from this file
+// Individual configurations are defined in their respective folders
