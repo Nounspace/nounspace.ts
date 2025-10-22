@@ -2,7 +2,7 @@ import { SpaceConfig } from "@/app/(spaces)/Space";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
 import { cloneDeep } from "lodash";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "../initialSpaceConfig";
 
 // Set default tabNames for profile spaces
 const INITIAL_PROFILE_SPACE_CONFIG = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
