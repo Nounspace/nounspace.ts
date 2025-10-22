@@ -3,7 +3,7 @@ import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import neynar from "@/common/data/api/neynar";
 import { unstable_noStore as noStore } from "next/cache";
 import { ProfileSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
-import createInitialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
+import createInitialProfileSpaceConfigForFid from "@/config/spaces/initialProfileSpace";
 
 export type Tab = {
   spaceId: string;

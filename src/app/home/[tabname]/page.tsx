@@ -16,30 +16,17 @@ import {
   FUNDED_WORKS_TAB_CONFIG,
   PLACES_TAB_CONFIG,
 } from "./homePageTabsConfig";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config/spaces/initialSpaceConfig";
+import { useSystemConfig } from "@/hooks/useSystemConfig";
 
-const getTabConfig = (tabName: string) => {
-  switch (tabName) {
-    case "Governance":
-      return GOVERNANCE_TAB_CONFIG;
-    case "Resources":
-      return RESOURCES_TAB_CONFIG;
-    case "Funded Works":
-      return FUNDED_WORKS_TAB_CONFIG;
-    case "Social":
-      return SOCIAL_TAB_CONFIG;
-    case "Places":
-      return PLACES_TAB_CONFIG;
-    case "Nouns":
-      return NOUNS_TAB_CONFIG;
-    default:
-      return NOUNS_TAB_CONFIG;
-  }
+const getTabConfig = (tabName: string, config: any): SpaceConfig => {
+  return config.homePage.tabs[tabName] || config.homePage.tabs[config.homePage.defaultTab];
 };
 
 const Home = () => {
   const router = useRouter();
   const params = useParams();
+  const config = useSystemConfig();
   const { getIsAccountReady, getIsInitializing, setCurrentTabName, currentTabName } = useAppStore((state) => ({
     getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
@@ -49,8 +36,8 @@ const Home = () => {
   const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
 
-  // Tab ordering for homepage
-  const tabOrdering = ["Nouns", "Social", "Governance", "Resources", "Funded Works", "Places"];
+  // Tab ordering for homepage from configuration
+  const tabOrdering = config.homePage.tabOrder;
 
   const { setFrameReady, isFrameReady } = useMiniKit();
 
@@ -61,10 +48,10 @@ const Home = () => {
   useEffect(() => {
     const newTabName = params?.tabname
       ? decodeURIComponent(params.tabname as string)
-      : "Nouns";
+      : config.homePage.defaultTab;
 
     setCurrentTabName(newTabName);
-  }, [params?.tabname, setCurrentTabName]);
+  }, [params?.tabname, setCurrentTabName, config.homePage.defaultTab]);
 
   function switchTabTo(newTabName: string) {
     // Update the store immediately for better responsiveness
@@ -76,13 +63,13 @@ const Home = () => {
     <TabBar
       getSpacePageUrl={(tab) => `/home/${tab}`}
       inHomebase={false}
-      currentTab={currentTabName ?? "Nouns"}
+      currentTab={currentTabName ?? config.homePage.defaultTab}
       tabList={tabOrdering}
-      defaultTab={"Nouns"}
+      defaultTab={config.homePage.defaultTab}
       inEditMode={false}
       updateTabOrder={async () => Promise.resolve()}
       deleteTab={async () => Promise.resolve()}
-      createTab={async () => Promise.resolve({ tabName: currentTabName ?? "Nouns" })}
+      createTab={async () => Promise.resolve({ tabName: currentTabName ?? config.homePage.defaultTab })}
       renameTab={async () => Promise.resolve(void 0)}
       commitTab={async () => Promise.resolve()}
       commitTabOrder={async () => Promise.resolve()}
@@ -91,7 +78,7 @@ const Home = () => {
   );
 
   const args: SpacePageArgs = {
-    config: getTabConfig(currentTabName ?? "Nouns") as SpaceConfig,
+    config: getTabConfig(currentTabName ?? config.homePage.defaultTab, config) as SpaceConfig,
     saveConfig: async () => {},
     commitConfig: async () => {},
     resetConfig: async () => {},
