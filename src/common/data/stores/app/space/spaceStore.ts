@@ -7,7 +7,7 @@ import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
-import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
+import createInitialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
 import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
 import {
   ModifiableSpacesResponse,
@@ -919,7 +919,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        createIntialProfileSpaceConfigForFid(fid),
+        createInitialProfileSpaceConfigForFid(fid),
       );
       analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
         type: "user",
