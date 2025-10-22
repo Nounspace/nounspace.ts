@@ -19,5 +19,11 @@ export { nounsTheme } from './theme/nouns.theme';
 export { nounsContent } from './content/nouns.content';
 export { nounsCommunity } from './community/nouns.community';
 export { nounsFidgets } from './fidgets/nouns.fidgets';
-export { nounsHomePage } from './home/nouns.home';
-export { nounsSpaces } from './spaces/nouns.spaces';
+export { nounsHomePage } from './spaces/nouns.home';
+
+// Export the initial space creators from config
+export { default as createInitialProfileSpaceConfigForFid } from './spaces/initialProfileSpace';
+export { default as createInitialChannelSpaceConfig } from './spaces/initialChannelSpace';
+export { default as createInitialTokenSpaceConfigForAddress } from './spaces/initialTokenSpace';
+export { default as createInitalProposalSpaceConfigForProposalId } from './spaces/initialProposalSpace';
+export { default as INITIAL_HOMEBASE_CONFIG } from './spaces/initialHomebase';

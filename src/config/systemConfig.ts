@@ -4,8 +4,7 @@ import { nounsTheme } from './theme/nouns.theme';
 import { nounsContent } from './content/nouns.content';
 import { nounsCommunity } from './community/nouns.community';
 import { nounsFidgets } from './fidgets/nouns.fidgets';
-import { nounsHomePage } from './home/nouns.home';
-import { nounsSpaces } from './spaces/nouns.spaces';
+import { nounsHomePage } from './spaces/nouns.home';
 
 export interface SystemConfig {
   brand: BrandConfig;
@@ -15,7 +14,6 @@ export interface SystemConfig {
   community: CommunityConfig;
   fidgets: FidgetConfig;
   homePage: HomePageConfig;
-  spaces: SpaceConfig;
 }
 
 export interface BrandConfig {
@@ -23,20 +21,6 @@ export interface BrandConfig {
   displayName: string;
   tagline: string;
   description: string;
-  website: string;
-  social: {
-    farcaster: string;
-    discord: string;
-    twitter: string;
-  };
-  contact: {
-    support: string;
-    email: string;
-  };
-  legal: {
-    terms: string;
-    privacy: string;
-  };
 }
 
 export interface AssetConfig {
@@ -48,30 +32,6 @@ export interface AssetConfig {
     og: string;
     splash: string;
   };
-  images: {
-    hero: string;
-    background: string;
-    tutorial: string;
-    loading: string;
-    notFound: string;
-    chainEmoji: string;
-    farcaster: string;
-    farcasterNude: string;
-    noggles: string;
-    nounsYellow: string;
-    badge: string;
-    activeBadge: string;
-    tomAlerts: string;
-    clankerGalaxy: string;
-    rainforest: string;
-  };
-  learn: {
-    governance: string;
-    noggles: string;
-    whatAreNouns: string;
-  };
-  nounsSamples: string[];
-  exploreIcons: string[];
 }
 
 export interface ThemeConfig {
@@ -151,7 +111,7 @@ export interface ContentConfig {
       buttonLabel: string;
       href: string;
       image: string;
-      footer: string;
+      footer?: string;
     }>;
     fundedProjects: Array<{
       title: string;
@@ -171,35 +131,8 @@ export interface CommunityConfig {
     name: string;
     contract: string;
     graphUrl: string;
-    icon: string;
+    icon?: string;
   }>;
-  integrations: {
-    neynar: {
-      apiKey: string;
-      baseUrl: string;
-    };
-    supabase: {
-      url: string;
-      anonKey: string;
-    };
-    alchemy: {
-      apiKey: string;
-      baseUrl: string;
-    };
-  };
-  social: {
-    farcaster: {
-      channel: string;
-      url: string;
-      followers: string;
-    };
-    discord: {
-      url: string;
-    };
-    twitter: {
-      url: string;
-    };
-  };
 }
 
 export interface FidgetConfig {
@@ -233,7 +166,12 @@ export interface HomePageConfig {
   layout: {
     defaultLayoutFidget: string;
     gridSpacing: number;
-    theme: ThemeProperties;
+    theme: {
+      background: string;
+      fidgetBackground: string;
+      font: string;
+      fontColor: string;
+    };
   };
 }
 
@@ -247,111 +185,6 @@ export interface TabConfig {
   fidgetTrayContents: any[];
   isEditable: boolean;
   timestamp: string;
-}
-
-export interface SpaceConfig {
-  base: BaseSpaceConfig;
-  profile: ProfileSpaceConfig;
-  channel: ChannelSpaceConfig;
-  token: TokenSpaceConfig;
-  proposal: ProposalSpaceConfig;
-  homebase: HomebaseSpaceConfig;
-}
-
-export interface BaseSpaceConfig {
-  layoutID: string;
-  layoutDetails: LayoutFidgetDetails;
-  theme: ThemeProperties;
-  fidgetInstanceDatums: Record<string, FidgetInstanceData>;
-  fidgetTrayContents: any[];
-  tabNames: string[];
-}
-
-export interface ProfileSpaceConfig {
-  defaultTabNames: string[];
-  defaultFidgets: {
-    feed: FidgetInstanceData;
-    portfolio: FidgetInstanceData;
-  };
-  layout: {
-    feed: GridItem;
-    portfolio: GridItem;
-  };
-}
-
-export interface ChannelSpaceConfig {
-  defaultTabNames: string[];
-  defaultFidgets: {
-    feed: FidgetInstanceData;
-  };
-  layout: {
-    feed: GridItem;
-  };
-}
-
-export interface TokenSpaceConfig {
-  defaultTabNames: string[];
-  defaultFidgets: {
-    swap: FidgetInstanceData;
-    market: FidgetInstanceData;
-    cast?: FidgetInstanceData;
-  };
-  layout: {
-    swap: GridItem;
-    market: GridItem;
-    cast?: GridItem;
-  };
-}
-
-export interface ProposalSpaceConfig {
-  defaultTabNames: string[];
-  defaultFidgets: {
-    proposal: FidgetInstanceData;
-    tldr: FidgetInstanceData;
-    voting: FidgetInstanceData;
-  };
-  layout: {
-    proposal: GridItem;
-    tldr: GridItem;
-    voting: GridItem;
-  };
-}
-
-export interface HomebaseSpaceConfig {
-  defaultTabNames: string[];
-  defaultFidgets: {
-    onboarding: FidgetInstanceData;
-  };
-  layout: {
-    onboarding: GridItem;
-  };
-  onboarding: {
-    tutorialText: string;
-    styling: {
-      fontFamily: string;
-      fontColor: string;
-      headingsFontFamily: string;
-      headingsFontColor: string;
-      backgroundColor: string;
-      borderColor: string;
-    };
-  };
-}
-
-export interface GridItem {
-  w: number;
-  h: number;
-  x: number;
-  y: number;
-  i: string;
-  minW?: number;
-  maxW?: number;
-  minH?: number;
-  maxH?: number;
-  moved?: boolean;
-  static?: boolean;
-  resizeHandles?: string[];
-  isBounded?: boolean;
 }
 
 export interface LayoutFidgetDetails {
@@ -371,6 +204,23 @@ export interface FidgetInstanceData {
   id: string;
 }
 
+export interface GridItem {
+  w: number;
+  h: number;
+  x: number;
+  y: number;
+  i: string;
+  minW?: number;
+  maxW?: number;
+  minH?: number;
+  maxH?: number;
+  moved?: boolean;
+  static?: boolean;
+  resizeHandles?: string[];
+  isBounded?: boolean;
+}
+
+
 // Export the Nouns configuration
 export const nounsSystemConfig: SystemConfig = {
   brand: nounsBrand,
@@ -380,5 +230,4 @@ export const nounsSystemConfig: SystemConfig = {
   community: nounsCommunity,
   fidgets: nounsFidgets,
   homePage: nounsHomePage,
-  spaces: nounsSpaces,
 };

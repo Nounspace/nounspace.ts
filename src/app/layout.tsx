@@ -4,23 +4,40 @@ import "@/styles/globals.css";
 import '@coinbase/onchainkit/styles.css';
 import Providers from "@/common/providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { defaultFrame } from "@/constants/metadata";
+import { loadSystemConfig } from "@/config";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
 import type { Metadata } from 'next' // Migrating next/head
 
+// Load system configuration
+const config = loadSystemConfig();
+
+// Create default frame from configuration
+const defaultFrame = {
+  version: "next",
+  imageUrl: `${WEBSITE_URL}${config.assets.logos.og}`,
+  button: {
+    title: config.brand.name,
+    action: {
+      type: "launch_frame",
+      url: WEBSITE_URL,
+      name: config.brand.displayName,
+      splashImageUrl: `${WEBSITE_URL}${config.assets.logos.splash}`,
+      splashBackgroundColor: "#FFFFFF",
+    }
+  }
+};
+
 export const metadata: Metadata = {
-  title: "Nounspace",
-  description:
-    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
+  title: config.brand.displayName,
+  description: config.brand.description,
   openGraph: {
-    siteName: "Nounspace",
-    title: "Nounspace",
+    siteName: config.brand.displayName,
+    title: config.brand.displayName,
     type: "website",
-    description:
-      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
+    description: config.brand.description,
     images: {
-      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+      url: `${WEBSITE_URL}${config.assets.logos.og}`,
       type: "image/png",
       width: 1200,
       height: 737,
@@ -30,7 +47,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/images/favicon.ico",
+        url: config.assets.logos.favicon,
       },
       {
         url: "/images/favicon-32x32.png",
@@ -41,7 +58,7 @@ export const metadata: Metadata = {
         sizes: "16x16",
       },
     ],
-    apple: "/images/apple-touch-icon.png",
+    apple: config.assets.logos.appleTouch,
   },
   other: {
     "fc:frame": JSON.stringify(defaultFrame),
