@@ -5,7 +5,7 @@ import {
 import axiosBackend from "@/common/data/api/backend";
 import { createClient } from "@/common/data/database/supabase/clients/component";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import INITIAL_HOMEBASE_CONFIG from "@/config/spaces/initialHomebase";
+import { INITIAL_HOMEBASE_CONFIG } from "@/config";
 import { homebaseTabOrderPath, homebaseTabsPath } from "@/constants/supabase";
 import {
   ManageHomebaseTabsResponse,
