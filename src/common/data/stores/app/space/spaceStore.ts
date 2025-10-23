@@ -6,9 +6,11 @@ import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config/spaces/initialSpaceConfig";
-import createInitialProfileSpaceConfigForFid from "@/config/spaces/initialProfileSpace";
-import createInitialChannelSpaceConfig from "@/config/spaces/initialChannelSpace";
+import { 
+  INITIAL_SPACE_CONFIG_EMPTY,
+  createInitialProfileSpaceConfigForFid,
+  createInitialChannelSpaceConfig
+} from "@/config";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,

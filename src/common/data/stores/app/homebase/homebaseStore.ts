@@ -11,7 +11,7 @@ import {
   SpaceConfig,
   SpaceConfigSaveDetails,
 } from "@/app/(spaces)/Space";
-import INITIAL_HOMEBASE_CONFIG from "@/config/spaces/initialHomebase";
+import { INITIAL_HOMEBASE_CONFIG } from "@/config";
 import {
   HomeBaseTabStore,
   createHomeBaseTabStoreFunc,

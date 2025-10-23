@@ -5,7 +5,7 @@ import {
   ChannelSpacePageData,
   SPACE_TYPES,
 } from "@/common/types/spaceData";
-import createInitialChannelSpaceConfig from "@/config/spaces/initialChannelSpace";
+import { createInitialChannelSpaceConfig } from "@/config";
 import { Channel, ChannelType } from "@neynar/nodejs-sdk/build/api";
 
 export const getChannelMetadata = async (
