@@ -10,7 +10,6 @@ import {
   WagmiProvider,
   useAccount,
   useConnect,
-  useDisconnect,
   useEnsName,
   useSwitchChain,
   useWriteContract,
@@ -35,7 +34,7 @@ import { nounsWagmiConfig, REQUIRED_CHAIN_ID } from "./wagmiConfig";
 import { nounsPublicClient, NOUNS_AH_ADDRESS } from "./config";
 import { NounsAuctionHouseV3Abi, NounsAuctionHouseExtraAbi } from "./abis";
 import type { Auction, Settlement } from "./types";
-import { formatEth, getAuctionStatus, shortAddress } from "./utils";
+import { formatEth, getAuctionStatus } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
 import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX, fetchAccountLeaderboardCount } from "./subgraph";
 import LinkOut from "./LinkOut";
