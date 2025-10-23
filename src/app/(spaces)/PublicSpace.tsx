@@ -23,7 +23,6 @@ import {
   isProposalSpace,
   isChannelSpace,
 } from "@/common/types/spaceData";
-import { withOptimisticUpdate } from "@/common/utils/tabUtils";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -37,10 +36,7 @@ export default function PublicSpace({
 }: PublicSpaceProps) {
 
   const {
-    clearLocalSpaces,
-    getCurrentSpaceId,
     setCurrentSpaceId,
-    getCurrentTabName,
     setCurrentTabName,
     currentSpaceId,
     currentTabName,

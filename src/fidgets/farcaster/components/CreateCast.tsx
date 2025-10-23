@@ -272,7 +272,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const { user } = usePrivy();
   const result = useBalance({
     address: (user?.wallet?.address as Address) || zeroAddress,
-    token: SPACE_CONTRACT_ADDR,
+    token: SPACE_CONTRACT_ADDR as Address,
     chainId: base.id,
   });
   const spaceHoldAmount = result?.data
