@@ -113,21 +113,22 @@ const ChannelCard = ({ metadata }: { metadata: ChannelMetadata }) => {
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            fallbackInitial
+            <div style={{ display: "flex" }}>{fallbackInitial}</div>
           )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ fontSize: "32px", opacity: 0.7 }}>Farcaster Channel</div>
-          <div style={{ fontSize: "72px", fontWeight: 700 }}>{displayName}</div>
-          <div style={{ fontSize: "30px", opacity: 0.8 }}>/{channelId}</div>
+          <div style={{ display: "flex", fontSize: "32px", opacity: 0.7 }}>Farcaster Channel</div>
+          <div style={{ display: "flex", fontSize: "72px", fontWeight: 700 }}>{displayName}</div>
+          <div style={{ display: "flex", fontSize: "30px", opacity: 0.8 }}>/{channelId}</div>
           {formattedFollowers ? (
-            <div style={{ fontSize: "28px", opacity: 0.75 }}>{formattedFollowers}</div>
+            <div style={{ display: "flex", fontSize: "28px", opacity: 0.75 }}>{formattedFollowers}</div>
           ) : null}
         </div>
       </div>
 
       <div
         style={{
+          display: "flex",
           fontSize: "30px",
           lineHeight: 1.4,
           maxWidth: "880px",
@@ -139,6 +140,7 @@ const ChannelCard = ({ metadata }: { metadata: ChannelMetadata }) => {
 
       <div
         style={{
+          display: "flex",
           marginTop: "auto",
           fontSize: "28px",
           letterSpacing: "0.08em",
