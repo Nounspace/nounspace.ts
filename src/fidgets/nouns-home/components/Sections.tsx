@@ -10,7 +10,6 @@ import type { Auction } from "../types";
 import type { Settlement } from "../types";
 
 const VIDEO_THUMBNAIL = "https://www.nouns.com/this-is-nouns-video-thumbnail.png";
-const VIDEO_URL = "https://www.youtube.com/watch?v=lOzCA7bZG_k";
 
 const FUNDED_PROJECTS = [
   {
@@ -118,22 +117,6 @@ const GET_A_NOUN_CARDS = [
   },
 ];
 
-const ALREADY_OWN_CARDS = [
-  {
-    title: "Instant Swap",
-    description: "Swap your Noun for another in a single trade.",
-    buttonLabel: "Swap",
-    href: "https://www.nouns.com/explore?instantSwap=1",
-    image: "https://www.nouns.com/feature/instant-swap/main.png",
-  },
-  {
-    title: "Treasury Swap",
-    description: "Offer to trade your Noun with one held by the Treasury.",
-    buttonLabel: "Trade",
-    href: "https://www.nouns.com/explore?onlyTreasuryNouns=1",
-    image: "https://www.nouns.com/feature/treasury-swap/main.png",
-  },
-];
 
 const JOURNEY_CARDS = [
   {

@@ -8,15 +8,6 @@ import { SpaceConfig } from "@/app/(spaces)/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 
-import {
-  RESOURCES_TAB_CONFIG,
-  NOUNS_TAB_CONFIG,
-  SOCIAL_TAB_CONFIG,
-  GOVERNANCE_TAB_CONFIG,
-  FUNDED_WORKS_TAB_CONFIG,
-  PLACES_TAB_CONFIG,
-} from "./homePageTabsConfig";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config";
 import { useSystemConfig } from "@/hooks/useSystemConfig";
 
 const getTabConfig = (tabName: string, config: any): SpaceConfig => {
@@ -27,14 +18,10 @@ const Home = () => {
   const router = useRouter();
   const params = useParams();
   const config = useSystemConfig();
-  const { getIsAccountReady, getIsInitializing, setCurrentTabName, currentTabName } = useAppStore((state) => ({
-    getIsAccountReady: state.getIsAccountReady,
-    getIsInitializing: state.getIsInitializing,
+  const { setCurrentTabName, currentTabName } = useAppStore((state) => ({
     setCurrentTabName: state.currentSpace.setCurrentTabName,
     currentTabName: state.currentSpace.currentTabName,
   }));
-  const isLoggedIn = getIsAccountReady();
-  const isInitializing = getIsInitializing();
 
   // Tab ordering for homepage from configuration
   const tabOrdering = config.homePage.tabOrder;
@@ -53,11 +40,6 @@ const Home = () => {
     setCurrentTabName(newTabName);
   }, [params?.tabname, setCurrentTabName, config.homePage.defaultTab]);
 
-  function switchTabTo(newTabName: string) {
-    // Update the store immediately for better responsiveness
-    setCurrentTabName(newTabName);
-    router.push(`/home/${newTabName}`);
-  }
 
   const tabBar = (
     <TabBar
