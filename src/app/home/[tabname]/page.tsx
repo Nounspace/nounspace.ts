@@ -15,7 +15,6 @@ const getTabConfig = (tabName: string, config: any): SpaceConfig => {
 };
 
 const Home = () => {
-  const router = useRouter();
   const params = useParams();
   const config = useSystemConfig();
   const { setCurrentTabName, currentTabName } = useAppStore((state) => ({
