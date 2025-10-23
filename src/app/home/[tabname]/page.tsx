@@ -8,7 +8,7 @@ import { SpaceConfig } from "@/app/(spaces)/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 
-import { useSystemConfig } from "@/hooks/useSystemConfig";
+import { useSystemConfig } from "@/common/lib/hooks/useSystemConfig";
 
 const getTabConfig = (tabName: string, config: any): SpaceConfig => {
   return config.homePage.tabs[tabName] || config.homePage.tabs[config.homePage.defaultTab];
