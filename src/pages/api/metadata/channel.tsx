@@ -36,10 +36,7 @@ const formatFollowerCount = (count?: number) => {
   return `${rounded}${units[unitIndex]} followers`;
 };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<ImageResponse | string>,
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<ImageResponse | string>) {
   if (!req.url) {
     return res.status(404).send("Url not found");
   }
@@ -65,13 +62,7 @@ export default async function handler(
 }
 
 const ChannelCard = ({ metadata }: { metadata: ChannelMetadata }) => {
-  const {
-    channelId,
-    channelName,
-    description,
-    imageUrl,
-    followerCount,
-  } = metadata;
+  const { channelId, channelName, description, imageUrl, followerCount } = metadata;
 
   const displayName = channelName || channelId || "Channel";
   const formattedFollowers = formatFollowerCount(followerCount);
