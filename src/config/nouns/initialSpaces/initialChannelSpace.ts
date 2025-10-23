@@ -2,7 +2,7 @@ import { SpaceConfig } from "@/app/(spaces)/Space";
 import { FilterType, FeedType } from "@neynar/nodejs-sdk/build/api";
 import { cloneDeep } from "lodash";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "../initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "../../initialSpaceConfig";
 
 const INITIAL_CHANNEL_SPACE_CONFIG = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 INITIAL_CHANNEL_SPACE_CONFIG.tabNames = ["Channel"];

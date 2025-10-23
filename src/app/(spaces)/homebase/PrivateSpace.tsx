@@ -7,7 +7,7 @@ import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { isNil, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config/spaces/initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 import { HOMEBASE_DEFAULT_TAB } from "@/common/data/stores/app/homebase/homebaseTabsStore";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";

@@ -16,7 +16,7 @@ import {
   FUNDED_WORKS_TAB_CONFIG,
   PLACES_TAB_CONFIG,
 } from "./homePageTabsConfig";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config/spaces/initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config";
 import { useSystemConfig } from "@/hooks/useSystemConfig";
 
 const getTabConfig = (tabName: string, config: any): SpaceConfig => {
