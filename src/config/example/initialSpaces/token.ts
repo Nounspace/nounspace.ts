@@ -24,7 +24,7 @@ export const createInitialTokenSpaceConfigForAddress = (
         settings: {
           tokenAddress: address,
           network: network,
-          geckoUrl: getGeckoUrl(network, address),
+          geckoUrl: getGeckoUrl(address, network),
         },
       },
       fidgetType: "market",
