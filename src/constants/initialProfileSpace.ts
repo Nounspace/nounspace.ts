@@ -16,7 +16,7 @@ const createIntialProfileSpaceConfigForFid = (
   config.fidgetInstanceDatums = {
     "feed:profile": {
       config: {
-        editable: false,
+        editable: true,
         settings: {
           feedType: FeedType.Filter,
           users: fid,
@@ -29,7 +29,7 @@ const createIntialProfileSpaceConfigForFid = (
     },
     "Portfolio:cd627e89-d661-4255-8c4c-2242a950e93e": {
       config: {
-        editable: false,
+        editable: true,
         settings: {
           trackType: "farcaster",
           farcasterUsername: username ?? "",
