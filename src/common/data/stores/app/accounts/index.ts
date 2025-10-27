@@ -27,8 +27,6 @@ export type AccountStore = IdentityStore &
   FarcasterStore &
   PrivyStore & {
     reset: () => void;
-    hasNogs: boolean;
-    setHasNogs: (v: boolean) => void;
   };
 
 export const accountStoreDefaults: Partial<AccountStore> = {
@@ -50,15 +48,6 @@ export const createAccountStoreFunc = (
   reset: () => {
     get().account.resetIdenities();
     get().account.resetAuthenticators();
-    set((draft) => {
-      draft.account.hasNogs = false;
-    }, "resetHasNogs");
-  },
-  hasNogs: false,
-  setHasNogs: (newValue) => {
-    set((draft) => {
-      draft.account.hasNogs = newValue;
-    }, "setHasNogs");
   },
 });
 
@@ -66,5 +55,4 @@ export const partializedAccountStore = (state: AppStore) => ({
   ...partializedIdentityStore(state),
   ...partializedPrivyStore(state),
   ...partializedAuthenticatorStore(state),
-  hasNogs: state.account.hasNogs,
 });

@@ -28,7 +28,7 @@ export enum AnalyticsEvent {
 }
 
 export type AnalyticsEventProperties = {
-  [AnalyticsEvent.CONNECT_WALLET]: { hasNogs: boolean };
+  [AnalyticsEvent.CONNECT_WALLET]: Record<string, never>;
   [AnalyticsEvent.SIGN_UP]: Record<string, never>;
   [AnalyticsEvent.LINK_FID]: { fid: number };
   [AnalyticsEvent.CHANGE_TAB_NAME]: Record<string, never>;

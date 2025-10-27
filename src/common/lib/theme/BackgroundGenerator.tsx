@@ -4,7 +4,6 @@ import { Button } from "@/common/components/atoms/button";
 import Spinner from "@/common/components/atoms/spinner";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import { useToastStore } from "@/common/data/stores/toastStore";
-import { useAppStore } from "@/common/data/stores/app";
 import { ThemeSettingsTooltip } from "./components/ThemeSettingsTooltip";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { analytics } from "@/common/providers/AnalyticsProvider";
@@ -57,9 +56,6 @@ export const BackgroundGenerator: React.FC<BackgroundGeneratorProps> = ({
     ? parseInt(formatUnits(result.data.value, result.data.decimals))
     : 0;
   const userHoldEnoughSpace = spaceHoldAmount >= 1111;
-  const { hasNogs } = useAppStore((state) => ({
-    hasNogs: state.account.hasNogs,
-  }));
 
   const handleGenerateBackground = async (promptText: string) => {
     try {
@@ -122,8 +118,8 @@ export const BackgroundGenerator: React.FC<BackgroundGeneratorProps> = ({
   };
 
   const handleGenerateWrapper = () => {
-    // Allow generation if user holds enough SPACE or has nOGs
-    if (!userHoldEnoughSpace && !hasNogs) {
+    // Allow generation if user holds enough SPACE
+    if (!userHoldEnoughSpace) {
       setButtonDisabled(true);
       setShowBanner(true);
       return;
@@ -171,15 +167,6 @@ export const BackgroundGenerator: React.FC<BackgroundGeneratorProps> = ({
               className="font-bold underline"
             >
               $SPACE
-            </a>{" "}
-            or 1{" "}
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
-              className="font-bold underline"
-            >
-              nOGs
             </a>{" "}
             to unlock generation
           </p>

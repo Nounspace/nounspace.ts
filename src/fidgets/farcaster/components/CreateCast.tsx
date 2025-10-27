@@ -30,7 +30,6 @@ import {
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
 import Spinner from "@/common/components/atoms/spinner";
-import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon } from "@heroicons/react/20/solid";
@@ -276,9 +275,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     ? parseInt(formatUnits(result.data.value, result.data.decimals))
     : 0;
   const userHoldEnoughSpace = spaceHoldAmount >= 1111;
-  const { hasNogs } = useAppStore((state) => ({
-    hasNogs: state.account.hasNogs,
-  }));
   const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
 
   useEffect(() => {
@@ -633,7 +629,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       closeBanner(SPARKLES_BANNER_KEY);
     }
 
-    if (!userHoldEnoughSpace && !hasNogs) {
+    if (!userHoldEnoughSpace) {
       setShowEnhanceBanner(true);
       return;
     }
@@ -905,15 +901,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
               className="font-bold underline"
             >
               $SPACE
-            </a>{" "}
-            or 1{" "}
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
-              className="font-bold underline"
-            >
-              nOGs
             </a>{" "}
             to unlock generation
           </p>

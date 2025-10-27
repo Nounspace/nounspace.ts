@@ -8,7 +8,6 @@ import {
 import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 import AiChatSidebar from "@/common/components/organisms/AgentChat";
-import NogsGateButton from "@/common/components/organisms/NogsGateButton";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useAppStore } from "@/common/data/stores/app";
 import { FidgetInstanceData } from "@/common/fidgets";
@@ -405,16 +404,16 @@ export function ThemeSettingsEditor({
 
         <div className="flex flex-col gap-2">
           {tabValue === ThemeEditorTab.SPACE && (
-            <NogsGateButton
+            <Button
               className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
               onClick={() => setShowVibeEditor(true)}
+              variant="ghost"
             >
               <p>
                 <span className="font-bold">New!</span> Vibe editor is here!
               </p>
-              {/* <HiOutlineSparkles size={32} /> */}
               <SparklesIcon className="size-8" />
-            </NogsGateButton>
+            </Button>
           )}
 
           {/* Actions */}

@@ -26,7 +26,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
  * POST ->
  *   - takes in the Public key of the signer that is being created
  *   - builds a signer request object that is signed by the Nounspace account
- *   - adds a sponsorship field if the user is nOG holder (TO DO: change this as we leave alpha)
+ *   - adds a sponsorship field for eligible wallets
  *   - returns data about the new signer, including reference token and deeplinkUrl
  *   - errors if the public key is not provided
  */
@@ -109,7 +109,7 @@ async function handlePost(
   //       {
   //         params: {
   //           wallet: requestingWallet,
-  //           contractAddress: NOGS_CONTRACT_ADDR,
+  //           contractAddress: "0xD094D5D45c06c1581f5f429462eE7cCe72215616",
   //         },
   //       },
   //     );
