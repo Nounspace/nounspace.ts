@@ -11,6 +11,12 @@ import { Button, ButtonProps } from "../atoms/button";
 import NogsChecker from "./NogsChecker";
 import Modal from "../molecules/Modal";
 import { isUndefined } from "lodash";
+import { useBalance } from "wagmi";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { base } from "viem/chains";
+import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
+
+const MIN_SPACE_TOKENS_FOR_UNLOCK = 1111;
 
 const NogsGateButton = (props: ButtonProps) => {
   const { user } = usePrivy();
@@ -46,6 +52,19 @@ const NogsGateButton = (props: ButtonProps) => {
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  const walletAddress = user?.wallet?.address as Address | undefined;
+  const { data: spaceBalanceData } = useBalance({
+    address: walletAddress ?? zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+    query: { enabled: Boolean(walletAddress) },
+  });
+  const userHoldEnoughSpace = spaceBalanceData
+    ? Number(
+        formatUnits(spaceBalanceData.value, spaceBalanceData.decimals),
+      ) >= MIN_SPACE_TOKENS_FOR_UNLOCK
+    : false;
+
   async function isHoldingNogs(address): Promise<boolean> {
     setNogsIsChecking(true);
     if (process.env.NODE_ENV === "development") {
@@ -75,6 +94,11 @@ const NogsGateButton = (props: ButtonProps) => {
     clearTimeout(nogsRecheckCountDownTimer);
     setNogsRecheckCountDown(0);
     setNogsShouldRecheck(false);
+    if (userHoldEnoughSpace) {
+      setModalOpen(false);
+      return;
+    }
+
     if (user && user.wallet) {
       if (await isHoldingNogs(user.wallet.address)) {
         setHasNogs(true);
@@ -91,6 +115,7 @@ const NogsGateButton = (props: ButtonProps) => {
     }
   }, [
     user,
+    userHoldEnoughSpace,
     setModalOpen,
     nogsRecheckTimerLength,
     setNogsRecheckTimerLength,
@@ -98,6 +123,8 @@ const NogsGateButton = (props: ButtonProps) => {
     setNogsRecheckCountDown,
     setNogsShouldRecheck,
     setHasNogs,
+    nogsTimeoutTimer,
+    nogsRecheckCountDownTimer,
   ]);
 
   useEffect(() => {
@@ -127,6 +154,14 @@ const NogsGateButton = (props: ButtonProps) => {
     };
   }, []);
 
+  const gatingSatisfied = hasNogs || userHoldEnoughSpace;
+
+  useEffect(() => {
+    if (modalOpen && gatingSatisfied) {
+      setModalOpen(false);
+    }
+  }, [modalOpen, gatingSatisfied]);
+
   return (
     <>
       <Modal setOpen={setModalOpen} open={modalOpen} showClose>
@@ -135,7 +170,7 @@ const NogsGateButton = (props: ButtonProps) => {
       <Button
         {...props}
         onClick={(e) =>
-          hasNogs
+          gatingSatisfied
             ? isUndefined(props.onClick)
               ? undefined
               : props.onClick(e)

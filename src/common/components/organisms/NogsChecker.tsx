@@ -21,9 +21,9 @@ export default function NogsChecker() {
   return (
     <>
       <p className="mb-2">
-        For now Tabs are only for early supporters holding a nounspace OG NFT (nOGs){" "}
-        <br />
-        Mint a pair{" "}
+        Premium features like the vibe editor, AI background generation, and cast
+        enhancements are reserved for early supporters holding a nounspace OG NFT
+        (nOGs) or enough $SPACE tokens. Mint a pair{" "}
         <a
           href="https://highlight.xyz/mint/663d2717dffb7b3a490f398f"
           rel="noopener noreferrer"
@@ -35,7 +35,7 @@ export default function NogsChecker() {
         , then try again!
       </p>
       <Button disabled={isChecking} onClick={userTriggeredRecheck}>
-        {isChecking ? "Checking if you have nOGs" : "Check my nOGs!"}
+        {isChecking ? "Checking your access" : "Check access"}
       </Button>
     </>
   );
