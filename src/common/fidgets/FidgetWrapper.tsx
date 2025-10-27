@@ -55,7 +55,17 @@ export const getSettingsWithDefaults = (
   );
 };
 
-export function FidgetWrapper({
+/// Custom memoization to avoid unnecessary re-renders
+function areEqual(prevProps, nextProps) {
+  // Only re-renders if id, config, or selection change
+  return (
+    prevProps.bundle.id === nextProps.bundle.id &&
+    prevProps.selectedFidgetID === nextProps.selectedFidgetID &&
+    JSON.stringify(prevProps.bundle.config) === JSON.stringify(nextProps.bundle.config)
+  );
+}
+
+const FidgetWrapper = React.memo(function FidgetWrapper({
   fidget,
   bundle,
   saveConfig,
@@ -189,7 +199,7 @@ export function FidgetWrapper({
             : "size-full overflow-hidden"
         }
         style={{
-          background: settingsWithDefaults.useDefaultColors 
+          background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,
           borderColor: settingsWithDefaults.useDefaultColors
@@ -224,4 +234,6 @@ export function FidgetWrapper({
       </Card>
     </>
   );
-}
+}, areEqual);
+
+export { FidgetWrapper };

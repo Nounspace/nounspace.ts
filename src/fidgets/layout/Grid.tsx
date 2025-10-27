@@ -1,42 +1,53 @@
-import React, {
-  DragEvent,
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-} from "react";
-import useWindowSize from "@/common/lib/hooks/useWindowSize";
-import RGL, { WidthProvider } from "react-grid-layout";
-import {
-  LayoutFidget,
-  FidgetInstanceData,
-  FidgetConfig,
-  FidgetSettings,
-  LayoutFidgetProps,
-  LayoutFidgetConfig,
-  FidgetBundle,
-  FidgetArgs,
-  FidgetModule,
-} from "@/common/fidgets";
-import { CompleteFidgets } from "..";
-import { createPortal } from "react-dom";
-import { toast } from "sonner";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
+import Spinner from "@/common/components/atoms/spinner";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
+import { FidgetPickerModal } from "@/common/components/organisms/FidgetPickerModal";
+import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import {
-  FidgetWrapper,
+  FidgetArgs,
+  FidgetBundle,
+  FidgetConfig,
+  FidgetInstanceData,
+  FidgetModule,
+  FidgetSettings,
+  LayoutFidget,
+  LayoutFidgetConfig,
+  LayoutFidgetProps,
+} from "@/common/fidgets";
+import {
   getSettingsWithDefaults,
 } from "@/common/fidgets/FidgetWrapper";
-import { map, reject, fromPairs } from "lodash";
-import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
-import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
-import { debounce } from "lodash";
-import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
-import { analytics } from "@/common/providers/AnalyticsProvider";
-import { SpaceConfig } from "../../app/(spaces)/Space";
+import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
+import { analytics } from "@/common/providers/AnalyticsProvider";
+import { debounce, fromPairs, map, reject } from "lodash";
+import React, {
+  DragEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import RGL, { WidthProvider } from "react-grid-layout";
+import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { FidgetPickerModal } from "@/common/components/organisms/FidgetPickerModal";
+import { CompleteFidgets } from "..";
+import { SpaceConfig } from "../../app/(spaces)/Space";
+
+const FidgetSkeleton = ({ borderRadius }: { borderRadius: string }) => (
+  <div
+    className="bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 animate-pulse flex items-center justify-center"
+    style={{ height: '100%', width: '100%', borderRadius }}
+  >
+    <Spinner className="w-8 h-8" color="#2563eb" />
+  </div>
+);
+
+const FIDGET_BATCH_SIZE = 8;
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -884,19 +895,43 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   };
 
+  const LazyFidgetWrapper = React.lazy(() => import("@/common/fidgets/FidgetWrapper").then(mod => ({ default: mod.FidgetWrapper })));
+
+  const memoizedRemoveFidget = useCallback((id: string) => removeFidget(id), [removeFidget]);
+const memoizedMoveFidgetFromGridToTray = useCallback((id: string) => moveFidgetFromGridToTray(id),
+ [moveFidgetFromGridToTray]);
+const memoizedSetCurrentFidgetSettings = useCallback((settings: React.ReactNode) => 
+  setCurrentFidgetSettings(settings), [setCurrentFidgetSettings]);
+const memoizedSetSelectedFidgetID = useCallback((id: string) => setSelectedFidgetID(id), [setSelectedFidgetID]);
+
+  const [fidgetsLoaded, setFidgetsLoaded] = useState(FIDGET_BATCH_SIZE);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  useEffect(() => {
+    if (fidgetsLoaded < layoutConfig.layout.length) {
+      const timer = setTimeout(() => setFidgetsLoaded(f => Math.min(f + 
+        FIDGET_BATCH_SIZE, layoutConfig.layout.length)), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [fidgetsLoaded, layoutConfig.layout.length]);
+  useEffect(() => {
+    if (fidgetsLoaded >= Math.min(FIDGET_BATCH_SIZE, layoutConfig.layout.length)) {
+      setIsInitialLoading(false);
+    }
+  }, [fidgetsLoaded, layoutConfig.layout.length]);
+
   return (
     <>
       {editorPanelPortal(element)}
-
       <div className="flex flex-col z-0">
+        {isInitialLoading && layoutConfig.layout.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+            <Spinner />
+          </div>
+        )}
         <div className="flex-1 grid-container grow relative">
           {inEditMode && (
-            <Gridlines 
-              {...memoizedGridDetails} 
-              rowHeight={rowHeight} 
-            />
+            <Gridlines {...memoizedGridDetails} rowHeight={rowHeight} />
           )}
-
           <div className="relative">
             <ReactGridLayout
               {...memoizedGridDetails}
@@ -920,15 +955,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                 position: "relative",
               }}
             >
-            {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
+            {map(layoutConfig.layout, (gridItem: PlacedGridItem, idx: number) => {
               const fidgetDatum = fidgetInstanceDatums[gridItem.i];
-              const fidgetModule = fidgetDatum
-                ? CompleteFidgets[fidgetDatum.fidgetType]
-                : null;
-              
-              
+              const fidgetModule = fidgetDatum ? CompleteFidgets[fidgetDatum.fidgetType] : null;
               if (!fidgetModule) return null;
-
               return (
                 <div
                   key={gridItem.i}
@@ -945,15 +975,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                         : undefined,
                   }}
                 >
-                  <FidgetWrapper
+              <Suspense fallback={<FidgetSkeleton borderRadius={memoizedGridDetails.borderRadius} />}>
+                {idx < fidgetsLoaded ? (
+                  <LazyFidgetWrapper
                     fidget={fidgetModule.fidget}
                     context={{ theme }}
                     borderRadius={memoizedGridDetails.borderRadius}
-                    removeFidget={removeFidget}
-                    minimizeFidget={moveFidgetFromGridToTray}
+                    removeFidget={memoizedRemoveFidget}
+                    minimizeFidget={memoizedMoveFidgetFromGridToTray}
                     saveConfig={saveFidgetConfig(fidgetDatum.id)}
-                    setCurrentFidgetSettings={setCurrentFidgetSettings}
-                    setSelectedFidgetID={setSelectedFidgetID}
+                    setCurrentFidgetSettings={memoizedSetCurrentFidgetSettings}
+                    setSelectedFidgetID={memoizedSetSelectedFidgetID}
                     selectedFidgetID={selectedFidgetID}
                     bundle={{
                       ...fidgetDatum,
@@ -961,16 +993,18 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                       config: { ...fidgetDatum.config, editable: inEditMode },
                     }}
                   />
-                </div>
-              );
-            })}
-          </ReactGridLayout>
-          
-          <GridOverlay inEditMode={inEditMode} />
+                ) : (
+                  <FidgetSkeleton borderRadius={memoizedGridDetails.borderRadius} />
+                )}
+              </Suspense>
+                  </div>
+                );
+              })}
+            </ReactGridLayout>
+            <GridOverlay inEditMode={inEditMode} />
           </div>
         </div>
       </div>
-      
       <FidgetPickerModal
         isOpen={isFidgetPickerModalOpen}
         setIsOpen={setIsFidgetPickerModalOpen}
