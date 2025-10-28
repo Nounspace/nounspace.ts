@@ -15,6 +15,8 @@ export type ModalProps = {
   // The modality of the dialog. When set to true, interaction with outside elements
   // will be disabled and only dialog content will be visible to screen readers.
   focusMode?: boolean;
+  onInteractOutside?: Dialog.DialogContentProps["onInteractOutside"];
+  onPointerDownOutside?: Dialog.DialogContentProps["onPointerDownOutside"];
 };
 
 const Modal = ({
@@ -26,6 +28,8 @@ const Modal = ({
   focusMode = true,
   showClose = true,
   overlay = true,
+  onInteractOutside,
+  onPointerDownOutside,
 }: ModalProps) => (
   <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Portal>
@@ -41,6 +45,12 @@ const Modal = ({
         )}
         onMouseDown={(e) => e.stopPropagation()} // Fixes issue causing grid items to remain draggable behind open modal
         onClick={(e) => e.stopPropagation()}
+        onInteractOutside={(event) => {
+          onInteractOutside?.(event);
+        }}
+        onPointerDownOutside={(event) => {
+          onPointerDownOutside?.(event);
+        }}
       >
         {
           <Dialog.Title

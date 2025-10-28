@@ -132,13 +132,15 @@ export type DraftType = {
 type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
   afterSubmit?: () => void;
+  onShouldConfirmCloseChange?: (shouldConfirm: boolean) => void;
 };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
+  onShouldConfirmCloseChange,
 }) => {
   const isMobile = useIsMobile();
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
@@ -162,6 +164,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const shouldConfirmClose = useMemo(() => {
+    const hasText = (draft.text ?? "").trim().length > 0;
+    const hasEmbeds = (draft.embeds?.length ?? 0) > 0;
+    return (hasText || hasEmbeds) && draft.status !== DraftStatus.published;
+  }, [draft.text, draft.embeds, draft.status]);
+
+  useEffect(() => {
+    onShouldConfirmCloseChange?.(shouldConfirmClose);
+  }, [onShouldConfirmCloseChange, shouldConfirmClose]);
 
 
   // Real image upload function for imgBB

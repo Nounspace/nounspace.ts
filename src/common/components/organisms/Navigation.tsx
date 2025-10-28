@@ -7,7 +7,7 @@ import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import { first } from "lodash";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CgProfile } from "react-icons/cg";
 import {
     FaChevronLeft,
@@ -34,6 +34,7 @@ import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import SearchModal from "./SearchModal";
+import type { DialogContentProps } from "@radix-ui/react-dialog";
 
 type NavItemProps = {
   label: string;
@@ -102,9 +103,74 @@ const Navigation = React.memo(
   const openModal = () => setModalOpen(true);
 
   const [showCastModal, setShowCastModal] = useState(false);
+  const [shouldConfirmCastClose, setShouldConfirmCastClose] = useState(false);
+  const [showCastDiscardPrompt, setShowCastDiscardPrompt] = useState(false);
+
+  const closeCastModal = useCallback(() => {
+    setShowCastModal(false);
+    setShowCastDiscardPrompt(false);
+    setShouldConfirmCastClose(false);
+  }, []);
+
   function openCastModal() {
     setShowCastModal(true);
   }
+
+  const handleCastModalChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        if (shouldConfirmCastClose) {
+          setShowCastDiscardPrompt(true);
+          return;
+        }
+
+        closeCastModal();
+        return;
+      }
+
+      setShowCastDiscardPrompt(false);
+      setShowCastModal(true);
+    },
+    [closeCastModal, shouldConfirmCastClose],
+  );
+
+  useEffect(() => {
+    if (!shouldConfirmCastClose) {
+      setShowCastDiscardPrompt(false);
+    }
+  }, [shouldConfirmCastClose]);
+
+  const handleCastModalInteractOutside = useCallback<
+    NonNullable<DialogContentProps["onInteractOutside"]>
+  >(
+    (event) => {
+      if (!shouldConfirmCastClose) {
+        return;
+      }
+
+      const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
+      const eventTarget =
+        (originalEvent?.target as HTMLElement | null) ??
+        ((event as any)?.target as HTMLElement | null);
+
+      if (eventTarget?.closest?.('[data-cast-modal-interactive="true"]')) {
+        event.preventDefault();
+        return;
+      }
+
+      event.preventDefault();
+      setShowCastDiscardPrompt(true);
+    },
+    [shouldConfirmCastClose],
+  );
+
+  const handleDiscardCast = useCallback(() => {
+    closeCastModal();
+  }, [closeCastModal]);
+
+  const handleCancelDiscard = useCallback(() => {
+    setShowCastDiscardPrompt(false);
+  }, []);
   const { fid } = useFarcasterSigner("navigation");
   const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
@@ -223,11 +289,38 @@ const Navigation = React.memo(
     >
       <Modal
         open={showCastModal}
-        setOpen={setShowCastModal}
+        setOpen={handleCastModalChange}
         focusMode={false}
         showClose={false}
+        onInteractOutside={handleCastModalInteractOutside}
+        onPointerDownOutside={handleCastModalInteractOutside}
       >
-        <CreateCast afterSubmit={() => setShowCastModal(false)} />
+        <div className="relative">
+          <CreateCast
+            afterSubmit={closeCastModal}
+            onShouldConfirmCloseChange={setShouldConfirmCastClose}
+          />
+          {showCastDiscardPrompt && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white/95 px-6 text-center">
+              <h1 className="text-2xl font-semibold text-gray-900">Cancel Cast</h1>
+              <p className="text-base text-gray-600">
+                Are you sure you want to proceed?
+              </p>
+              <div className="mt-4 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                <Button variant="outline" onClick={handleCancelDiscard} className="sm:min-w-[96px]">
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleDiscardCast}
+                  className="sm:min-w-[96px]"
+                >
+                  Discard
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </Modal>
       <SearchModal ref={searchRef} />
       <div

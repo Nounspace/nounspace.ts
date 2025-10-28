@@ -15,6 +15,7 @@ import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
 import Navigation from "./Navigation";
 import { useSidebarContext } from "./Sidebar";
+import type { DialogContentProps } from "@radix-ui/react-dialog";
 
 const MobileHeader = () => {
   const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
@@ -25,6 +26,14 @@ const MobileHeader = () => {
 
   const [navOpen, setNavOpen] = useState(false);
   const [castOpen, setCastOpen] = useState(false);
+  const [shouldConfirmCastClose, setShouldConfirmCastClose] = useState(false);
+  const [showCastDiscardPrompt, setShowCastDiscardPrompt] = useState(false);
+
+  const closeCastModal = useCallback(() => {
+    setCastOpen(false);
+    setShowCastDiscardPrompt(false);
+    setShouldConfirmCastClose(false);
+  }, []);
 
   const { fid } = useFarcasterSigner("mobile-header");
   const { data } = useLoadFarcasterUser(fid);
@@ -135,6 +144,62 @@ const MobileHeader = () => {
     }
   }, []);
 
+  const handleCastModalChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        if (shouldConfirmCastClose) {
+          setShowCastDiscardPrompt(true);
+          return;
+        }
+
+        closeCastModal();
+        return;
+      }
+
+      setShowCastDiscardPrompt(false);
+      setCastOpen(true);
+    },
+    [closeCastModal, shouldConfirmCastClose],
+  );
+
+  const handleCastModalInteractOutside = useCallback<
+    NonNullable<DialogContentProps["onInteractOutside"]>
+  >(
+    (event) => {
+      if (!shouldConfirmCastClose) {
+        return;
+      }
+
+      const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
+      const eventTarget =
+        (originalEvent?.target as HTMLElement | null) ??
+        ((event as any)?.target as HTMLElement | null);
+
+      if (eventTarget?.closest?.('[data-cast-modal-interactive="true"]')) {
+        event.preventDefault();
+        return;
+      }
+
+      event.preventDefault();
+      setShowCastDiscardPrompt(true);
+    },
+    [shouldConfirmCastClose],
+  );
+
+  const handleCancelDiscard = useCallback(() => {
+    setShowCastDiscardPrompt(false);
+  }, []);
+
+  const handleDiscardCast = useCallback(() => {
+    closeCastModal();
+  }, [closeCastModal]);
+
+  useEffect(() => {
+    if (!shouldConfirmCastClose) {
+      setShowCastDiscardPrompt(false);
+    }
+  }, [shouldConfirmCastClose]);
+
   return (
     <header className="z-30 flex items-center justify-between h-14 px-4 bg-white overflow-hidden sticky top-0">
       <div className="flex items-center gap-2">{isLoggedIn ? userAvatar : menuButton}</div>
@@ -155,8 +220,40 @@ const MobileHeader = () => {
           />
         </DrawerContent>
       </Drawer>
-      <Modal open={castOpen} setOpen={setCastOpen} focusMode={false} showClose={false}>
-        <CreateCast afterSubmit={() => setCastOpen(false)} />
+      <Modal
+        open={castOpen}
+        setOpen={handleCastModalChange}
+        focusMode={false}
+        showClose={false}
+        onInteractOutside={handleCastModalInteractOutside}
+        onPointerDownOutside={handleCastModalInteractOutside}
+      >
+        <div className="relative">
+          <CreateCast
+            afterSubmit={closeCastModal}
+            onShouldConfirmCloseChange={setShouldConfirmCastClose}
+          />
+          {showCastDiscardPrompt && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white/95 px-6 text-center">
+              <h1 className="text-2xl font-semibold text-gray-900">Cancel Cast</h1>
+              <p className="text-base text-gray-600">
+                Are you sure you want to proceed?
+              </p>
+              <div className="mt-4 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                <Button variant="outline" onClick={handleCancelDiscard} className="sm:min-w-[96px]">
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleDiscardCast}
+                  className="sm:min-w-[96px]"
+                >
+                  Discard
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </Modal>
     </header>
   );

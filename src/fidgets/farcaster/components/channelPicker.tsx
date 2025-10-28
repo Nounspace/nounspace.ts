@@ -79,7 +79,11 @@ export function ChannelPicker(props: Props) {
           <CaretDownIcon className="-mr-2 ml-2" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start">
+      <PopoverContent
+        className="w-[400px] p-0"
+        align="start"
+        data-cast-modal-interactive="true"
+      >
         <Command>
           <CommandInput
             placeholder="Search Channels"
