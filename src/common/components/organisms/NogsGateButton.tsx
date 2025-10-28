@@ -169,13 +169,15 @@ const NogsGateButton = (props: ButtonProps) => {
       </Modal>
       <Button
         {...props}
-        onClick={(e) =>
-          gatingSatisfied
-            ? isUndefined(props.onClick)
-              ? undefined
-              : props.onClick(e)
-            : setModalOpen(true)
-        }
+        onClick={(e) => {
+          if (gatingSatisfied) {
+            return isUndefined(props.onClick) ? undefined : props.onClick(e);
+          }
+
+          setModalOpen(true);
+          checkForNogs();
+          return undefined;
+        }}
       ></Button>
     </>
   );
