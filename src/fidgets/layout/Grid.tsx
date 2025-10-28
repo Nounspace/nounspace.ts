@@ -1,3 +1,5 @@
+"use client";
+
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import Spinner from "@/common/components/atoms/spinner";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
@@ -48,6 +50,7 @@ const FidgetSkeleton = ({ borderRadius }: { borderRadius: string }) => (
 );
 
 const FIDGET_BATCH_SIZE = 8;
+const BATCH_LOAD_DELAY_MS = 600;
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -895,21 +898,20 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   };
 
+// LazyFidgetWrapper outside the component to avoid re-creation
   const LazyFidgetWrapper = React.lazy(() => import("@/common/fidgets/FidgetWrapper").then(mod => ({ default: mod.FidgetWrapper })));
 
-  const memoizedRemoveFidget = useCallback((id: string) => removeFidget(id), [removeFidget]);
-const memoizedMoveFidgetFromGridToTray = useCallback((id: string) => moveFidgetFromGridToTray(id),
- [moveFidgetFromGridToTray]);
-const memoizedSetCurrentFidgetSettings = useCallback((settings: React.ReactNode) => 
-  setCurrentFidgetSettings(settings), [setCurrentFidgetSettings]);
-const memoizedSetSelectedFidgetID = useCallback((id: string) => setSelectedFidgetID(id), [setSelectedFidgetID]);
+  const removeFidgetEvent = useEvent(removeFidget);
+const moveFidgetFromGridToTrayEvent = useEvent(moveFidgetFromGridToTray);
+const setCurrentFidgetSettingsEvent = useEvent(setCurrentFidgetSettings);
+const setSelectedFidgetIDEvent = useEvent(setSelectedFidgetID);
 
   const [fidgetsLoaded, setFidgetsLoaded] = useState(FIDGET_BATCH_SIZE);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   useEffect(() => {
     if (fidgetsLoaded < layoutConfig.layout.length) {
       const timer = setTimeout(() => setFidgetsLoaded(f => Math.min(f + 
-        FIDGET_BATCH_SIZE, layoutConfig.layout.length)), 600);
+        FIDGET_BATCH_SIZE, layoutConfig.layout.length)), BATCH_LOAD_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [fidgetsLoaded, layoutConfig.layout.length]);
@@ -981,11 +983,11 @@ const memoizedSetSelectedFidgetID = useCallback((id: string) => setSelectedFidge
                     fidget={fidgetModule.fidget}
                     context={{ theme }}
                     borderRadius={memoizedGridDetails.borderRadius}
-                    removeFidget={memoizedRemoveFidget}
-                    minimizeFidget={memoizedMoveFidgetFromGridToTray}
+                    removeFidget={removeFidgetEvent}
+                    minimizeFidget={moveFidgetFromGridToTrayEvent}
                     saveConfig={saveFidgetConfig(fidgetDatum.id)}
-                    setCurrentFidgetSettings={memoizedSetCurrentFidgetSettings}
-                    setSelectedFidgetID={memoizedSetSelectedFidgetID}
+                    setCurrentFidgetSettings={setCurrentFidgetSettingsEvent}
+                    setSelectedFidgetID={setSelectedFidgetIDEvent}
                     selectedFidgetID={selectedFidgetID}
                     bundle={{
                       ...fidgetDatum,
@@ -1019,3 +1021,11 @@ const memoizedSetSelectedFidgetID = useCallback((id: string) => setSelectedFidge
 };
 
 export default Grid;
+
+function useEvent<T extends (...args: any[]) => any>(handler: T): T {
+  const ref = React.useRef(handler);
+  React.useEffect(() => {
+    ref.current = handler;
+  }, [handler]);
+  return React.useCallback(((...args: any[]) => ref.current(...args)) as T, []);
+}

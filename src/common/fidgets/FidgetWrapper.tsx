@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
@@ -56,13 +58,19 @@ export const getSettingsWithDefaults = (
 };
 
 /// Custom memoization to avoid unnecessary re-renders
-function areEqual(prevProps, nextProps) {
-  // Only re-renders if id, config, or selection change
-  return (
-    prevProps.bundle.id === nextProps.bundle.id &&
-    prevProps.selectedFidgetID === nextProps.selectedFidgetID &&
-    JSON.stringify(prevProps.bundle.config) === JSON.stringify(nextProps.bundle.config)
-  );
+ function areEqual(prevProps: FidgetWrapperProps, nextProps: FidgetWrapperProps) {
+  if (prevProps.bundle.id !== nextProps.bundle.id) return false;
+  if (prevProps.selectedFidgetID !== nextProps.selectedFidgetID) return false;
+  if (prevProps.borderRadius !== nextProps.borderRadius) return false;
+  const a = prevProps.bundle.config;
+  const b = nextProps.bundle.config;
+  if (a.editable !== b.editable) return false;
+  if (a.settings !== b.settings) return false;
+  if (a.data !== b.data) return false;
+  if (prevProps.bundle.properties !== nextProps.bundle.properties) return false;
+  if (prevProps.fidget !== nextProps.fidget) return false;
+  if (prevProps.context?.theme !== nextProps.context?.theme) return false;
+  return true;
 }
 
 const FidgetWrapper = React.memo(function FidgetWrapper({
