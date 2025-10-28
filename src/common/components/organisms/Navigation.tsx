@@ -35,6 +35,7 @@ import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import SearchModal from "./SearchModal";
 import type { DialogContentProps } from "@radix-ui/react-dialog";
+import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
 
 type NavItemProps = {
   label: string;
@@ -150,10 +151,10 @@ const Navigation = React.memo(
 
       const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
       const eventTarget =
-        (originalEvent?.target as HTMLElement | null) ??
-        ((event as any)?.target as HTMLElement | null);
+        (originalEvent?.target as EventTarget | null) ??
+        ((event as any)?.target as EventTarget | null);
 
-      if (eventTarget?.closest?.('[data-cast-modal-interactive="true"]')) {
+      if (eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
         event.preventDefault();
         return;
       }
@@ -295,13 +296,13 @@ const Navigation = React.memo(
         onInteractOutside={handleCastModalInteractOutside}
         onPointerDownOutside={handleCastModalInteractOutside}
       >
-        <div className="relative">
+        <>
           <CreateCast
             afterSubmit={closeCastModal}
             onShouldConfirmCloseChange={setShouldConfirmCastClose}
           />
           {showCastDiscardPrompt && (
-            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white/95 px-6 text-center">
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 rounded-[10px] bg-white px-6 py-8 text-center">
               <h1 className="text-2xl font-semibold text-gray-900">Cancel Cast</h1>
               <p className="text-base text-gray-600">
                 Are you sure you want to proceed?
@@ -320,7 +321,7 @@ const Navigation = React.memo(
               </div>
             </div>
           )}
-        </div>
+        </>
       </Modal>
       <SearchModal ref={searchRef} />
       <div

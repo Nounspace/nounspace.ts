@@ -84,13 +84,13 @@ export function ChannelPicker(props: Props) {
         align="start"
         data-cast-modal-interactive="true"
       >
-        <Command>
+        <Command data-cast-modal-interactive="true">
           <CommandInput
             placeholder="Search Channels"
             value={query}
             onValueChange={setQuery} // Update query state on input change
           />
-          <CommandList>
+          <CommandList data-cast-modal-interactive="true">
             {channelResults.length === 0 ? (
               <CommandEmpty>No channels found.</CommandEmpty>
             ) : (
@@ -99,6 +99,7 @@ export function ChannelPicker(props: Props) {
                   key={channel.parent_url || "home"}
                   value={channel.name || "home"}
                   className="cursor-pointer flex items-center px-4 py-2 hover:bg-gray-100"
+                  data-cast-modal-interactive="true"
                   onSelect={() => handleSelect(channel)}
                 >
                   <img
