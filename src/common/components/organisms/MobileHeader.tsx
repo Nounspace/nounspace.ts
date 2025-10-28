@@ -240,14 +240,18 @@ const MobileHeader = () => {
               <p className="text-base text-gray-600">
                 Are you sure you want to proceed?
               </p>
-              <div className="mt-4 flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
-                <Button variant="outline" onClick={handleCancelDiscard} className="sm:min-w-[96px]">
+              <div className="mt-4 flex w-full flex-col-reverse items-center gap-2 sm:flex-row sm:justify-center sm:gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleCancelDiscard}
+                  className="w-full sm:w-auto sm:min-w-[96px]"
+                >
                   Cancel
                 </Button>
                 <Button
                   variant="primary"
                   onClick={handleDiscardCast}
-                  className="sm:min-w-[96px]"
+                  className="w-full sm:w-auto sm:min-w-[96px]"
                 >
                   Discard
                 </Button>

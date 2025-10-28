@@ -1,11 +1,23 @@
 const CAST_MODAL_INTERACTIVE_SELECTOR = '[data-cast-modal-interactive="true"]';
+const CAST_MODAL_ADDITIONAL_INTERACTIVE_SELECTORS = [
+  "[data-radix-popover-content-wrapper]",
+  "[cmdk-root]",
+] as const;
+
+const CAST_MODAL_INTERACTIVE_SELECTORS = [
+  CAST_MODAL_INTERACTIVE_SELECTOR,
+  ...CAST_MODAL_ADDITIONAL_INTERACTIVE_SELECTORS,
+] as const;
 
 const isHTMLElement = (
   node: EventTarget | null | undefined,
 ): node is HTMLElement => node instanceof HTMLElement;
 
 const matchesInteractiveRegion = (element?: HTMLElement | null) =>
-  !!element?.closest?.(CAST_MODAL_INTERACTIVE_SELECTOR);
+  !!element &&
+  CAST_MODAL_INTERACTIVE_SELECTORS.some(
+    (selector) => !!element.closest(selector),
+  );
 
 export const eventIsFromCastModalInteractiveRegion = (
   event?: Event,
