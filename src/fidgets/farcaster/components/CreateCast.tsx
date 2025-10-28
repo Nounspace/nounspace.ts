@@ -29,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
+import { CastModalInteractiveBranch } from "@/common/lib/utils/castModalInteractivity";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/common/stores/bannerStore";
@@ -816,19 +817,21 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     <GoSmiley size={20} />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  align="end"
-                  sideOffset={8}
-                  className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
-                  data-cast-modal-interactive="true"
-                >
-                  <EmojiPicker
-                    theme={"light" as Theme}
-                    onEmojiClick={handleEmojiClick}
-                    open={isEmojiPickerOpen}
-                  />
-                </PopoverContent>
+                <CastModalInteractiveBranch asChild>
+                  <PopoverContent
+                    side="top"
+                    align="end"
+                    sideOffset={8}
+                    className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
+                    data-cast-modal-interactive="true"
+                  >
+                    <EmojiPicker
+                      theme={"light" as Theme}
+                      onEmojiClick={handleEmojiClick}
+                      open={isEmojiPickerOpen}
+                    />
+                  </PopoverContent>
+                </CastModalInteractiveBranch>
               </Popover>
             </div>
           </div>

@@ -1,3 +1,6 @@
+import React from "react";
+import { Branch as DismissableLayerBranch } from "@radix-ui/react-dismissable-layer";
+
 const CAST_MODAL_INTERACTIVE_SELECTOR = '[data-cast-modal-interactive="true"]';
 const CAST_MODAL_ADDITIONAL_INTERACTIVE_SELECTORS = [
   "[data-radix-popover-content-wrapper]",
@@ -45,3 +48,23 @@ export const eventIsFromCastModalInteractiveRegion = (
     isHTMLElement(node) && matchesInteractiveRegion(node as HTMLElement),
   );
 };
+
+type CastModalInteractiveBranchProps = React.ComponentPropsWithoutRef<
+  typeof DismissableLayerBranch
+>;
+
+export const CastModalInteractiveBranch = React.forwardRef<
+  HTMLDivElement,
+  CastModalInteractiveBranchProps
+>(({ children, ...props }, forwardedRef) =>
+  React.createElement(
+    DismissableLayerBranch,
+    {
+      ...props,
+      ref: forwardedRef,
+    },
+    children,
+  ),
+);
+
+CastModalInteractiveBranch.displayName = "CastModalInteractiveBranch";

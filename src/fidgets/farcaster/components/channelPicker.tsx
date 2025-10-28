@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/common/components/atoms/popover"; // Adjust the import paths if needed
+import { CastModalInteractiveBranch } from "@/common/lib/utils/castModalInteractivity";
 import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
 
 type Props = {
@@ -79,43 +80,45 @@ export function ChannelPicker(props: Props) {
           <CaretDownIcon className="-mr-2 ml-2" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-[400px] p-0"
-        align="start"
-        data-cast-modal-interactive="true"
-      >
-        <Command data-cast-modal-interactive="true">
-          <CommandInput
-            placeholder="Search Channels"
-            value={query}
-            onValueChange={setQuery} // Update query state on input change
-          />
-          <CommandList data-cast-modal-interactive="true">
-            {channelResults.length === 0 ? (
-              <CommandEmpty>No channels found.</CommandEmpty>
-            ) : (
-              channelResults.map((channel) => (
-                <CommandItem
-                  key={channel.parent_url || "home"}
-                  value={channel.name || "home"}
-                  className="cursor-pointer flex items-center px-4 py-2 hover:bg-gray-100"
-                  data-cast-modal-interactive="true"
-                  onSelect={() => handleSelect(channel)}
-                >
-                  <img
-                    src={channel.image_url ?? ""}
-                    alt={channel.name}
-                    width={24}
-                    height={24}
-                    className="mr-2"
-                  />
-                  {channel.name}
-                </CommandItem>
-              ))
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
+      <CastModalInteractiveBranch asChild>
+        <PopoverContent
+          className="w-[400px] p-0"
+          align="start"
+          data-cast-modal-interactive="true"
+        >
+          <Command data-cast-modal-interactive="true">
+            <CommandInput
+              placeholder="Search Channels"
+              value={query}
+              onValueChange={setQuery} // Update query state on input change
+            />
+            <CommandList data-cast-modal-interactive="true">
+              {channelResults.length === 0 ? (
+                <CommandEmpty>No channels found.</CommandEmpty>
+              ) : (
+                channelResults.map((channel) => (
+                  <CommandItem
+                    key={channel.parent_url || "home"}
+                    value={channel.name || "home"}
+                    className="cursor-pointer flex items-center px-4 py-2 hover:bg-gray-100"
+                    data-cast-modal-interactive="true"
+                    onSelect={() => handleSelect(channel)}
+                  >
+                    <img
+                      src={channel.image_url ?? ""}
+                      alt={channel.name}
+                      width={24}
+                      height={24}
+                      className="mr-2"
+                    />
+                    {channel.name}
+                  </CommandItem>
+                ))
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </CastModalInteractiveBranch>
     </Popover>
   );
 }
