@@ -1,6 +1,6 @@
 import React from "react";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
+import { NextRequest } from "next/server";
 
 export const config = {
   runtime: "edge",
@@ -36,22 +36,24 @@ const formatFollowerCount = (count?: number) => {
   return `${rounded}${units[unitIndex]} followers`;
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<ImageResponse | string>) {
-  if (!req.url) {
-    return res.status(404).send("Url not found");
+export default async function handler(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+
+  const channelId = searchParams.get("channelId");
+  const channelName = searchParams.get("channelName");
+
+  if (!channelId) {
+    return new Response("Missing required parameter: channelId", { status: 400 });
   }
 
-  const [, searchParams = ""] = req.url.split("?");
-  const params = new URLSearchParams(searchParams);
-
-  const followerCountParam = params.get("followerCount");
+  const followerCountParam = searchParams.get("followerCount");
   const followerCount = followerCountParam ? Number(followerCountParam) : undefined;
 
   const channelMetadata: ChannelMetadata = {
-    channelId: params.get("channelId") || "",
-    channelName: params.get("channelName") || "",
-    description: params.get("description") || "",
-    imageUrl: params.get("imageUrl") || "",
+    channelId,
+    channelName: channelName || channelId,
+    description: searchParams.get("description") || "",
+    imageUrl: searchParams.get("imageUrl") || "",
     followerCount: Number.isNaN(followerCount) ? undefined : followerCount,
   };
 
