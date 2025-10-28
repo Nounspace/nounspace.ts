@@ -145,10 +145,6 @@ const Navigation = React.memo(
     NonNullable<DialogContentProps["onInteractOutside"]>
   >(
     (event) => {
-      if (!shouldConfirmCastClose) {
-        return;
-      }
-
       const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
       const eventTarget =
         (originalEvent?.target as EventTarget | null) ??
@@ -156,6 +152,10 @@ const Navigation = React.memo(
 
       if (eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
         event.preventDefault();
+        return;
+      }
+
+      if (!shouldConfirmCastClose) {
         return;
       }
 

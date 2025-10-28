@@ -158,8 +158,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const isReply = draft?.parentCastId !== undefined;
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
   const [initialChannels, setInitialChannels] = useState() as any;
-  const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
-  const parentRef = useRef<HTMLDivElement>(null);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -635,7 +634,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   ) => {
     event.stopPropagation();
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
-    setIsPickingEmoji(false);
+    setIsEmojiPickerOpen(false);
   };
 
   const handleEnhanceCast = async (text: string) => {
@@ -803,18 +802,34 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 )}
               </Button>
 
-              <Button
-                className="h-10"
-                type="button"
-                variant="ghost"
-                disabled={isPublishing}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsPickingEmoji(!isPickingEmoji);
-                }}
+              <Popover
+                open={isEmojiPickerOpen}
+                onOpenChange={setIsEmojiPickerOpen}
               >
-                <GoSmiley size={20} />
-              </Button>
+                <PopoverTrigger asChild>
+                  <Button
+                    className="h-10"
+                    type="button"
+                    variant="ghost"
+                    disabled={isPublishing}
+                  >
+                    <GoSmiley size={20} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  align="end"
+                  sideOffset={8}
+                  className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
+                  data-cast-modal-interactive="true"
+                >
+                  <EmojiPicker
+                    theme={"light" as Theme}
+                    onEmojiClick={handleEmojiClick}
+                    open={isEmojiPickerOpen}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
@@ -832,23 +847,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
             </div>
           )}
 
-          <div
-            ref={parentRef}
-            className="z-50"
-            style={{
-              opacity: isPickingEmoji ? 1 : 0,
-              pointerEvents: isPickingEmoji ? "auto" : "none",
-              marginTop: 50,
-              transition: "opacity 1s ease",
-              position: "absolute",
-            }}
-          >
-            <EmojiPicker
-              theme={"light" as Theme}
-              onEmojiClick={handleEmojiClick}
-              open={isPickingEmoji}
-            />
-          </div>
           <Popover
             open={!!currentMod}
             onOpenChange={(op: boolean) => {

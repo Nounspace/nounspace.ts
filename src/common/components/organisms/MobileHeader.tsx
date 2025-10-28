@@ -167,10 +167,6 @@ const MobileHeader = () => {
     NonNullable<DialogContentProps["onInteractOutside"]>
   >(
     (event) => {
-      if (!shouldConfirmCastClose) {
-        return;
-      }
-
       const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
       const eventTarget =
         (originalEvent?.target as EventTarget | null) ??
@@ -178,6 +174,10 @@ const MobileHeader = () => {
 
       if (eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
         event.preventDefault();
+        return;
+      }
+
+      if (!shouldConfirmCastClose) {
         return;
       }
 
