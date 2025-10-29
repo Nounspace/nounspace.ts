@@ -1,7 +1,9 @@
 "use client";
 
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
-import Modal from "@/common/components/molecules/Modal";
+import Modal, {
+  useModalContentContainer,
+} from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { useAppStore } from "@/common/data/stores/app";
 import { formatTimeAgo } from "@/common/lib/utils/date";
@@ -32,6 +34,19 @@ import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
+import { CastModalPortalProvider } from "@/common/lib/utils/castModalInteractivity";
+
+const CastModalPortalBoundary: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const modalContainer = useModalContentContainer();
+
+  return (
+    <CastModalPortalProvider value={modalContainer}>
+      {children}
+    </CastModalPortalProvider>
+  );
+};
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -441,10 +456,14 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   return (
     <>
       <Modal open={showModal} setOpen={setShowModal} focusMode showClose={false}>
-        <div className="mb-4">{replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}</div>
-        <div className="flex">
-          <CreateCast initialDraft={replyCastDraft} />
-        </div>
+        <CastModalPortalBoundary>
+          <div className="mb-4">
+            {replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}
+          </div>
+          <div className="flex">
+            <CreateCast initialDraft={replyCastDraft} />
+          </div>
+        </CastModalPortalBoundary>
       </Modal>
       <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
@@ -801,3 +820,4 @@ export const CastRow = React.memo(CastRowComponent);
 CastRow.displayName = "CastRow";
 
 export const CastRowExport = CastRow;
+

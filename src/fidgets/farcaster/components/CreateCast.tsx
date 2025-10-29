@@ -168,6 +168,66 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const emojiTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const emojiContentRef = useRef<HTMLDivElement | null>(null);
+
+  const isTargetInsideEmojiPicker = useCallback((target: EventTarget | null) => {
+    if (!(target instanceof Node)) {
+      return false;
+    }
+
+    if (emojiContentRef.current?.contains(target)) {
+      return true;
+    }
+
+    if (emojiTriggerRef.current?.contains(target)) {
+      return true;
+    }
+
+    return false;
+  }, []);
+
+  useEffect(() => {
+    if (!isEmojiPickerOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (isTargetInsideEmojiPicker(event.target)) {
+        return;
+      }
+
+      setIsEmojiPickerOpen(false);
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      if (isTargetInsideEmojiPicker(event.target)) {
+        return;
+      }
+
+      setIsEmojiPickerOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsEmojiPickerOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isEmojiPickerOpen, isTargetInsideEmojiPicker]);
+
+  const toggleEmojiPicker = useCallback(() => {
+    setIsEmojiPickerOpen((prev) => !prev);
+  }, []);
 
   const shouldConfirmClose = useMemo(() => {
     const hasText = (draft.text ?? "").trim().length > 0;
@@ -807,28 +867,46 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 )}
               </Button>
 
-              <Popover
-                open={isEmojiPickerOpen}
-                onOpenChange={setIsEmojiPickerOpen}
-              >
+              <Popover open={isEmojiPickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
+                    ref={emojiTriggerRef}
                     className="h-10"
                     type="button"
                     variant="ghost"
                     disabled={isPublishing}
+                    aria-expanded={isEmojiPickerOpen}
+                    onClick={toggleEmojiPicker}
                   >
                     <GoSmiley size={20} />
                   </Button>
                 </PopoverTrigger>
                 <CastModalInteractiveBranch asChild>
                   <PopoverContent
+                    ref={emojiContentRef}
                     container={castModalPortalContainer ?? undefined}
                     side="top"
                     align="end"
                     sideOffset={8}
                     className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
                     data-cast-modal-interactive="true"
+                    onInteractOutside={(event) => {
+                      if (isTargetInsideEmojiPicker(event.target)) {
+                        event.preventDefault();
+                        return;
+                      }
+
+                      setIsEmojiPickerOpen(false);
+                    }}
+                    onPointerDownOutside={(event) => {
+                      if (isTargetInsideEmojiPicker(event.target)) {
+                        event.preventDefault();
+                        return;
+                      }
+
+                      setIsEmojiPickerOpen(false);
+                    }}
+                    onEscapeKeyDown={() => setIsEmojiPickerOpen(false)}
                   >
                     <EmojiPicker
                       theme={"light" as Theme}
