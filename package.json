@@ -36,7 +36,8 @@
   "engines": {
     "node": "^22.11.0"
   },
-  "dependencies": {
+  "dependencies": { 
+    "react-window": "1.8.7",
     "@cloudflare/workers-types": "^4.20251011.0",
     "@coinbase/onchainkit": "^0.38.19",
     "@emotion/react": "^11.14.0",
