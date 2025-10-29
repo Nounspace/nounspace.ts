@@ -36,7 +36,7 @@ export const DAO_OPTIONS = [
   },
   {
     name: "Based Fellas",
-    contract: "0xa5078075b929eabeb02a25edf4243665c9354601",
+    contract: "0xa5078075b929eabeb02a073edf4243665c9354601",
     graphUrl: BUILDER_DAO,
     icon: "https://nouns.build/_next/image?url=https%3A%2F%2Fipfs.decentralized-content.com%2Fipfs%2Fbafkreid4nwlrqpsxzchtu7sa2nes7slwo5uzsawurhl4yn3t3pzbjqv5je&w=128&q=75",
   },

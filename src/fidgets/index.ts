@@ -20,6 +20,7 @@ import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import Portfolio from "./token/Portfolio";
 import chat from "./ui/chat";
+import BuilderScore from "./farcaster/BuilderScore";
 import MobileStack from "./layout/tabFullScreen";
 import FramesFidget from "./framesV2/components/FramesFidget";
 import NounsHome from "./nouns-home";
@@ -55,6 +56,7 @@ export const CompleteFidgets = {
   Portfolio: Portfolio,
   Chat: chat,
   Top8: Top8,
+  BuilderScore: BuilderScore,
   FramesV2: FramesFidget,
 };
 

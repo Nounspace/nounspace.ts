@@ -98,10 +98,13 @@ export class FidgetOptionsService {
           case 'frame':
           case 'chat':
           case 'profile':
-          case 'Top8':
           case 'top8':
+          case 'BuilderScore':
             primaryCategory = 'social';
             specificTags.push('farcaster');
+            if (key === 'BuilderScore') {
+              specificTags.push('talent protocol', 'builder score');
+            }
             break;
             
           // DeFi

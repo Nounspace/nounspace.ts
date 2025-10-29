@@ -6,9 +6,11 @@ import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { SPACE_TYPES } from "@/common/types/spaceData";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
-import createIntialProfileSpaceConfigForFid from "@/constants/initialProfileSpace";
-import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
+import { 
+  INITIAL_SPACE_CONFIG_EMPTY,
+  createInitialProfileSpaceConfigForFid,
+  createInitialChannelSpaceConfig
+} from "@/config";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -46,6 +48,11 @@ import { createClient } from "../../../database/supabase/clients/component";
 import { StoreGet, StoreSet } from "../../createStore";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { analytics } from "@/common/providers/AnalyticsProvider";
+import {
+  validateTabName,
+  isDuplicateTabName,
+  withOptimisticUpdate,
+} from "@/common/utils/tabUtils";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -126,7 +133,13 @@ interface SpaceActions {
     spaceId: string,
     tabName: string,
     config: UpdatableDatabaseWritableSpaceSaveConfig,
-    newName?: string,
+  ) => Promise<void>;
+  renameSpaceTab: (
+    spaceId: string,
+    tabName: string,
+    newName: string,
+    config?: UpdatableDatabaseWritableSpaceSaveConfig,
+    network?: EtherScanChainName,
   ) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
   loadSpaceTabOrder: (spaceId: string) => Promise<void>;
@@ -189,50 +202,6 @@ export const spaceStoreprofiles: SpaceState = {
   localSpaces: {},
 };
 
-// Function to show tooltip using React components
-const showTooltipError = (title: string, description: string) => {
-  // Only run in browser environment
-  if (typeof document === 'undefined' || typeof window === 'undefined') return;
-
-  // Create a simple error message element instead of using the tooltip components
-  const errorContainer = document.createElement('div');
-  errorContainer.style.position = 'fixed';
-  errorContainer.style.top = '20px';
-  errorContainer.style.right = '20px';
-  errorContainer.style.zIndex = '9999';
-  errorContainer.style.backgroundColor = '#ef4444'; // red-500
-  errorContainer.style.color = 'white';
-  errorContainer.style.padding = '16px';
-  errorContainer.style.borderRadius = '6px';
-  errorContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-  errorContainer.style.maxWidth = '400px';
-
-  const titleElement = document.createElement('h3');
-  titleElement.style.fontWeight = 'bold';
-  titleElement.style.marginBottom = '4px';
-  titleElement.textContent = title;
-
-  const descriptionElement = document.createElement('p');
-  descriptionElement.textContent = description;
-
-  errorContainer.appendChild(titleElement);
-  errorContainer.appendChild(descriptionElement);
-  document.body.appendChild(errorContainer);
-
-  // Remove after timeout
-  setTimeout(() => {
-    document.body.removeChild(errorContainer);
-  }, 4000);
-};
-
-// Add validation function
-const validateTabName = (tabName: string): string | null => {
-  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
-  }
-  return null;
-};
-
 export const createSpaceStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
@@ -257,7 +226,7 @@ export const createSpaceStoreFunc = (
           `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
           { ...file, network },
         );
-        
+
         set((draft) => {
           draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
           delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
@@ -269,49 +238,29 @@ export const createSpaceStoreFunc = (
       }
     }
   },
-  saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
-    // Check if the new name contains special characters
-    if (newName && /[^a-zA-Z0-9-_ ]/.test(newName as string)) {
-      // Show error tooltip
-      showTooltipError(
-        "Invalid Tab Name",
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-
-      // Log error but don't crash the app
-      console.error("Invalid tab name characters:", newName);
-      
-      // Wait a bit to ensure tooltip shows, then exit
-      setTimeout(() => {}, 100);
-      return; // Exit safely instead of throwing
-    }
-
-    // console.log("NewConfig", config);
-    let localCopy;
+  saveLocalSpaceTab: async (spaceId, tabName, config) => {
     const newTimestamp = moment().toISOString();
+    let localCopy;
 
-    // If the tab doesn't exist yet, use the new config directly
-    if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
+    const existingTab = get().space.localSpaces[spaceId]?.tabs?.[tabName];
+
+    if (!existingTab) {
       localCopy = {
         ...cloneDeep(config),
         timestamp: newTimestamp,
       };
     } else {
-      // Otherwise merge with existing config
-      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+      localCopy = cloneDeep(existingTab);
       mergeWith(localCopy, config, (objValue, srcValue) => {
         if (isArray(srcValue)) return srcValue;
-        if (typeof srcValue === 'object' && srcValue !== null) {
-          // For objects, return the source value to replace the target completely
+        if (typeof srcValue === "object" && srcValue !== null) {
           return srcValue;
         }
       });
       localCopy.timestamp = newTimestamp;
-      // console.log("localCopy", localCopy);
     }
 
     set((draft) => {
-      // Create space entry if it doesn't exist
       if (!draft.space.localSpaces[spaceId]) {
         draft.space.localSpaces[spaceId] = {
           id: spaceId,
@@ -321,17 +270,161 @@ export const createSpaceStoreFunc = (
           changedNames: {},
         };
       }
-      
-      if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
-        draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
-        draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
-        delete draft.space.localSpaces[spaceId].tabs[tabName];
-      } else {
-        draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
-      }
-      const newSpaceTimestamp = moment().toISOString();
-      draft.space.localSpaces[spaceId].updatedAt = newSpaceTimestamp;
+
+      const spaceDraft = draft.space.localSpaces[spaceId];
+      spaceDraft.tabs[tabName] = localCopy;
+      spaceDraft.updatedAt = newTimestamp;
     }, "saveLocalSpaceTab");
+  },
+  renameSpaceTab: async (
+    spaceId,
+    tabName,
+    newName,
+    config,
+    network,
+  ) => {
+    const existingSpace = get().space.localSpaces[spaceId];
+    if (!existingSpace) {
+      console.warn("Attempted to rename tab for unknown space", {
+        spaceId,
+        tabName,
+        newName,
+      });
+      return;
+    }
+
+    const sanitizedNewName = newName.trim();
+    if (!sanitizedNewName || sanitizedNewName === tabName) {
+      return;
+    }
+
+    // Validate tab name using shared utility
+    const validationError = validateTabName(sanitizedNewName);
+    if (validationError) {
+      console.error("Invalid tab name characters:", sanitizedNewName);
+      return;
+    }
+
+    const baselineOrder = existingSpace.order.length
+      ? cloneDeep(existingSpace.order)
+      : Object.keys(existingSpace.tabs || {});
+
+    // Check for duplicates - should not happen since UI ensures uniqueness
+    // but log a warning just in case
+    const allTabNames = [
+      ...baselineOrder,
+      ...Object.keys(existingSpace.tabs || {}),
+    ];
+    const uniqueTabNames = [...new Set(allTabNames)];
+    
+    if (isDuplicateTabName(sanitizedNewName, uniqueTabNames, tabName)) {
+      console.warn(`Tab name "${sanitizedNewName}" already exists - UI should have ensured uniqueness`);
+      return; // Exit gracefully instead of throwing
+    }
+
+    const previousTabState = existingSpace.tabs?.[tabName];
+    if (!previousTabState) {
+      console.error("Attempted to rename missing tab", {
+        spaceId,
+        tabName,
+        newName,
+      });
+      return;
+    }
+
+    const previousOrder = cloneDeep(baselineOrder);
+    const previousChangedNames = cloneDeep(existingSpace.changedNames);
+
+    const mergedConfig = cloneDeep(previousTabState);
+    if (config) {
+      mergeWith(mergedConfig, config, (objValue, srcValue) => {
+        if (isArray(srcValue)) return srcValue;
+        if (typeof srcValue === "object" && srcValue !== null) {
+          return srcValue;
+        }
+      });
+    }
+    const newTimestamp = moment().toISOString();
+    mergedConfig.timestamp = newTimestamp;
+
+    const orderWithoutOldName = previousOrder.filter((name) => name !== tabName);
+    const previousIndex = previousOrder.indexOf(tabName);
+    if (previousIndex >= 0) {
+      orderWithoutOldName.splice(previousIndex, 0, sanitizedNewName);
+    } else if (!orderWithoutOldName.includes(sanitizedNewName)) {
+      orderWithoutOldName.push(sanitizedNewName);
+    }
+
+    const previousRemoteName =
+      existingSpace.changedNames?.[tabName] || tabName;
+
+    const resolvedNetworkCandidate =
+      network ?? existingSpace.network ?? get().space.remoteSpaces[spaceId]?.network;
+    const resolvedNetwork = resolvedNetworkCandidate ?? undefined;
+
+    // Use shared optimistic update pattern
+    return withOptimisticUpdate({
+      updateFn: () => {
+        set((draft) => {
+          const spaceDraft = draft.space.localSpaces[spaceId];
+          if (!spaceDraft) {
+            return;
+          }
+
+          spaceDraft.tabs[sanitizedNewName] = cloneDeep(mergedConfig);
+          delete spaceDraft.tabs[tabName];
+
+          spaceDraft.changedNames[sanitizedNewName] = previousRemoteName;
+          delete spaceDraft.changedNames[tabName];
+
+          spaceDraft.order = orderWithoutOldName;
+          spaceDraft.updatedAt = newTimestamp;
+          spaceDraft.orderUpdatedAt = newTimestamp;
+
+          if (draft.currentSpace.currentTabName === tabName) {
+            draft.currentSpace.currentTabName = sanitizedNewName;
+          }
+        }, "renameSpaceTabOptimistic");
+      },
+      commitFn: async () => {
+        const commitPromise = get().space.commitSpaceTabToDatabase(
+          spaceId,
+          sanitizedNewName,
+          resolvedNetwork,
+        );
+        if (commitPromise) {
+          await commitPromise;
+        }
+      },
+      rollbackFn: () => {
+        set((draft) => {
+          const spaceDraft = draft.space.localSpaces[spaceId];
+          if (!spaceDraft) {
+            return;
+          }
+
+          spaceDraft.tabs[tabName] = cloneDeep(previousTabState);
+          delete spaceDraft.tabs[sanitizedNewName];
+
+          spaceDraft.changedNames = cloneDeep(previousChangedNames);
+          spaceDraft.order = previousOrder;
+
+          const rollbackTimestamp = moment().toISOString();
+          spaceDraft.updatedAt = rollbackTimestamp;
+          spaceDraft.orderUpdatedAt = rollbackTimestamp;
+        }, "renameSpaceTabRollback");
+
+        set((draft) => {
+          if (draft.currentSpace.currentTabName === sanitizedNewName) {
+            draft.currentSpace.currentTabName = tabName;
+          }
+        }, "renameSpaceTabRollbackCurrentTab");
+      },
+      errorConfig: {
+        title: "Error Renaming Tab",
+        message: "We couldn't rename this tab. Your original tab name has been restored.",
+      },
+    });
   },
   deleteSpaceTab: async (
     spaceId,
@@ -595,7 +688,7 @@ export const createSpaceStoreFunc = (
     },
     1000,
   ),
-  loadSpaceTab: async (spaceId, tabName, fid) => {
+  loadSpaceTab: async (spaceId, tabName) => {
     const supabase = createClient();
     try {
       // Fetch the public URL for the space tab file
@@ -669,9 +762,10 @@ export const createSpaceStoreFunc = (
               remoteUpdatableSpaceConfig,
             );
           } else {
-            // Local is newer or same age, keep local data
+            // Local is newer or same age, keep local data but update remote to reflect actual database state
             draft.space.remoteSpaces[spaceId].tabs[tabName] =
-              cloneDeep(localTab);
+              remoteUpdatableSpaceConfig;
+            // Keep localTab unchanged - it already has the newer local changes
           }
         } else {
           // No local tab, create it with remote data
@@ -681,11 +775,6 @@ export const createSpaceStoreFunc = (
             remoteUpdatableSpaceConfig,
           );
         }
-
-        // Update timestamps
-        const newTimestamp = moment().toISOString();
-        draft.space.remoteSpaces[spaceId].updatedAt = newTimestamp;
-        draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
       }, "loadSpaceTab");
     } catch (e) {
       console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
@@ -832,7 +921,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        createIntialProfileSpaceConfigForFid(fid),
+        createInitialProfileSpaceConfigForFid(fid),
       );
       analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
         type: "user",
@@ -1243,20 +1332,21 @@ export const createSpaceStoreFunc = (
               // Only create entry if it doesn't exist or if it's missing contract metadata
               if (!draft.space.localSpaces[spaceInfo.spaceId] || 
                   (!draft.space.localSpaces[spaceInfo.spaceId].contractAddress && spaceInfo.contractAddress)) {
-              draft.space.localSpaces[spaceInfo.spaceId] = {
-                id: spaceInfo.spaceId,
-                updatedAt: moment().toISOString(),
-                tabs: draft.space.localSpaces[spaceInfo.spaceId]?.tabs || {},
-                order: draft.space.localSpaces[spaceInfo.spaceId]?.order || [],
-                changedNames: draft.space.localSpaces[spaceInfo.spaceId]?.changedNames || {},
-                contractAddress: spaceInfo.contractAddress,
-                network: spaceInfo.network,
-                fid: spaceInfo.fid,
-                proposalId: spaceInfo.proposalId,
-                channelId: spaceInfo.channelId,
-              };
-            }
-          });
+                draft.space.localSpaces[spaceInfo.spaceId] = {
+                  id: spaceInfo.spaceId,
+                  updatedAt: moment().toISOString(),
+                  tabs: draft.space.localSpaces[spaceInfo.spaceId]?.tabs || {},
+                  order: draft.space.localSpaces[spaceInfo.spaceId]?.order || [],
+                  changedNames:
+                    draft.space.localSpaces[spaceInfo.spaceId]?.changedNames || {},
+                  contractAddress: spaceInfo.contractAddress,
+                  network: spaceInfo.network,
+                  fid: spaceInfo.fid,
+                  proposalId: spaceInfo.proposalId,
+                  channelId: spaceInfo.channelId,
+                };
+              }
+            });
         }
         }, "loadEditableSpaces");
         return editableSpaces;
