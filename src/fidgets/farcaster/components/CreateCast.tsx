@@ -29,7 +29,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { CastModalInteractiveBranch } from "@/common/lib/utils/castModalInteractivity";
+import {
+  CastModalInteractiveBranch,
+  useCastModalPortalContainer,
+} from "@/common/lib/utils/castModalInteractivity";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/common/stores/bannerStore";
@@ -143,6 +146,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   afterSubmit = () => {},
   onShouldConfirmCloseChange,
 }) => {
+  const castModalPortalContainer = useCastModalPortalContainer();
   const isMobile = useIsMobile();
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -819,6 +823,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 </PopoverTrigger>
                 <CastModalInteractiveBranch asChild>
                   <PopoverContent
+                    container={castModalPortalContainer ?? undefined}
                     side="top"
                     align="end"
                     sideOffset={8}
@@ -857,7 +862,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }}
           >
             <PopoverTrigger></PopoverTrigger>
-            <PopoverContent className="w-[300px]">
+            <PopoverContent
+              container={castModalPortalContainer ?? undefined}
+              className="w-[300px]"
+            >
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">{currentMod?.name}</h4>
                 <hr />

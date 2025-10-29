@@ -15,7 +15,10 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/common/components/atoms/popover"; // Adjust the import paths if needed
-import { CastModalInteractiveBranch } from "@/common/lib/utils/castModalInteractivity";
+import {
+  CastModalInteractiveBranch,
+  useCastModalPortalContainer,
+} from "@/common/lib/utils/castModalInteractivity";
 import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
 
 type Props = {
@@ -60,6 +63,8 @@ export function ChannelPicker(props: Props) {
     [onSelect],
   );
 
+  const castModalPortalContainer = useCastModalPortalContainer();
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -82,6 +87,7 @@ export function ChannelPicker(props: Props) {
       </PopoverTrigger>
       <CastModalInteractiveBranch asChild>
         <PopoverContent
+          container={castModalPortalContainer ?? undefined}
           className="w-[400px] p-0"
           align="start"
           data-cast-modal-interactive="true"
