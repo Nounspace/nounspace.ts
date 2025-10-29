@@ -1,10 +1,10 @@
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
+import { Card, CardContent } from "@mui/material";
 import { isUndefined } from "lodash";
 import React, { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import BackArrowIcon from "../components/atoms/icons/BackArrow";
 import { FixedSizeList } from "react-window";
-import { Card, CardContent } from "../atoms/card";
-import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export interface FidgetPickerProps {
   addFidget: (fidgetId: string, fidget: FidgetModule<any>) => void;
