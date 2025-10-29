@@ -225,8 +225,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     };
   }, [isEmojiPickerOpen, isTargetInsideEmojiPicker]);
 
-  const toggleEmojiPicker = useCallback(() => {
-    setIsEmojiPickerOpen((prev) => !prev);
+  const handleEmojiPickerOpenChange = useCallback((nextOpen: boolean) => {
+    setIsEmojiPickerOpen(nextOpen);
   }, []);
 
   const shouldConfirmClose = useMemo(() => {
@@ -867,7 +867,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 )}
               </Button>
 
-              <Popover open={isEmojiPickerOpen}>
+              <Popover
+                open={isEmojiPickerOpen}
+                onOpenChange={handleEmojiPickerOpenChange}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     ref={emojiTriggerRef}
@@ -876,7 +879,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     variant="ghost"
                     disabled={isPublishing}
                     aria-expanded={isEmojiPickerOpen}
-                    onClick={toggleEmojiPicker}
                   >
                     <GoSmiley size={20} />
                   </Button>
