@@ -1,9 +1,9 @@
-import React from "react";
-import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { FidgetBundle, FidgetConfig } from "@/common/fidgets";
 import { ThemeSettings } from "@/common/lib/theme";
-import { dummyFunctions } from "../utils";
 import { CompleteFidgets } from "@/fidgets";
+import React from "react";
+import { dummyFunctions } from "../utils";
+import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 
 interface FidgetContentProps {
   fidgetId: string;
