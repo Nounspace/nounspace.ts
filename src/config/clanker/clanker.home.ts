@@ -35,7 +35,7 @@ export const clankerHomePage = {
           fidgetBorderColor: "rgba(0, 212, 255, 0.3)",
           fidgetShadow: "0 4px 20px rgba(0, 212, 255, 0.2)",
           fidgetBorderRadius: "12px",
-          gridSpacing: "16px"
+          gridSpacing: "16"
         }
       },
       fidgetInstanceDatums: {
@@ -124,7 +124,7 @@ export const clankerHomePage = {
         "text",
         "iframe"
       ],
-      isEditable: true,
+      isEditable: false,
       timestamp: new Date().toISOString()
     },
     trending: {
@@ -158,7 +158,7 @@ export const clankerHomePage = {
           fidgetBorderColor: "#ffd700",
           fidgetShadow: "0 4px 20px rgba(255, 215, 0, 0.2)",
           fidgetBorderRadius: "12px",
-          gridSpacing: "16px"
+          gridSpacing: "16"
         }
       },
       fidgetInstanceDatums: {
@@ -221,7 +221,7 @@ export const clankerHomePage = {
         "Video",
         "Rss"
       ],
-      isEditable: true,
+      isEditable: false,
       timestamp: new Date().toISOString()
     },
     portfolio: {
@@ -256,7 +256,7 @@ export const clankerHomePage = {
           fidgetBorderColor: "rgba(0, 255, 136, 0.3)",
           fidgetShadow: "0 4px 20px rgba(0, 255, 136, 0.2)",
           fidgetBorderRadius: "12px",
-          gridSpacing: "16px"
+          gridSpacing: "16"
         }
       },
       fidgetInstanceDatums: {
@@ -332,7 +332,7 @@ export const clankerHomePage = {
         "Video",
         "Chat"
       ],
-      isEditable: true,
+      isEditable: false,
       timestamp: new Date().toISOString()
     },
     create: {
@@ -366,7 +366,7 @@ export const clankerHomePage = {
           fidgetBorderColor: "#ff6b6b",
           fidgetShadow: "0 6px 24px rgba(255, 107, 107, 0.3)",
           fidgetBorderRadius: "16px",
-          gridSpacing: "20px"
+          gridSpacing: "16"
         }
       },
       fidgetInstanceDatums: {
@@ -432,7 +432,7 @@ export const clankerHomePage = {
         "Chat",
         "BuilderScore"
       ],
-      isEditable: true,
+      isEditable: false,
       timestamp: new Date().toISOString()
     },
     analytics: {
@@ -468,7 +468,7 @@ export const clankerHomePage = {
           fidgetBorderColor: "rgba(168, 230, 207, 0.4)",
           fidgetShadow: "0 10px 40px rgba(168, 230, 207, 0.2)",
           fidgetBorderRadius: "20px",
-          gridSpacing: "24px"
+          gridSpacing: "16"
         }
       },
       fidgetInstanceDatums: {
@@ -561,7 +561,7 @@ export const clankerHomePage = {
         "Video",
         "Chat"
       ],
-      isEditable: true,
+      isEditable: false,
       timestamp: new Date().toISOString()
     }
   },
