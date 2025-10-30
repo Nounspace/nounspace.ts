@@ -326,6 +326,7 @@ export default function PublicSpace({
             config: {
               settings: datum.config.settings,
               editable: datum.config.editable,
+              data: datum.config.data,
             },
           }))
           : undefined,

@@ -36,6 +36,9 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id_here
 # Neynar API Configuration
 NEYNAR_API_KEY=your_neynar_api_key_here
 
+# Token Directory Fidget
+COVALENT_API_KEY=your_covalent_api_key_here
+
 # Application URLs
 NEXT_PUBLIC_WEBSITE_URL=http://localhost:3000
 ```

@@ -65,7 +65,7 @@ export type DatabaseWritableSpaceConfig = Omit<
 > & {
   fidgetInstanceDatums: {
     [key: string]: Omit<FidgetInstanceData, "config"> & {
-      config: Omit<FidgetConfig, "data">;
+      config: FidgetConfig;
     };
   };
 };
@@ -75,7 +75,7 @@ export type DatabaseWritableSpaceSaveConfig = Partial<
 > & {
   fidgetInstanceDatums?: {
     [key: string]: Omit<FidgetInstanceData, "config"> & {
-      config: Omit<FidgetConfig, "data">;
+      config: FidgetConfig;
     };
   };
 };

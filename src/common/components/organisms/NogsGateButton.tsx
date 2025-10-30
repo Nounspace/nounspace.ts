@@ -55,7 +55,7 @@ const NogsGateButton = (props: ButtonProps) => {
   const walletAddress = user?.wallet?.address as Address | undefined;
   const { data: spaceBalanceData } = useBalance({
     address: walletAddress ?? zeroAddress,
-    token: SPACE_CONTRACT_ADDR,
+    token: SPACE_CONTRACT_ADDR as Address,
     chainId: base.id,
     query: { enabled: Boolean(walletAddress) },
   });
