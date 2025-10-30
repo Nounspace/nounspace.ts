@@ -3,7 +3,7 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
 import { ProposalSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
-import { createInitalProposalSpaceConfigForProposalId } from "@/constants/initialProposalSpace";
+import { createInitalProposalSpaceConfigForProposalId } from "@/config";
 
 export interface ProposalData {
   id: string;

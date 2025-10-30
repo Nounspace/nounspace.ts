@@ -13,19 +13,19 @@ import { TooltipProvider } from "../atoms/tooltip";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import { useSidebarContext } from "./Sidebar";
 import TokenDataHeader from "./TokenDataHeader";
+import { validateTabName } from "@/common/utils/tabUtils";
 
 interface TabBarProps {
-  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
   tabList: string[];
+  defaultTab: string;
   updateTabOrder: (newOrder: string[]) => void;
   commitTabOrder: () => void;
-  switchTabTo: (tabName: string, shouldSave?: boolean) => void;
   deleteTab: (tabName: string) => void;
   createTab: (tabName: string) => Promise<{ tabName: string } | undefined>;
-  renameTab: (tabName: string, newName: string) => void;
+  renameTab: (tabName: string, newName: string) => Promise<void> | void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
@@ -33,24 +33,15 @@ interface TabBarProps {
   isEditable?: boolean;
 }
 
-const PERMANENT_TABS = ["Feed", "Profile"];
-const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
-
-// Add validation function
-const validateTabName = (tabName: string): string | null => {
-  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
-  }
-  return null;
-};
+const isEditableTab = (tabName: string, defaultTab: string) => 
+  tabName !== defaultTab;
 
 function TabBar({
-  inHome,
   inHomebase,
   inEditMode,
   currentTab,
-  tabList = ["Profile"],
-  switchTabTo,
+  tabList,
+  defaultTab,
   updateTabOrder,
   commitTabOrder,
   deleteTab,
@@ -65,98 +56,69 @@ function TabBar({
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
 
-  const { getIsLoggedIn, getIsInitializing, homebaseLoadTab } = useAppStore((state) => ({
+  const { getIsLoggedIn, getIsInitializing, homebaseLoadTab, setCurrentTabName } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     homebaseLoadTab: state.homebase.loadHomebaseTab,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
   }));
 
-  const [isOperating, setIsOperating] = React.useState(false);
-
-  /// State to control post-delete navigation
-  const [pendingTabSwitch, setPendingTabSwitch] = React.useState<string | null>(null);
+  function switchTabTo(tabName: string, shouldSave: boolean = true) {
+    setCurrentTabName(tabName);
+    const url = getSpacePageUrl(tabName);
+    window.history.replaceState(null, '', url);
+  }
 
   // Function to calculate next tab after deletion
   const nextClosestTab = React.useCallback((tabName: string) => {
-    const index = tabList.indexOf(tabName);
     const futureTabList = tabList.filter(tab => tab !== tabName);
+    if (futureTabList.length === 0) return defaultTab;
     
-    if (futureTabList.length === 0) {
-      return inHomebase ? "Feed" : "Profile";
-    }
-    
-    if (index === tabList.length - 1 && index > 0) {
-      return futureTabList[futureTabList.length - 1];
-    }
-    else if (index >= 0 && index < futureTabList.length) {
-      return futureTabList[index];
-    }
-    else if (futureTabList.length > 0) {
-      return futureTabList[futureTabList.length - 1];
-    }
-    else {
-      return inHomebase ? "Feed" : "Profile";
-    }
-  }, [tabList, inHomebase]);
+    const index = tabList.indexOf(tabName);
+    return futureTabList[Math.min(index, futureTabList.length - 1)];
+  }, [tabList, defaultTab]);
 
-  // Simple debounced functions without complex optimizations
   const debouncedCreateTab = React.useCallback(
     debounce(async (tabName: string) => {
-      if (isOperating) {
-        console.log("Operation already in progress, skipping");
+      if (!tabName?.trim()) return;
+      
+      const cleanTabName = tabName.trim();
+      
+      // If tab already exists, just switch to it
+      if (tabList.includes(cleanTabName)) {
+        switchTabTo(cleanTabName, true);
         return;
       }
-      
-      console.log("Creating tab with name:", tabName);
-      setIsOperating(true);
-      
+
+      // Optimistically update UI immediately
+      switchTabTo(cleanTabName, false);
+
       try {
-        if (!tabName || typeof tabName !== 'string' || tabName.trim() === '') {
-          console.error("Invalid tab name provided:", tabName);
-          return;
-        }
-        
-        const cleanTabName = tabName.trim();
-        
-        // If tab already exists, just switch to it
-        if (tabList.includes(cleanTabName)) {
-          console.log("Tab already exists, switching to it");
-          switchTabTo(cleanTabName, true);
-          return;
-        }
-
-        console.log("Calling createTab function...");
+        // Call createTab in the background (it already optimistically adds to the order)
         const result = await createTab(cleanTabName);
-        console.log("CreateTab result:", result);
-        
         const finalTabName = result?.tabName || cleanTabName;
-        console.log("Final tab name:", finalTabName);
-
-        // Only commit, don't auto-switch to avoid race conditions
-        console.log("Committing tab order...");
         
-        // Immediately navigate to the new tab
-        switchTabTo(finalTabName, true);
+        // If the final tab name is different (e.g., due to deduplication), switch to it
+        if (finalTabName !== cleanTabName) {
+          switchTabTo(finalTabName, false);
+        }
+        
+        // Commit the order (createTab already updated local state)
         commitTabOrder();
-        
-        console.log("Tab creation completed successfully");
-        
       } catch (error) {
-        console.error("Error in createTab:", error);
-      } finally {
-        setIsOperating(false);
+        console.error("Error creating tab:", error);
+        toast.error("Failed to create tab. Please try again.");
+        // TODO: Rollback optimistic changes if needed
       }
     }, 300),
-    [isOperating, tabList, createTab, commitTabOrder, switchTabTo]
+    [tabList, createTab, commitTabOrder, switchTabTo]
   );
 
   const debouncedDeleteTab = React.useCallback(
     debounce(async (tabName: string) => {
-      if (isOperating) return;
-      setIsOperating(true);
       try {
-        if (!isEditableTab(tabName)) {
+        if (!isEditableTab(tabName, defaultTab)) {
           toast.error("Cannot delete this tab.");
           return;
         }
@@ -166,29 +128,28 @@ function TabBar({
           return;
         }
         
-        // Only set pending switch if we're deleting the current tab
-        if (currentTab === tabName) {
-          const nextTab = nextClosestTab(tabName);
-          setPendingTabSwitch(nextTab);
-        }
+        // Calculate next tab before deletion
+        const shouldSwitch = currentTab === tabName;
+        const nextTab = shouldSwitch ? nextClosestTab(tabName) : null;
         
         await deleteTab(tabName);
+        
+        // Switch to next tab after successful deletion
+        if (shouldSwitch && nextTab) {
+          switchTabTo(nextTab, true);
+        }
         
         toast.success("Tab deleted successfully!");
       } catch (error) {
         console.error("Error deleting tab:", error);
         toast.error("Error deleting tab. Please try again.");
-      } finally {
-        setIsOperating(false);
       }
     }, 300),
-    [isOperating, tabList, deleteTab, currentTab, nextClosestTab]
+    [tabList, deleteTab, currentTab, nextClosestTab, defaultTab, switchTabTo]
   );
 
   const debouncedRenameTab = React.useCallback(
     debounce(async (tabName: string, newName: string) => {
-      if (isOperating) return;
-      setIsOperating(true);
       try {
         if (!newName || typeof newName !== 'string') {
           return;
@@ -210,135 +171,48 @@ function TabBar({
           return;
         }
         
-        renameTab(tabName, uniqueName);
-        const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
-        updateTabOrder(newOrder);
+        // Fire off rename (optimistic update happens immediately and handles order update)
+        const renamePromise = renameTab(tabName, uniqueName);
+        
+        // Update current tab name in store and URL
         switchTabTo(uniqueName);
+        
+        // Wait for rename to complete, then commit
+        await renamePromise;
         commitTab(uniqueName);
         commitTabOrder();
         
       } catch (error) {
         console.error("Error in handleRenameTab:", error);
-      } finally {
-        setIsOperating(false);
       }
     }, 300),
-    [isOperating, renameTab, updateTabOrder, switchTabTo, commitTab, commitTabOrder, tabList]
+    [renameTab, switchTabTo, commitTab, commitTabOrder, tabList]
   );
 
   function generateNewTabName(): string {
-    try {
-      // Use the list length to determine the next tab number
-      const nextNumber = tabList.length + 1;
-      const baseName = `Tab ${nextNumber}`;
-      
-      // If this name is available, use it
-      if (!tabList.includes(baseName)) {
-        return baseName;
-      }
-      
-      // If somehow that number is taken, find the next available
-      let counter = nextNumber + 1;
-      let newName = `Tab ${counter}`;
-      
-      while (tabList.includes(newName) && counter < 200) {
-        counter++;
-        newName = `Tab ${counter}`;
-      }
-      
-      return newName;
-    } catch (error) {
-      console.error("Error generating tab name:", error);
-      return `Tab ${Date.now()}`;
+    for (let i = tabList.length + 1; i < 200; i++) {
+      const name = `Tab ${i}`;
+      if (!tabList.includes(name)) return name;
     }
+    return `Tab ${Date.now()}`; // Fallback if all numbers taken
   }
 
-  function generateUniqueTabName(tabName: string) {
-    try {
-      // First validate the base name
-      const validationError = validateTabName(tabName);
-      if (validationError) {
-        console.error("Invalid base tab name:", tabName, validationError);
-        return null;
-      }
-
-      let iter = 1;
-      let uniqueName = tabName;
-      
-      // Safety limit to prevent infinite loops
-      const maxIterations = 100;
-      
-      while (tabList.includes(uniqueName) && iter <= maxIterations) {
-        uniqueName = `${tabName} - ${iter}`;
-        // Validate each generated name
-        const validationError = validateTabName(uniqueName);
-        if (validationError) {
-          console.error("Could not generate unique name:", uniqueName, validationError);
-          return null;
-        }
-        iter += 1;
-      }
-      
-      if (iter > maxIterations) {
-        console.error("Max iterations reached for unique name generation");
-        return null;
-      }
-      
-      return uniqueName;
-    } catch (error) {
-      console.error("Error in generateUniqueTabName:", error);
+  function generateUniqueTabName(tabName: string): string | null {
+    const validationError = validateTabName(tabName);
+    if (validationError) {
+      console.error("Invalid tab name:", validationError);
       return null;
     }
+
+    let uniqueName = tabName;
+    let iter = 1;
+    
+    while (tabList.includes(uniqueName) && iter <= 100) {
+      uniqueName = `${tabName} - ${iter++}`;
+    }
+    
+    return iter > 100 ? null : uniqueName;
   }
-
-  // Defensive wrapper for switchTabTo: never navigate to null/undefined
-  const safeSwitchTabTo = React.useCallback((tabName: string, shouldSave?: boolean) => {
-    if (!tabName || typeof tabName !== 'string' || !tabList.includes(tabName)) {
-      console.warn('Attempted navigation to invalid tab:', tabName);
-      return;
-    }
-    switchTabTo(tabName, shouldSave);
-  }, [switchTabTo, tabList]);
-
-  // Effect to safely navigate after deleting a tab
-  React.useEffect(() => {
-    if (!pendingTabSwitch) return;
-    if (!tabList.includes(pendingTabSwitch)) {
-      const fallbackTab = tabList[0] || (inHomebase ? "Feed" : "Profile");
-      if (fallbackTab) {
-        console.warn("Target tab no longer exists. Redirecting to:", fallbackTab);
-        safeSwitchTabTo(fallbackTab);
-      } else {
-        console.error("No available tab for navigation after deletion.");
-      }
-      setPendingTabSwitch(null);
-      return;
-    }
-    const timeoutId = setTimeout(() => {
-      try {
-        try {
-          if (typeof getSpacePageUrl === 'function') {
-            const url = getSpacePageUrl(encodeURIComponent(pendingTabSwitch));
-            if (url && typeof url === 'string') {
-              window.history.pushState({}, '', url);
-            }
-          }
-        } catch (urlError) {
-          // Ignore error when updating URL after tab deletion
-        }
-        safeSwitchTabTo(pendingTabSwitch);
-        setPendingTabSwitch(null);
-      } catch (error) {
-        setPendingTabSwitch(null);
-      }
-    }, 50);
-    return () => clearTimeout(timeoutId);
-  }, [tabList, pendingTabSwitch, safeSwitchTabTo, getSpacePageUrl, inHomebase]);
-
-  // Releases the ref whenever the tab actually changes
-  React.useEffect(() => {
-    // No longer needed, but keeping for potential future use
-  }, [currentTab]);
 
   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
@@ -346,24 +220,10 @@ function TabBar({
       e.preventDefault();
     }
 
-    // Does nothing if it's already the current tab
-    if (currentTab === tabName) {
-      return;
-    }
+    if (currentTab === tabName) return;
     
-    // Update URL immediately on click for instant visual feedback
-    try {
-      if (typeof getSpacePageUrl === 'function') {
-        const url = getSpacePageUrl(encodeURIComponent(tabName));
-        window.history.pushState({}, '', url);
-      }
-    } catch (error) {
-      console.error("Error updating URL:", error);
-    }
-    
-    // Direct call to switchTabTo
     switchTabTo(tabName, true);
-  }, [currentTab, getSpacePageUrl, switchTabTo]);
+  }, [currentTab, switchTabTo]);
 
   // Function to preload tab data (only for homebase tabs)
   const preloadTabData = React.useCallback((tabName: string) => {
@@ -375,15 +235,10 @@ function TabBar({
   // Simple debounced reorder function
   const debouncedReorder = React.useCallback(
     debounce((newOrder) => {
-      if (isOperating) return;
-      setIsOperating(true);
       updateTabOrder(newOrder);
-      setTimeout(() => {
-        commitTabOrder();
-        setIsOperating(false);
-      }, 50);
+      commitTabOrder();
     }, 300),
-    [isOperating, updateTabOrder, commitTabOrder]
+    [updateTabOrder, commitTabOrder]
   );
 
   const isLoggedIn = getIsLoggedIn();
@@ -408,7 +263,7 @@ function TabBar({
                 values={tabList}
               >
                 {map(
-                  inHomebase ? ["Feed", ...tabList] : tabList,
+                  tabList,
                   (tabName: string) => (
                     <Tab
                       key={`tab-${tabName}`}
@@ -417,9 +272,9 @@ function TabBar({
                       inEditMode={inEditMode}
                       isSelected={currentTab === tabName}
                       onClick={() => handleTabClick(tabName)}
-                      removeable={isEditableTab(tabName)}
+                      removeable={isEditableTab(tabName, defaultTab)}
                       draggable={inEditMode}
-                      renameable={isEditableTab(tabName)}
+                      renameable={isEditableTab(tabName, defaultTab)}
                       onRemove={() => debouncedDeleteTab(tabName)}
                       renameTab={(tab, newName) => debouncedRenameTab(tab, newName)}
                       preloadTabData={preloadTabData}
@@ -445,7 +300,6 @@ function TabBar({
               {(inEditMode) && (
                 <Button
                   onClick={() => debouncedCreateTab(generateNewTabName())}
-                  disabled={isOperating}
                   className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
                 >
                   <FaPlus />
@@ -459,16 +313,6 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
       </div>
-     {/* Visual operation feedback as a tooltip */}
-      {isOperating && (
-        <div className="fixed bottom-8 right-8 z-50">
-          <TooltipProvider>
-            <div className="bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 shadow-lg flex items-center">
-              <span className="text-blue-600 font-bold">Processing operation...</span>
-            </div>
-          </TooltipProvider>
-        </div>
-      )}
     </TooltipProvider>
   );
 }

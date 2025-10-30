@@ -10,7 +10,6 @@ import {
   WagmiProvider,
   useAccount,
   useConnect,
-  useDisconnect,
   useEnsName,
   useSwitchChain,
   useWriteContract,
@@ -35,56 +34,11 @@ import { nounsWagmiConfig, REQUIRED_CHAIN_ID } from "./wagmiConfig";
 import { nounsPublicClient, NOUNS_AH_ADDRESS } from "./config";
 import { NounsAuctionHouseV3Abi, NounsAuctionHouseExtraAbi } from "./abis";
 import type { Auction, Settlement } from "./types";
-import { formatCountdown, formatEth, getAuctionStatus, shortAddress } from "./utils";
+import { formatEth, getAuctionStatus } from "./utils";
 import { useEthUsdPrice, formatUsd } from "./price";
 import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX, fetchAccountLeaderboardCount } from "./subgraph";
 import LinkOut from "./LinkOut";
 
-const ConnectControl: React.FC = () => {
-  const { isConnected, address, chainId } = useAccount();
-  const { connectAsync, connectors, status } = useConnect();
-  const { disconnectAsync } = useDisconnect();
-  const [error, setError] = useState<string | null>(null);
-
-  const handlePress = async () => {
-    try {
-      setError(null);
-      if (isConnected) {
-        await disconnectAsync();
-        return;
-      }
-      const preferred = connectors[0];
-      if (!preferred) {
-        setError("No wallet connectors available");
-        return;
-      }
-      await connectAsync({ connector: preferred, chainId: REQUIRED_CHAIN_ID });
-    } catch (err) {
-      console.error("Connect error", err);
-      setError(err instanceof Error ? err.message : "Wallet connection failed");
-    }
-  };
-
-  const label = isConnected
-    ? chainId && chainId !== REQUIRED_CHAIN_ID
-      ? `Wrong network (${chainId})`
-      : shortAddress(address)
-    : "Connect wallet";
-
-  return (
-    <div className="flex flex-col items-end gap-1 text-sm">
-      <button
-        type="button"
-        onClick={handlePress}
-        className="rounded-full bg-black px-4 py-2 font-semibold text-white transition hover:bg-black/80"
-        disabled={status === "pending"}
-      >
-        {status === "pending" ? "Connecting..." : label}
-      </button>
-      {error && <span className="text-xs text-red-600">{error}</span>}
-    </div>
-  );
-};
 
 const useAuctionData = () => {
   const [auction, setAuction] = useState<Auction | undefined>();
@@ -255,8 +209,7 @@ const INNER_PADDING = "space-y-10 md:space-y-14";
 
 const NounsHomeInner: React.FC = () => {
   const { auction, refetch } = useAuctionData();
-  const { settlements, isLoading: settlementsLoading, hasMore, loadNext, refresh } =
-    useSettlements(auction);
+  const { settlements, refresh } = useSettlements(auction);
   const { isConnected, address, chainId } = useAccount();
   const { connectAsync, connectors } = useConnect();
   const { switchChainAsync } = useSwitchChain();

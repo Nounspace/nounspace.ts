@@ -5,7 +5,7 @@ import {
   ChannelSpacePageData,
   SPACE_TYPES,
 } from "@/common/types/spaceData";
-import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
+import { createInitialChannelSpaceConfig } from "@/config";
 import { Channel, ChannelType } from "@neynar/nodejs-sdk/build/api";
 
 export const getChannelMetadata = async (
@@ -27,6 +27,9 @@ export const createChannelSpaceData = (
   spaceId: string | undefined,
   channelId: string,
   channelDisplayName: string | undefined,
+  channelDescription: string | undefined,
+  channelImageUrl: string | undefined,
+  channelFollowerCount: number | undefined,
   moderatorFids: number[],
   tabName: string,
   identityPublicKey?: string,
@@ -47,6 +50,9 @@ export const createChannelSpaceData = (
     spaceOwnerFid: moderatorFids[0],
     channelId,
     channelDisplayName,
+    channelDescription,
+    channelImageUrl,
+    channelFollowerCount,
     moderatorFids,
     identityPublicKey,
   };
@@ -102,6 +108,9 @@ export const loadChannelSpaceData = async (
     spaceId,
     channelId,
     channelMetadata.name,
+    channelMetadata.description,
+    channelMetadata.image_url,
+    channelMetadata.follower_count,
     channelMetadata.moderator_fids || [],
     tabName,
     identityPublicKey,

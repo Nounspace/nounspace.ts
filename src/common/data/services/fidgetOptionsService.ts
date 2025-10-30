@@ -98,6 +98,7 @@ export class FidgetOptionsService {
           case 'frame':
           case 'chat':
           case 'profile':
+          case 'top8':
           case 'BuilderScore':
             primaryCategory = 'social';
             specificTags.push('farcaster');

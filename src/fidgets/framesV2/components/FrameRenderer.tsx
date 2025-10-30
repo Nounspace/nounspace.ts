@@ -187,7 +187,7 @@ export default function FrameRenderer({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 10,
+            zIndex: 0,
           }}
           role="status"
           aria-live="polite"
@@ -304,6 +304,7 @@ export default function FrameRenderer({
           background: "#fff",
           position: "relative",
           overflow: "hidden",
+          zIndex: 0,
         }}
       >
         {/* Frame image (responsive, fills container) */}
@@ -313,7 +314,7 @@ export default function FrameRenderer({
               position: "relative",
               width: "100%",
               height: "100%",
-              zIndex: 1,
+              zIndex: 0,
             }}
           >
             <Image
@@ -342,7 +343,7 @@ export default function FrameRenderer({
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 2,
+            zIndex: 0,
             width: "100%",
             background: "rgba(255,255,255,0.95)",
             display: "flex",

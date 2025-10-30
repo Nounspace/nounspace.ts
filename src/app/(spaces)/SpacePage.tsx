@@ -59,20 +59,18 @@ export default function SpacePage({
     useSidebarContext();
 
   return (
-    <>
-      <Space
-        config={config}
-        saveConfig={saveConfig}
-        commitConfig={commitConfig}
-        resetConfig={resetConfig}
-        tabBar={tabBar}
-        profile={profile}
-        feed={feed}
-        setEditMode={setEditMode}
-        editMode={editMode}
-        setSidebarEditable={setSidebarEditable}
-        portalRef={portalRef}
-      />
-    </>
+    <Space
+      config={config}
+      saveConfig={saveConfig}
+      commitConfig={commitConfig}
+      resetConfig={resetConfig}
+      tabBar={tabBar}
+      profile={profile}
+      feed={feed}
+      setEditMode={setEditMode}
+      editMode={editMode}
+      setSidebarEditable={setSidebarEditable}
+      portalRef={portalRef}
+    />
   );
 }

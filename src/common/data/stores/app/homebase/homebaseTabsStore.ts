@@ -5,7 +5,7 @@ import {
 import axiosBackend from "@/common/data/api/backend";
 import { createClient } from "@/common/data/database/supabase/clients/component";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
+import { INITIAL_HOMEBASE_CONFIG } from "@/config";
 import { homebaseTabOrderPath, homebaseTabsPath } from "@/constants/supabase";
 import {
   ManageHomebaseTabsResponse,
@@ -17,13 +17,21 @@ import {
   clone,
   cloneDeep,
   debounce,
-  forEach,
   has,
   isArray,
   mergeWith,
 } from "lodash";
+import moment from "moment";
 import { AppStore } from "..";
 import { StoreGet, StoreSet } from "../../createStore";
+import {
+  validateTabName,
+  isDuplicateTabName,
+  withOptimisticUpdate,
+} from "@/common/utils/tabUtils";
+
+// Default tab for homebase
+export const HOMEBASE_DEFAULT_TAB = "Feed";
 
 interface HomeBaseTabStoreState {
   tabs: {
@@ -64,50 +72,6 @@ export const homeBaseStoreDefaults: HomeBaseTabStoreState = {
     local: [],
     remote: [],
   },
-};
-
-// Function to show tooltip using DOM elements
-const showTooltipError = (title: string, description: string) => {
-  // Only run in browser environment
-  if (typeof document === 'undefined' || typeof window === 'undefined') return;
-  
-  // Create a simple error message element
-  const errorContainer = document.createElement('div');
-  errorContainer.style.position = 'fixed';
-  errorContainer.style.top = '20px';
-  errorContainer.style.right = '20px';
-  errorContainer.style.zIndex = '9999999999999999';
-  errorContainer.style.backgroundColor = '#ef4444';
-  errorContainer.style.color = 'white';
-  errorContainer.style.padding = '16px';
-  errorContainer.style.borderRadius = '6px';
-  errorContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-  errorContainer.style.maxWidth = '400px';
-  
-  const titleElement = document.createElement('h3');
-  titleElement.style.fontWeight = 'bold';
-  titleElement.style.marginBottom = '4px';
-  titleElement.textContent = title;
-  
-  const descriptionElement = document.createElement('p');
-  descriptionElement.textContent = description;
-  
-  errorContainer.appendChild(titleElement);
-  errorContainer.appendChild(descriptionElement);
-  document.body.appendChild(errorContainer);
-  
-  // Remove after timeout
-  setTimeout(() => {
-    document.body.removeChild(errorContainer);
-  }, 4000);
-};
-
-// Add validation function
-const validateTabName = (tabName: string): string | null => {
-  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
-  }
-  return null;
 };
 
 export const createHomeBaseTabStoreFunc = (
@@ -156,8 +120,21 @@ export const createHomeBaseTabStoreFunc = (
       // });
       
       set((draft) => {
+        // Ensure default tab is always first in the loaded order
+        const orderedTabs = clone(tabOrder);
+        if (!orderedTabs.includes(HOMEBASE_DEFAULT_TAB)) {
+          orderedTabs.unshift(HOMEBASE_DEFAULT_TAB);
+        } else {
+          // If default tab exists but isn't first, move it to the front
+          const defaultTabIndex = orderedTabs.indexOf(HOMEBASE_DEFAULT_TAB);
+          if (defaultTabIndex > 0) {
+            orderedTabs.splice(defaultTabIndex, 1);
+            orderedTabs.unshift(HOMEBASE_DEFAULT_TAB);
+          }
+        }
+        
         draft.homebase.tabOrdering = {
-          local: clone(tabOrder),
+          local: orderedTabs,
           remote: clone(tabOrder),
         };
       }, `loadHomebaseTabOrdering`);
@@ -170,7 +147,7 @@ export const createHomeBaseTabStoreFunc = (
   commitTabOrderingToDatabase: debounce(async () => {
     const localCopy = cloneDeep(
       get().homebase.tabOrdering.local.filter((name, i, arr) =>
-        name !== "Feed" && arr.indexOf(name) === i,
+        arr.indexOf(name) === i,
       ),
     );
     if (localCopy) {
@@ -185,7 +162,7 @@ export const createHomeBaseTabStoreFunc = (
         { useRootKey: true },
       );
       try {
-        await axiosBackend.post(`/api/space/homebase/tabOrder/`, file);
+        await axiosBackend.post(`/api/space/homebase/tabOrder`, file);
         set((draft) => {
           draft.homebase.tabOrdering.remote = localCopy;
         }, "commitHomebaseTabOrderToDatabase");
@@ -210,7 +187,6 @@ export const createHomeBaseTabStoreFunc = (
         // console.log('Failed to load tab names, using empty array');
         return [];
       } else {
-        const currentTabs = get().homebase.tabs;
         const validTabNames = data.value || [];
         
         // console.log('Loaded tab names:', {
@@ -219,11 +195,22 @@ export const createHomeBaseTabStoreFunc = (
         // });
         
         set((draft) => {
-          // Reset all tabs, this removes all ones that no longer exist
-          draft.homebase.tabs = {};
-          forEach(validTabNames, (tabName) => {
-            // Set the tabs that we have and add the missing ones
-            draft.homebase.tabs[tabName] = currentTabs[tabName] || {};
+          // Don't wipe tabs object - instead, preserve existing tabs and only modify what's needed
+          const validTabNames = data.value || [];
+          const currentTabNames = Object.keys(draft.homebase.tabs);
+          
+          // Remove tabs that no longer exist in the remote list
+          currentTabNames.forEach(tabName => {
+            if (!validTabNames.includes(tabName)) {
+              delete draft.homebase.tabs[tabName];
+            }
+          });
+          
+          // Add entries for any new tabs that don't exist locally yet
+          validTabNames.forEach((tabName) => {
+            if (!draft.homebase.tabs[tabName]) {
+              draft.homebase.tabs[tabName] = {};
+            }
           });
 
           // Clean up tab order by removing tabs that no longer exist
@@ -231,9 +218,21 @@ export const createHomeBaseTabStoreFunc = (
             tabName => validTabNames.includes(tabName)
           );
 
-          // Add back any valid tabs that aren't in the tab order
+          // Ensure default tab is always first in the order
+          if (!draft.homebase.tabOrdering.local.includes(HOMEBASE_DEFAULT_TAB)) {
+            draft.homebase.tabOrdering.local.unshift(HOMEBASE_DEFAULT_TAB);
+          } else {
+            // If default tab exists but isn't first, move it to the front
+            const defaultTabIndex = draft.homebase.tabOrdering.local.indexOf(HOMEBASE_DEFAULT_TAB);
+            if (defaultTabIndex > 0) {
+              draft.homebase.tabOrdering.local.splice(defaultTabIndex, 1);
+              draft.homebase.tabOrdering.local.unshift(HOMEBASE_DEFAULT_TAB);
+            }
+          }
+
+          // Add back any other valid tabs that aren't in the tab order
           validTabNames.forEach(tabName => {
-            if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+            if (tabName !== HOMEBASE_DEFAULT_TAB && !draft.homebase.tabOrdering.local.includes(tabName)) {
               draft.homebase.tabOrdering.local.push(tabName);
             }
           });
@@ -374,49 +373,127 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   async renameTab(tabName, newName) {
-    // console.log('Renaming tab:', { from: tabName, to: newName });
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
 
-    if (/[^a-zA-Z0-9-_ ]/.test(newName)) {
-      showTooltipError(
-        "Invalid Tab Name", 
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-      
-      const error = new Error(
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
+    const sanitizedNewName = newName.trim();
+    if (!sanitizedNewName || sanitizedNewName === tabName) {
+      return;
+    }
+
+    // Validate tab name using shared utility
+    const validationError = validateTabName(sanitizedNewName);
+    if (validationError) {
+      const error = new Error(validationError);
       (error as any).status = 400;
       throw error;
     }
 
-    const req: UnsignedManageHomebaseTabsRequest = {
-      publicKey,
-      type: "rename",
-      tabName,
-      newName,
-    };
-    const signedReq = await signSignable(
-      req,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
-    );
-    try {
-      const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
-        "/api/space/homebase/tabs",
-        { request: signedReq },
-      );
-      if (data.result === "success") {
-        // console.log('Successfully renamed tab:', { from: tabName, to: newName });
-        const currentTabData = get().homebase.tabs[tabName];
-        set((draft) => {
-          delete draft.homebase.tabs[tabName];
-          draft.homebase.tabs[newName] = currentTabData;
-        }, "renameHomebaseTab");
-      }
-    } catch (e) {
-      console.error('Failed to rename tab:', e);
+    // Check for duplicates - should not happen since UI ensures uniqueness
+    // but log a warning just in case
+    const existingTabs = get().homebase.tabOrdering.local;
+    if (isDuplicateTabName(sanitizedNewName, existingTabs, tabName)) {
+      console.warn(`Tab name "${sanitizedNewName}" already exists - UI should have ensured uniqueness`);
+      return; // Exit gracefully instead of throwing
     }
+
+    const previousOrderLocal = cloneDeep(existingTabs);
+    const previousOrderRemote = cloneDeep(get().homebase.tabOrdering.remote);
+    
+    // If tab doesn't exist in memory yet, create an empty entry for it
+    // This can happen if the tab exists in ordering but hasn't been loaded yet
+    if (!get().homebase.tabs[tabName]) {
+      console.warn(`Tab "${tabName}" not loaded yet, creating empty entry for rename`);
+      set((draft) => {
+        if (!draft.homebase.tabs[tabName]) {
+          draft.homebase.tabs[tabName] = {};
+        }
+      }, "ensureTabExists");
+    }
+    
+    const previousTabState = cloneDeep(get().homebase.tabs[tabName]);
+
+    const updatedOrder = previousOrderLocal.map((name) =>
+      name === tabName ? sanitizedNewName : name,
+    );
+
+    // Use shared optimistic update pattern
+    return withOptimisticUpdate({
+      updateFn: () => {
+        set((draft) => {
+          const tabEntry = draft.homebase.tabs[tabName];
+          if (!tabEntry) {
+            return;
+          }
+
+          draft.homebase.tabs[sanitizedNewName] = tabEntry;
+          delete draft.homebase.tabs[tabName];
+          draft.homebase.tabOrdering.local = updatedOrder;
+
+          if (draft.currentSpace.currentTabName === tabName) {
+            draft.currentSpace.currentTabName = sanitizedNewName;
+          }
+        }, "renameHomebaseTabOptimistic");
+      },
+      commitFn: async () => {
+        const req: UnsignedManageHomebaseTabsRequest = {
+          publicKey,
+          type: "rename",
+          tabName,
+          newName: sanitizedNewName,
+        };
+        const signedReq = await signSignable(
+          req,
+          get().account.getCurrentIdentity()!.rootKeys.privateKey,
+        );
+
+        const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
+          "/api/space/homebase/tabs",
+          { request: signedReq },
+        );
+        
+        if (data.result !== "success") {
+          throw new Error("Failed to rename tab");
+        }
+
+        // Update remoteConfig to reflect the new name after successful rename
+        set((draft) => {
+          const tabEntry = draft.homebase.tabs[sanitizedNewName];
+          if (tabEntry && tabEntry.config) {
+            // Update the remoteConfig to point to the new name
+            tabEntry.remoteConfig = cloneDeep(tabEntry.config);
+          }
+        }, "updateRemoteConfigAfterRename");
+
+        // Update remote ordering to match the new local ordering
+        set((draft) => {
+          draft.homebase.tabOrdering.remote = cloneDeep(updatedOrder);
+        }, "updateRemoteOrderingAfterRename");
+
+        // Persist the updated ordering to the backend
+        await get().homebase.commitTabOrderingToDatabase();
+      },
+      rollbackFn: () => {
+        set((draft) => {
+          if (draft.homebase.tabs[sanitizedNewName]) {
+            draft.homebase.tabs[tabName] = draft.homebase.tabs[sanitizedNewName];
+            delete draft.homebase.tabs[sanitizedNewName];
+          } else {
+            draft.homebase.tabs[tabName] = cloneDeep(previousTabState);
+          }
+          draft.homebase.tabOrdering.local = previousOrderLocal;
+          draft.homebase.tabOrdering.remote = previousOrderRemote;
+
+          if (draft.currentSpace.currentTabName === sanitizedNewName) {
+            draft.currentSpace.currentTabName = tabName;
+          }
+        }, "renameHomebaseTabRollback");
+      },
+      errorConfig: {
+        title: "Error Renaming Tab",
+        message: "We couldn't rename this tab. Your original tab name has been restored.",
+      },
+    });
   },
   async loadHomebaseTab(tabName) {
     // console.log('Loading homebase tab:', { tabName });
@@ -440,23 +517,57 @@ export const createHomeBaseTabStoreFunc = (
         },
       });
       const fileData = JSON.parse(await data.text()) as SignedFile;
-      const spaceConfig = JSON.parse(
+      const remoteConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
       
       // console.log('Loaded homebase tab config:', {
       //   tabName,
-      //   timestamp: spaceConfig.timestamp,
-      //   fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
+      //   timestamp: remoteConfig.timestamp,
+      //   fidgetCount: Object.keys(remoteConfig.fidgetInstanceDatums || {}).length
       // });
       
+      // Only overwrite local config if remote is newer (same pattern as loadHomebase)
+      const existingTab = get().homebase.tabs[tabName];
+      
+      // If we have a local config with a newer timestamp, keep it
+      // If remote config has no timestamp, preserve local changes
+      if (existingTab?.config?.timestamp && 
+          (!remoteConfig.timestamp || moment(existingTab.config.timestamp).isAfter(moment(remoteConfig.timestamp)))) {
+        // console.log('Local config is newer, keeping it:', {
+        //   tabName,
+        //   localTimestamp: existingTab.config.timestamp,
+        //   remoteTimestamp: remoteConfig.timestamp
+        // });
+        // Still update remoteConfig to track what's in the database
+        set((draft) => {
+          draft.homebase.tabs[tabName].remoteConfig = cloneDeep(remoteConfig);
+        }, `loadHomebaseTab:${tabName}-remote-only`);
+        return existingTab.config;
+      }
+      
+      // Remote is newer or local doesn't exist, load the remote configuration
+      // console.log('Remote config is newer or local empty, updating:', {
+      //   tabName,
+      //   remoteTimestamp: remoteConfig.timestamp
+      // });
       set((draft) => {
-        draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
-        draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
+        draft.homebase.tabs[tabName].config = cloneDeep(remoteConfig);
+        draft.homebase.tabs[tabName].remoteConfig = cloneDeep(remoteConfig);
       }, `loadHomebaseTab:${tabName}-found`);
-      return spaceConfig;
+      return remoteConfig;
     } catch (e) {
-      // console.log('Failed to load tab config, using default:', { tabName });
+      // console.log('Failed to load tab config, checking for local config:', { tabName });
+      const existingTab = get().homebase.tabs[tabName];
+      
+      // If we have a local config, preserve it instead of falling back to default
+      if (existingTab?.config) {
+        // console.log('Preserving existing local config:', { tabName });
+        return existingTab.config;
+      }
+      
+      // Only fall back to default if no local config exists
+      // console.log('No local config found, using default:', { tabName });
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(
           INITIAL_HOMEBASE_CONFIG,
@@ -507,6 +618,8 @@ export const createHomeBaseTabStoreFunc = (
         return srcValue;
       }
     });
+    // Update timestamp to mark this as a local change
+    localCopy.timestamp = moment().toISOString();
     set(
       (draft) => {
         draft.homebase.tabs[tabName].config = localCopy;

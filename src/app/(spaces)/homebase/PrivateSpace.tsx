@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useEffect, useMemo, useCallback, lazy, useTransition } from "react";
+import React, { useEffect, useMemo, useCallback, lazy } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { isNil, noop } from "lodash";
-import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
+import { HOMEBASE_DEFAULT_TAB } from "@/common/data/stores/app/homebase/homebaseTabsStore";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
 // Lazy load the TabBar component to improve performance
@@ -16,13 +16,13 @@ const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
 // Main component for the private space
 function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
-  const [_isPending, startTransition] = useTransition();
   
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
     homebaseConfig,
     tabOrdering,
+    currentTabName,
     loadTab,
     saveTab,
     commitTab,
@@ -46,6 +46,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     tabConfigs: state.homebase.tabs,
     homebaseConfig: state.homebase.homebaseConfig,
     currentSpaceId: state.currentSpace.currentSpaceId,
+    currentTabName: state.currentSpace.currentTabName,
     tabOrdering: state.homebase.tabOrdering,
     loadTab: state.homebase.loadHomebaseTab,
     saveTab: state.homebase.saveHomebaseTabConfig,
@@ -68,7 +69,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     setModalOpen: state.setup.setModalOpen,
   }));
 
-  const router = useRouter(); // Hook for navigation
   const isLoggedIn = getIsAccountReady(); // Check if the user is logged in
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
@@ -82,101 +82,69 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     }
   }, [isLoggedIn, setModalOpen, castHash]);
 
-  // Effect to set the current space and tab name, and load the tab configuration
+  // Sync URL params to store when they change
   useEffect(() => {
     setCurrentSpaceId(HOMEBASE_ID);
     setCurrentTabName(tabName);
-    if (!isNil(tabName)) {
-      // For Feed tab, ensure we have the homebase config loaded first
-      if (tabName === "Feed" && !homebaseConfig) {
-        // Try to load homebase config first before proceeding
-        loadFeedConfig().then(() => loadTabConfigAsync());
+  }, [tabName, setCurrentSpaceId, setCurrentTabName]);
+
+  // Load tab ordering when component mounts
+  useEffect(() => {
+    loadTabOrder().catch(error => {
+      console.error("Error loading tab order:", error);
+    });
+    loadTabNames().catch(error => {
+      console.error("Error loading tab names:", error);
+    });
+  }, [loadTabOrder, loadTabNames]);
+
+  // Load tab configuration when store values are set
+  useEffect(() => {
+    if (!isNil(currentTabName)) {
+      if (currentTabName === HOMEBASE_DEFAULT_TAB && !homebaseConfig) {
+        loadFeedConfig().then(() => loadTab(currentTabName));
       } else {
-        loadTabConfigAsync();
+        loadTab(currentTabName);
       }
     }
-  }, [tabName, setCurrentSpaceId, setCurrentTabName, homebaseConfig]);
+  }, [currentTabName, homebaseConfig, loadFeedConfig, loadTab]);
 
-  // Load tab config without blocking the initial render
-  function loadTabConfigAsync() {
-    startTransition(() => {
-      (async () => {
-        await loadTabNames();
-        // Check current ordering from our local state
-        if (tabOrdering.local.length === 0) {
-          await loadTabOrder();
-        }
-        if (tabName === "Feed") {
-          await loadFeedConfig();
-        } else {
-          await loadTab(tabName);
-        }
-        // Load remaining tabs
-        void loadRemainingTabs();
-      })().catch(() => {});
-    });
-  }
-
-  // Preload all tabs except the current one
-  async function loadRemainingTabs() {
-    // Use the current tabOrdering from component state
-    const otherTabs = tabOrdering.local.filter((name) => name !== tabName);
-    await Promise.all(
-      otherTabs.map((name) =>
-        name === "Feed" ? loadFeedConfig() : loadTab(name),
-      ),
-    );
-  }
-
-  // Function to switch to a different tab
-  async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
-    // Updates the route immediately
-    setCurrentTabName(newTabName);
-    if (newTabName === "Feed") {
-      router.push(`/homebase`);
-    } else {
-      router.push(`/homebase/${newTabName}`);
-    }
-    // Save config changes in background
-    if (shouldSave) {
-      startTransition(() => {
-        commitConfigHandler();
-      });
-    }
-  }
 
   // Function to get the URL for a given tab
   function getSpacePageUrl(tabName: string) {
-    if (tabName === "Feed") {
+    if (tabName === HOMEBASE_DEFAULT_TAB) {
       return `/homebase`;
     }
-    return `/homebase/${tabName}`;
+    return `/homebase/${encodeURIComponent(tabName)}`;
   }
 
   // Handler to reset the configuration for the current tab
   const resetConfigHandler = async () => {
-    if (tabName === "Feed") {
+    const activeTabName = currentTabName || HOMEBASE_DEFAULT_TAB;
+    if (activeTabName === HOMEBASE_DEFAULT_TAB) {
       return resetConfig();
     } else {
-      return resetTab(tabName);
+      return resetTab(activeTabName);
     }
   };
 
   // Handler to commit the configuration for the current tab
   const commitConfigHandler = async () => {
-    if (tabName === "Feed") {
+    const activeTabName = currentTabName || HOMEBASE_DEFAULT_TAB;
+    if (activeTabName === HOMEBASE_DEFAULT_TAB) {
       return commitConfig();
     } else {
-      return commitTab(tabName);
+      return commitTab(activeTabName);
     }
   };
 
   // Handler to save the configuration for the current tab
   const saveConfigHandler = async (configToSave) => {
-    if (tabName === "Feed") {
+    const activeTabName = currentTabName || HOMEBASE_DEFAULT_TAB;
+    if (activeTabName === HOMEBASE_DEFAULT_TAB) {
       await saveConfig(configToSave);
     } else {
-      await saveTab(tabName, configToSave);
+      await saveTab(activeTabName, configToSave);
     }
   };
 
@@ -198,9 +166,9 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     <TabBar
       getSpacePageUrl={getSpacePageUrl}
       inHomebase={true}
-      currentTab={tabName}
+      currentTab={currentTabName || HOMEBASE_DEFAULT_TAB}
       tabList={tabOrdering.local}
-      switchTabTo={switchTabTo}
+      defaultTab={HOMEBASE_DEFAULT_TAB}
       updateTabOrder={updateTabOrderWithCommit}
       inEditMode={editMode}
       deleteTab={deleteTab}
@@ -210,25 +178,26 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
       commitTab={commitTab}
       isEditable={true}
     />
-  ), [tabName, tabOrdering.local, editMode, updateTabOrderWithCommit]);
+  ), [currentTabName, tabOrdering.local, editMode, updateTabOrderWithCommit]);
 
   // Define the arguments for the SpacePage component
   const args: SpacePageArgs = useMemo(() => ({
     config: (() => {
+      const activeTabName = currentTabName || HOMEBASE_DEFAULT_TAB;
       const sourceConfig =
-        tabName === "Feed"
+        activeTabName === HOMEBASE_DEFAULT_TAB
           ? homebaseConfig
-          : tabConfigs[tabName]?.config;
+          : tabConfigs[activeTabName]?.config;
       
       // This prevents overwriting custom configurations with the default
       const baseConfig = sourceConfig || INITIAL_SPACE_CONFIG_EMPTY;
       
       // Debug logging to help track configuration issues
       if (process.env.NODE_ENV === 'development' && !sourceConfig) {
-        console.warn(`[PrivateSpace] No source config found for tab: ${tabName}`, {
-          tabName,
+        console.warn(`[PrivateSpace] No source config found for tab: ${activeTabName}`, {
+          activeTabName,
           homebaseConfigExists: !!homebaseConfig,
-          tabConfigExists: !!tabConfigs[tabName]?.config,
+          tabConfigExists: !!tabConfigs[activeTabName]?.config,
           tabConfigs: Object.keys(tabConfigs)
         });
       }
@@ -243,7 +212,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     commitConfig: commitConfigHandler,
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
-    feed: tabName === "Feed" ? (
+    feed: (currentTabName || HOMEBASE_DEFAULT_TAB) === HOMEBASE_DEFAULT_TAB ? (
       <FeedModule.fidget
         settings={{
           feedType: FeedType.Following,
@@ -261,10 +230,10 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     ) : undefined,
     showFeedOnMobile: Boolean(castHash),
   }), [
-    tabName,
-    tabName === "Feed"
+    currentTabName,
+    (currentTabName || HOMEBASE_DEFAULT_TAB) === HOMEBASE_DEFAULT_TAB
       ? homebaseConfig
-      : tabConfigs[tabName]?.config,
+      : tabConfigs[currentTabName || HOMEBASE_DEFAULT_TAB]?.config,
     tabOrdering.local,
     editMode,
     castHash,
@@ -273,7 +242,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Render the SpacePage component with the defined arguments
   return (
-    <SpacePage key={tabName} {...args} />
+    <SpacePage key={currentTabName || HOMEBASE_DEFAULT_TAB} {...args} />
   );
 }
 
