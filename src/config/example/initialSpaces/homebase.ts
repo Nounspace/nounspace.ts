@@ -37,7 +37,7 @@ Visit our documentation or join our community for support!
 **Welcome to Example Community!** This is your personal space where you can organize fidgets however you'd like.
 `;
 
-const INITIAL_HOMEBASE_CONFIG: Omit<SpaceConfig, "isEditable"> = {
+const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
   fidgetInstanceDatums: {
     "text:tutorial": {
       config: {
@@ -82,6 +82,7 @@ const INITIAL_HOMEBASE_CONFIG: Omit<SpaceConfig, "isEditable"> = {
   theme: DEFAULT_THEME,
   timestamp: new Date().toISOString(),
   tabNames: ["Homebase"],
+  isEditable: true,
 };
 
 export default INITIAL_HOMEBASE_CONFIG;
