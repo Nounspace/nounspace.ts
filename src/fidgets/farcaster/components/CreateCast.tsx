@@ -171,59 +171,60 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const emojiTriggerRef = useRef<HTMLButtonElement | null>(null);
   const emojiContentRef = useRef<HTMLDivElement | null>(null);
 
-  const isTargetInsideEmojiPicker = useCallback((target: EventTarget | null) => {
-    if (!(target instanceof Node)) {
-      return false;
-    }
+  const isTargetInsideEmojiPicker = useCallback(
+    (event?: Event | CustomEvent<{ originalEvent?: Event }>, fallbackTarget?: EventTarget | null) => {
+      const isInside = (node?: EventTarget | null) => {
+        if (!(node instanceof Node)) {
+          return false;
+        }
 
-    if (emojiContentRef.current?.contains(target)) {
-      return true;
-    }
+        if (emojiContentRef.current?.contains(node)) {
+          return true;
+        }
 
-    if (emojiTriggerRef.current?.contains(target)) {
-      return true;
-    }
+        if (emojiTriggerRef.current?.contains(node)) {
+          return true;
+        }
 
-    return false;
-  }, []);
+        return false;
+      };
 
-  useEffect(() => {
-    if (!isEmojiPickerOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (isTargetInsideEmojiPicker(event.target)) {
-        return;
+      if (isInside(fallbackTarget)) {
+        return true;
       }
 
-      setIsEmojiPickerOpen(false);
-    };
-
-    const handleFocusIn = (event: FocusEvent) => {
-      if (isTargetInsideEmojiPicker(event.target)) {
-        return;
+      if (!event) {
+        return false;
       }
 
-      setIsEmojiPickerOpen(false);
-    };
+      const relatedEvents: Event[] = [];
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsEmojiPickerOpen(false);
+      const originalEvent = (event as CustomEvent<{ originalEvent?: Event }>)
+        ?.detail?.originalEvent;
+
+      if (originalEvent) {
+        relatedEvents.push(originalEvent);
       }
-    };
 
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("focusin", handleFocusIn);
-    document.addEventListener("keydown", handleKeyDown);
+      if (!relatedEvents.includes(event)) {
+        relatedEvents.push(event);
+      }
 
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("focusin", handleFocusIn);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isEmojiPickerOpen, isTargetInsideEmojiPicker]);
+      return relatedEvents.some((currentEvent) => {
+        if (isInside(currentEvent.target)) {
+          return true;
+        }
+
+        const composedPath =
+          typeof (currentEvent as any)?.composedPath === "function"
+            ? (currentEvent as any).composedPath()
+            : [];
+
+        return composedPath.some((node: EventTarget) => isInside(node));
+      });
+    },
+    [],
+  );
 
   const handleEmojiPickerOpenChange = useCallback((nextOpen: boolean) => {
     setIsEmojiPickerOpen(nextOpen);
@@ -893,7 +894,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
                     data-cast-modal-interactive="true"
                     onInteractOutside={(event) => {
-                      if (isTargetInsideEmojiPicker(event.target)) {
+                      const originalEvent =
+                        (event as CustomEvent<{ originalEvent?: Event }>)
+                          ?.detail?.originalEvent;
+                      const fallbackTarget =
+                        originalEvent?.target ??
+                        ((event as unknown as Event)?.target ?? null);
+
+                      if (
+                        isTargetInsideEmojiPicker(
+                          event as unknown as Event,
+                          fallbackTarget,
+                        )
+                      ) {
                         event.preventDefault();
                         return;
                       }
@@ -901,7 +914,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
                       setIsEmojiPickerOpen(false);
                     }}
                     onPointerDownOutside={(event) => {
-                      if (isTargetInsideEmojiPicker(event.target)) {
+                      const originalEvent =
+                        (event as CustomEvent<{ originalEvent?: Event }>)
+                          ?.detail?.originalEvent;
+                      const fallbackTarget =
+                        originalEvent?.target ??
+                        ((event as unknown as Event)?.target ?? null);
+
+                      if (
+                        isTargetInsideEmojiPicker(
+                          event as unknown as Event,
+                          fallbackTarget,
+                        )
+                      ) {
                         event.preventDefault();
                         return;
                       }
