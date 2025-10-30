@@ -14,6 +14,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/atoms/avatar";
+import BoringAvatar from "boring-avatars";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
@@ -236,9 +237,6 @@ const getMemberSecondaryLabel = (member: DirectoryMemberData) => {
   return null;
 };
 
-const getIdenticonUrl = (address: string) =>
-  `https://effigy.im/a/${normalizeAddress(address)}.png`;
-
 const getMemberAvatarSrc = (member: DirectoryMemberData) => {
   if (member.pfpUrl) {
     return member.pfpUrl;
@@ -246,10 +244,6 @@ const getMemberAvatarSrc = (member: DirectoryMemberData) => {
 
   if (member.ensAvatarUrl) {
     return member.ensAvatarUrl;
-  }
-
-  if (!member.username && !member.ensName) {
-    return getIdenticonUrl(member.address);
   }
 
   return undefined;
@@ -474,14 +468,9 @@ const Directory: React.FC<
     return members;
   }, [directoryData.members, include, sortBy]);
 
-  const tokenLabel =
-    directoryData.tokenSymbol?.trim() || (isConfigured ? normalizedAddress : "Token");
-  const tokenLabelUpper = tokenLabel.toUpperCase();
   const includeFarcasterOnly = include === "holdersWithFarcasterAccount";
-  const holdingsTitle = `${tokenLabelUpper} HOLDINGS`;
-  const headerTitle = includeFarcasterOnly
-    ? `${tokenLabelUpper} HOLDERS ON FARCASTER`
-    : `${tokenLabelUpper} HOLDERS`;
+  const holdingsTitle = "HOLDINGS";
+  const headerTitle = includeFarcasterOnly ? "HOLDERS ON FARCASTER" : "COMMUNITY DIRECTORY";
 
   const emptyStateMessage =
     include === "allHolders"
@@ -519,11 +508,7 @@ const Directory: React.FC<
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-foreground">{headerTitle}</span>
-          {directoryData.tokenSymbol && (
-            <span className="text-muted-foreground/80">
-              {directoryData.tokenSymbol} • {network}
-            </span>
-          )}
+          <span className="text-muted-foreground/80 capitalize">{network}</span>
         </div>
         <div className="flex items-center gap-3 text-[11px]">
           {lastUpdatedLabel && (
@@ -567,16 +552,30 @@ const Directory: React.FC<
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
+              const avatarSrc = getMemberAvatarSrc(member);
+              const shouldRenderBoringAvatar = !avatarSrc;
               return (
                 <li key={member.address} className="flex items-center gap-3 py-3">
                   <ProfileLink username={member.username} fallbackHref={fallbackHref}>
                     <Avatar className="size-11 shrink-0">
-                      <AvatarImage
-                        src={getMemberAvatarSrc(member)}
-                        alt={primaryLabel}
-                      />
-                      <AvatarFallback className="bg-black/5 text-xs">
-                        {getMemberAvatarFallback(member)}
+                      {avatarSrc ? (
+                        <AvatarImage src={avatarSrc} alt={primaryLabel} />
+                      ) : null}
+                      <AvatarFallback
+                        className={mergeClasses(
+                          "bg-black/5 text-xs",
+                          shouldRenderBoringAvatar && "bg-transparent p-0",
+                        )}
+                      >
+                        {shouldRenderBoringAvatar ? (
+                          <BoringAvatar
+                            name={normalizeAddress(member.address)}
+                            variant="beam"
+                            size="100%"
+                          />
+                        ) : (
+                          getMemberAvatarFallback(member)
+                        )}
                       </AvatarFallback>
                     </Avatar>
                   </ProfileLink>
@@ -616,6 +615,8 @@ const Directory: React.FC<
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
+              const avatarSrc = getMemberAvatarSrc(member);
+              const shouldRenderBoringAvatar = !avatarSrc;
               return (
                 <ProfileLink
                   key={member.address}
@@ -625,12 +626,24 @@ const Directory: React.FC<
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="size-12">
-                      <AvatarImage
-                        src={getMemberAvatarSrc(member)}
-                        alt={primaryLabel}
-                      />
-                      <AvatarFallback className="bg-black/5 text-sm font-semibold">
-                        {getMemberAvatarFallback(member)}
+                      {avatarSrc ? (
+                        <AvatarImage src={avatarSrc} alt={primaryLabel} />
+                      ) : null}
+                      <AvatarFallback
+                        className={mergeClasses(
+                          "bg-black/5 text-sm font-semibold",
+                          shouldRenderBoringAvatar && "bg-transparent p-0",
+                        )}
+                      >
+                        {shouldRenderBoringAvatar ? (
+                          <BoringAvatar
+                            name={normalizeAddress(member.address)}
+                            variant="beam"
+                            size="100%"
+                          />
+                        ) : (
+                          getMemberAvatarFallback(member)
+                        )}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex min-w-0 flex-col text-sm">
