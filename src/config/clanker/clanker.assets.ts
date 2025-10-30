@@ -1,9 +1,8 @@
 // Local, colocated assets bundled by Next.js
 // Place files in ./assets/ (e.g., ./assets/logo.png)
-import logo from './assets/logo.png';
-import icon from './assets/icon.png';
+import logo from './assets/logo.jpg';
+import icon from './assets/favicon.ico';
 import og from './assets/og.png';
-import splash from './assets/splash.png';
 
 export const clankerAssets = {
   logos: {
@@ -13,6 +12,6 @@ export const clankerAssets = {
     favicon: icon,
     appleTouch: icon,
     og: og,
-    splash: splash
+    splash: og
   }
 };
