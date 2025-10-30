@@ -29,6 +29,7 @@ export const BackgroundGenerator = ({
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [internalBackgroundHTML, setInternalBackgroundHTML] =
     useState(backgroundHTML);
+  const [waitingForTokens, setWaitingForTokens] = useState(false);
   const timersRef = useRef<number[]>([]);
   const { showToast } = useToastStore();
 
@@ -57,9 +58,27 @@ export const BackgroundGenerator = ({
     ? parseInt(formatUnits(result.data.value, result.data.decimals))
     : 0;
   const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+  const spaceLoading = result.isLoading || result.isFetching;
   const { hasNogs } = useAppStore((state) => ({
     hasNogs: state.account.hasNogs,
   }));
+
+  // Sync gate state with token data
+  useEffect(() => {
+    if (waitingForTokens && !spaceLoading) {
+      setWaitingForTokens(false);
+    }
+    if (spaceLoading && waitingForTokens) {
+      setButtonDisabled(true);
+      setShowBanner(false);
+    } else if (!userHoldEnoughSpace && !hasNogs) {
+      setButtonDisabled(true);
+      setShowBanner(true);
+    } else {
+      setButtonDisabled(false);
+      setShowBanner(false);
+    }
+  }, [spaceLoading, userHoldEnoughSpace, hasNogs, waitingForTokens]);
 
   const handleGenerateBackground = async (promptText: string) => {
     try {
@@ -122,12 +141,13 @@ export const BackgroundGenerator = ({
   };
 
   const handleGenerateWrapper = () => {
-    // Allow generation if user holds enough SPACE or has nOGs
-    if (!userHoldEnoughSpace && !hasNogs) {
+    if (spaceLoading) {
+      setWaitingForTokens(true);
       setButtonDisabled(true);
-      setShowBanner(true);
+      setShowBanner(false);
       return;
     }
+    if (buttonDisabled) return;
     handleGenerate();
   };
 
@@ -150,15 +170,21 @@ export const BackgroundGenerator = ({
         variant="primary"
         width="auto"
         withIcon
-        disabled={buttonDisabled || isGenerating}
+        disabled={buttonDisabled || isGenerating || waitingForTokens}
         className="w-full"
       >
-        {isGenerating ? (
+        {isGenerating || waitingForTokens ? (
           <Spinner className="size-6" />
         ) : (
           <SparklesIcon className="size-5" />
         )}
-        <span>{isGenerating ? generateText : "Generate"}</span>
+        <span>
+          {waitingForTokens
+            ? "Checking tokens..."
+            : isGenerating
+            ? generateText
+            : "Generate"}
+        </span>
       </Button>
       {showBanner && (
         <div className="flex gap-1 items-center border-2 border-red-600 text-red-600 bg-red-100 rounded-lg p-2 text-sm font-medium">
