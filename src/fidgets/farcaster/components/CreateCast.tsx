@@ -237,8 +237,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const shouldConfirmClose = useMemo(() => {
     const hasText = (draft.text ?? "").trim().length > 0;
     const hasEmbeds = (draft.embeds?.length ?? 0) > 0;
-    return (hasText || hasEmbeds) && draft.status !== DraftStatus.published;
-  }, [draft.text, draft.embeds, draft.status]);
+    const hasMentions = (Object.keys(draft.mentionsToFids ?? {}).length > 0) || 
+                       ((draft.mentionsPositions?.length ?? 0) > 0);
+    return (hasText || hasEmbeds || hasMentions) && draft.status !== DraftStatus.published;
+  }, [draft.text, draft.embeds, draft.mentionsToFids, draft.mentionsPositions, draft.status]);
 
   useEffect(() => {
     onShouldConfirmCloseChange?.(shouldConfirmClose);
