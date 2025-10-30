@@ -179,7 +179,8 @@ async function fetchAlchemyTokenHolders(
   }
 
   const chainSlug = ALCHEMY_NETWORK_SLUGS[params.network];
-  const url = `${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`;
+  const url = new URL(`${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`);
+  url.searchParams.set("token", apiKey);
 
   const holders: AlchemyTokenHolder[] = [];
   let tokenDecimals: number | null = null;
@@ -200,7 +201,7 @@ async function fetchAlchemyTokenHolders(
       delete requestBody.pageKey;
     }
 
-    const response = await deps.fetchFn(url, {
+    const response = await deps.fetchFn(url.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

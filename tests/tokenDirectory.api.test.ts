@@ -59,6 +59,10 @@ describe("token directory API", () => {
     );
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("token=test-key"),
+      expect.any(Object),
+    );
     expect(neynarMock.fetchBulkUsersByEthOrSolAddress).toHaveBeenCalledWith({
       addresses: ["0x000000000000000000000000000000000000abcd"],
     });
@@ -115,6 +119,10 @@ describe("token directory API", () => {
       },
     );
 
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("token=test-key"),
+      expect.any(Object),
+    );
     expect(result.tokenDecimals).toBe(8);
     expect(mockedFetchTokenData).toHaveBeenCalled();
     expect(result.members[0].balanceFormatted).toBe("1");
