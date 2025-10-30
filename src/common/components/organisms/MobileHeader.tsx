@@ -12,26 +12,15 @@ import { RiQuillPenLine } from "react-icons/ri";
 import { Button } from "../atoms/button";
 import { Drawer, DrawerContent } from "../atoms/drawer";
 import BrandHeader from "../molecules/BrandHeader";
-import Modal, { useModalContentContainer } from "../molecules/Modal";
+import Modal from "../molecules/Modal";
 import Navigation from "./Navigation";
 import { useSidebarContext } from "./Sidebar";
 import type { DialogContentProps } from "@radix-ui/react-dialog";
+import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
 import {
-  CastModalPortalProvider,
-  eventIsFromCastModalInteractiveRegion,
-} from "@/common/lib/utils/castModalInteractivity";
-
-const CastModalPortalBoundary: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const modalContainer = useModalContentContainer();
-
-  return (
-    <CastModalPortalProvider value={modalContainer}>
-      {children}
-    </CastModalPortalProvider>
-  );
-};
+  CastModalPortalBoundary,
+  CastDiscardPrompt,
+} from "../molecules/CastModalHelpers";
 
 const MobileHeader = () => {
   const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
@@ -250,30 +239,11 @@ const MobileHeader = () => {
               afterSubmit={closeCastModal}
               onShouldConfirmCloseChange={setShouldConfirmCastClose}
             />
-            {showCastDiscardPrompt && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 rounded-[10px] bg-white px-6 py-8 text-center">
-                <h1 className="text-2xl font-semibold text-gray-900">Cancel Cast</h1>
-                <p className="text-base text-gray-600">
-                  Are you sure you want to proceed?
-                </p>
-                <div className="mt-4 flex w-full flex-col-reverse items-center gap-2 sm:flex-row sm:justify-center sm:gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleCancelDiscard}
-                    className="w-full sm:w-auto sm:min-w-[96px]"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={handleDiscardCast}
-                    className="w-full sm:w-auto sm:min-w-[96px]"
-                  >
-                    Discard
-                  </Button>
-                </div>
-              </div>
-            )}
+            <CastDiscardPrompt
+              open={showCastDiscardPrompt}
+              onClose={handleCancelDiscard}
+              onDiscard={handleDiscardCast}
+            />
           </>
         </CastModalPortalBoundary>
       </Modal>

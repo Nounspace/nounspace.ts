@@ -1,9 +1,7 @@
 "use client";
 
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
-import Modal, {
-  useModalContentContainer,
-} from "@/common/components/molecules/Modal";
+import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { useAppStore } from "@/common/data/stores/app";
 import { formatTimeAgo } from "@/common/lib/utils/date";
@@ -34,19 +32,7 @@ import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
-import { CastModalPortalProvider } from "@/common/lib/utils/castModalInteractivity";
-
-const CastModalPortalBoundary: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const modalContainer = useModalContentContainer();
-
-  return (
-    <CastModalPortalProvider value={modalContainer}>
-      {children}
-    </CastModalPortalProvider>
-  );
-};
+import { CastModalPortalBoundary } from "@/common/components/molecules/CastModalHelpers";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";

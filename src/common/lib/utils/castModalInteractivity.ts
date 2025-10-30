@@ -1,5 +1,6 @@
 import React from "react";
 import { Branch as DismissableLayerBranch } from "@radix-ui/react-dismissable-layer";
+import { CAST_MODAL_INTERACTIVE_ATTR } from "@/common/components/molecules/CastModalHelpers";
 
 const CastModalPortalContext = React.createContext<HTMLElement | null>(null);
 
@@ -8,7 +9,7 @@ export const CastModalPortalProvider = CastModalPortalContext.Provider;
 export const useCastModalPortalContainer = () =>
   React.useContext(CastModalPortalContext);
 
-const CAST_MODAL_INTERACTIVE_SELECTOR = '[data-cast-modal-interactive="true"]';
+const CAST_MODAL_INTERACTIVE_SELECTOR = `[${CAST_MODAL_INTERACTIVE_ATTR}="true"]`;
 const CAST_MODAL_ADDITIONAL_INTERACTIVE_SELECTORS = [
   "[data-radix-popover-content-wrapper]",
   "[cmdk-root]",
