@@ -35,6 +35,7 @@ import SpaceTabContent from "./components/SpaceTabContent";
 import StyleTabContent from "./components/StyleTabContent";
 import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
 import ThemeSettingsTooltip from "./components/ThemeSettingsTooltip";
+import { BackgroundGenerator } from "./BackgroundGenerator";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -368,6 +369,13 @@ export function ThemeSettingsEditor({
                       initialVideoURL={theme.properties.musicURL}
                       onVideoSelect={themePropSetter("musicURL")}
                     />
+                    {/* Custom HTML/CSS Background Input & Generator Button */}
+                    <div className="flex flex-col gap-2 mt-4">
+                      <BackgroundGenerator
+                        backgroundHTML={backgroundHTML}
+                        onChange={themePropSetter("backgroundHTML")}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
                 {/* Style */}
@@ -478,6 +486,5 @@ export function ThemeSettingsEditor({
   );
 }
 
-// Componentes foram movidos para arquivos separados
 
 export default ThemeSettingsEditor;
