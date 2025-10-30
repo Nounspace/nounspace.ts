@@ -27,7 +27,7 @@ import { THEMES } from "@/constants/themes";
 import { CompleteFidgets } from "@/fidgets";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useState } from "react";
-import { FaArrowDownToBracket, FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
+import { FaDownload, FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
 import CodeTabContent from "./components/CodeTabContent";
 import MobileTabContent from "./components/MobileTabContent";
@@ -459,7 +459,7 @@ export function ThemeSettingsEditor({
                       withIcon
                       className="w-full"
                     >
-                      <FaArrowDownToBracket aria-hidden="true" />
+                      <FaDownload aria-hidden="true" />
                       <span>Export Config</span>
                     </Button>
                   </div>
