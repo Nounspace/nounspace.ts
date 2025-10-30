@@ -1,7 +1,9 @@
+import noggles from './assets/noggles.svg';
+
 export const nounsAssets = {
   logos: {
     main: "/images/nounspace_logo.png",
-    icon: "/images/mini_app_icon.png",
+    icon: noggles,
     favicon: "/images/favicon.ico",
     appleTouch: "/images/apple-touch-icon.png",
     og: "/images/nounspace_og_low.png",
