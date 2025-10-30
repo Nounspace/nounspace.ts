@@ -3,7 +3,6 @@ import { createConfig } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 import { walletConnect } from "wagmi/connectors";
-import { NOUNS_CHAIN_ID } from "./config";
 
 const walletConnectProjectId =
   process.env.NOUNS_WC_PROJECT_ID ||

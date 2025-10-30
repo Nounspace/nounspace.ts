@@ -66,6 +66,9 @@ export interface ChannelSpacePageData extends SpacePageData {
   defaultTab: 'Channel';
   channelId: string;
   channelDisplayName?: string;
+  channelDescription?: string;
+  channelImageUrl?: string;
+  channelFollowerCount?: number;
   moderatorFids: number[];
   identityPublicKey?: string;
 }

@@ -33,13 +33,13 @@ import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
-import SearchModal from "./SearchModal";
 import type { DialogContentProps } from "@radix-ui/react-dialog";
 import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
 import {
   CastModalPortalBoundary,
   CastDiscardPrompt,
 } from "../molecules/CastModalHelpers";
+import SearchModal, { SearchModalHandle } from "./SearchModal";
 
 type NavItemProps = {
   label: string;
@@ -79,7 +79,7 @@ const Navigation = React.memo(
   mobile = false,
   onNavigate,
 }: NavProps) => {
-  const searchRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<SearchModalHandle | null>(null);
   const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
@@ -302,6 +302,10 @@ const Navigation = React.memo(
     searchRef.current.focus();
   }, [searchRef]);
 
+  const handleSearchResultSelect = useCallback(() => {
+    onNavigate?.();
+  }, [onNavigate]);
+
   return (
     <nav
       id="logo-sidebar"
@@ -335,7 +339,7 @@ const Navigation = React.memo(
           </>
         </CastModalPortalBoundary>
       </Modal>
-      <SearchModal ref={searchRef} />
+      <SearchModal ref={searchRef} onResultSelect={handleSearchResultSelect} />
       <div
         className={mergeClasses(
           "pt-12 pb-12 h-full",

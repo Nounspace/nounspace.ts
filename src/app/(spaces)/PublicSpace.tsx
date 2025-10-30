@@ -6,7 +6,7 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useAppStore } from "@/common/data/stores/app";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config";
 import Profile from "@/fidgets/ui/profile";
 import Channel from "@/fidgets/ui/channel";
 import { useWallets } from "@privy-io/react-auth";
@@ -23,7 +23,6 @@ import {
   isProposalSpace,
   isChannelSpace,
 } from "@/common/types/spaceData";
-import { withOptimisticUpdate } from "@/common/utils/tabUtils";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -37,10 +36,7 @@ export default function PublicSpace({
 }: PublicSpaceProps) {
 
   const {
-    clearLocalSpaces,
-    getCurrentSpaceId,
     setCurrentSpaceId,
-    getCurrentTabName,
     setCurrentTabName,
     currentSpaceId,
     currentTabName,
