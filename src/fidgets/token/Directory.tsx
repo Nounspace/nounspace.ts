@@ -35,6 +35,9 @@ export type DirectorySortOption =
   | "followers"
   | "recentlyUpdated";
 export type DirectoryLayoutStyle = "cards" | "list";
+export type DirectoryIncludeOption =
+  | "holdersWithFarcasterAccount"
+  | "allHolders";
 
 export interface DirectoryMemberData {
   address: string;
@@ -61,12 +64,14 @@ export interface DirectoryFidgetData extends FidgetData {
   fetchContext?: DirectoryFetchContext;
 }
 
-export type DirectoryFidgetSettings = FidgetSettings & FidgetSettingsStyle & {
-  network: DirectoryNetwork;
-  contractAddress: string;
-  sortBy: DirectorySortOption;
-  layoutStyle: DirectoryLayoutStyle;
-};
+export type DirectoryFidgetSettings = FidgetSettings &
+  FidgetSettingsStyle & {
+    network: DirectoryNetwork;
+    contractAddress: string;
+    sortBy: DirectorySortOption;
+    layoutStyle: DirectoryLayoutStyle;
+    include: DirectoryIncludeOption;
+  };
 
 const NETWORK_OPTIONS = [
   { name: "Base", value: "base" },
@@ -87,6 +92,17 @@ const LAYOUT_OPTIONS = [
   { name: "Cards", value: "cards" },
   { name: "List", value: "list" },
 ] as const;
+
+const INCLUDE_OPTIONS = [
+  {
+    name: "Holders with Farcaster Account",
+    value: "holdersWithFarcasterAccount",
+  },
+  { name: "All holders", value: "allHolders" },
+] as const satisfies ReadonlyArray<{
+  name: string;
+  value: DirectoryIncludeOption;
+}>;
 
 const styleFields = defaultStyleFields.filter((field) =>
   [
@@ -166,6 +182,22 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       ),
       group: "settings",
     },
+    {
+      fieldName: "include",
+      displayName: "Include",
+      default: "holdersWithFarcasterAccount",
+      required: true,
+      inputSelector: (props) => (
+        <WithMargin>
+          <SettingsSelector
+            {...props}
+            className="[&_label]:!normal-case"
+            settings={INCLUDE_OPTIONS}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
     ...styleFields,
   ],
   size: {
@@ -177,6 +209,15 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
 };
 
 const normalizeAddress = (address: string) => address.trim().toLowerCase();
+
+const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
+  mainnet: "https://etherscan.io/address/",
+  base: "https://basescan.org/address/",
+  polygon: "https://polygonscan.com/address/",
+};
+
+const getBlockExplorerLink = (network: DirectoryNetwork, address: string) =>
+  `${blockExplorerForNetwork[network]}${address}`;
 
 const getLastActivityLabel = (timestamp?: string | null) => {
   if (!timestamp) {
@@ -229,7 +270,7 @@ const sortMembers = (
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
-  const { network, contractAddress, sortBy, layoutStyle } = settings;
+  const { network, contractAddress, sortBy, layoutStyle, include } = settings;
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const isConfigured = normalizedAddress.length === 42;
 
@@ -384,10 +425,20 @@ const Directory: React.FC<
     }
   }, [fetchDirectory, isRefreshing, shouldRefresh]);
 
-  const sortedMembers = useMemo(
-    () => sortMembers(directoryData.members ?? [], sortBy),
-    [directoryData.members, sortBy],
-  );
+  const displayedMembers = useMemo(() => {
+    const members = sortMembers(directoryData.members ?? [], sortBy);
+
+    if (include === "holdersWithFarcasterAccount") {
+      return members.filter((member) => Boolean(member.username));
+    }
+
+    return members;
+  }, [directoryData.members, include, sortBy]);
+
+  const emptyStateMessage =
+    include === "allHolders"
+      ? "No holders found for this token yet."
+      : "No Farcaster profiles found for this token yet.";
 
   const lastUpdatedLabel = useMemo(() => {
     if (!directoryData.lastUpdatedTimestamp) {
@@ -454,17 +505,21 @@ const Directory: React.FC<
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             Loading directory…
           </div>
-        ) : sortedMembers.length === 0 ? (
+        ) : displayedMembers.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            No Farcaster profiles found for this token yet.
+            {emptyStateMessage}
           </div>
         ) : layoutStyle === "list" ? (
           <ul className="divide-y divide-black/5">
-            {sortedMembers.map((member) => {
+            {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
+              const fallbackHref =
+                include === "allHolders" && !member.username
+                  ? getBlockExplorerLink(network, member.address)
+                  : undefined;
               return (
                 <li key={member.address} className="flex items-center gap-3 py-3">
-                  <ProfileLink username={member.username}>
+                  <ProfileLink username={member.username} fallbackHref={fallbackHref}>
                     <Avatar className="size-11 shrink-0">
                       <AvatarImage
                         src={member.pfpUrl ?? undefined}
@@ -480,6 +535,7 @@ const Directory: React.FC<
                   <div className="flex flex-1 flex-col gap-1 text-sm">
                     <ProfileLink
                       username={member.username}
+                      fallbackHref={fallbackHref}
                       className="font-semibold text-foreground hover:underline"
                     >
                       {member.displayName || member.username || member.address}
@@ -506,12 +562,17 @@ const Directory: React.FC<
           </ul>
         ) : (
           <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sortedMembers.map((member) => {
+            {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
+              const fallbackHref =
+                include === "allHolders" && !member.username
+                  ? getBlockExplorerLink(network, member.address)
+                  : undefined;
               return (
                 <ProfileLink
                   key={member.address}
                   username={member.username}
+                  fallbackHref={fallbackHref}
                   className="flex h-full flex-col gap-3 rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
@@ -570,27 +631,35 @@ const Directory: React.FC<
 
 type ProfileLinkProps = {
   username?: string | null;
+  fallbackHref?: string;
   className?: string;
   children: React.ReactNode;
 };
 
-const ProfileLink = ({ username, className, children }: ProfileLinkProps) => {
-  const href = username ? `/s/${username}` : undefined;
+const ProfileLink = ({ username, fallbackHref, className, children }: ProfileLinkProps) => {
+  const href = username ? `/s/${username}` : fallbackHref;
 
   if (!href) {
     return <div className={mergeClasses("cursor-default", className)}>{children}</div>;
   }
 
+  const baseClassName = mergeClasses(
+    "transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+    className,
+  );
+
+  if (username) {
+    return (
+      <Link href={href} className={baseClassName}>
+        {children}
+      </Link>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className={mergeClasses(
-        "transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-        className,
-      )}
-    >
+    <a href={href} className={baseClassName} target="_blank" rel="noreferrer">
       {children}
-    </Link>
+    </a>
   );
 };
 
