@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { Buffer } from "node:buffer";
 
 import { fetchDirectoryData } from "@/pages/api/token/directory";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
@@ -60,8 +61,13 @@ describe("token directory API", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("token=test-key"),
-      expect.any(Object),
+      expect.stringContaining("/token/holders"),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Basic ${Buffer.from(":test-key").toString("base64")}`,
+          "X-Alchemy-Token": "test-key",
+        }),
+      }),
     );
     expect(neynarMock.fetchBulkUsersByEthOrSolAddress).toHaveBeenCalledWith({
       addresses: ["0x000000000000000000000000000000000000abcd"],
@@ -120,8 +126,13 @@ describe("token directory API", () => {
     );
 
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("token=test-key"),
-      expect.any(Object),
+      expect.stringContaining("/token/holders"),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Basic ${Buffer.from(":test-key").toString("base64")}`,
+          "X-Alchemy-Token": "test-key",
+        }),
+      }),
     );
     expect(result.tokenDecimals).toBe(8);
     expect(mockedFetchTokenData).toHaveBeenCalled();

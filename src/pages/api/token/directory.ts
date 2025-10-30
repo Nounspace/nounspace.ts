@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { chunk } from "lodash";
 import { formatUnits } from "viem";
+import { Buffer } from "node:buffer";
 
 import requestHandler, {
   type NounspaceResponse,
@@ -179,8 +180,8 @@ async function fetchAlchemyTokenHolders(
   }
 
   const chainSlug = ALCHEMY_NETWORK_SLUGS[params.network];
-  const url = new URL(`${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`);
-  url.searchParams.set("token", apiKey);
+  const url = `${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`;
+  const authorization = `Basic ${Buffer.from(`:${apiKey}`).toString("base64")}`;
 
   const holders: AlchemyTokenHolder[] = [];
   let tokenDecimals: number | null = null;
@@ -201,11 +202,12 @@ async function fetchAlchemyTokenHolders(
       delete requestBody.pageKey;
     }
 
-    const response = await deps.fetchFn(url.toString(), {
+    const response = await deps.fetchFn(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        Authorization: authorization,
         "X-Alchemy-Token": apiKey,
       },
       body: JSON.stringify(requestBody),
