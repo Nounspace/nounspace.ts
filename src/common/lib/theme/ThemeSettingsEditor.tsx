@@ -450,7 +450,7 @@ export function ThemeSettingsEditor({
             ) : (
               // X Button and Save Button (shows first)
               <>
-                {onExportConfig && process.env.NODE_ENV !== 'production' && (
+                {onExportConfig && (
                   <div className="gap-2 pt-2 flex items-center justify-center">
                     <Button
                       onClick={onExportConfig}
