@@ -147,10 +147,11 @@ const INITIAL_HOMEBASE_CONFIG: SpaceConfig = (() => {
 
 	config.tabNames = ["Homebase"];
 
-	// Ensure required SpaceConfig field present
-	(config as SpaceConfig).isEditable = true;
-
-	return config;
+	// Ensure required SpaceConfig field present and return full SpaceConfig
+	return {
+		...config,
+		isEditable: false,
+	};
 })();
 
 export default INITIAL_HOMEBASE_CONFIG;
