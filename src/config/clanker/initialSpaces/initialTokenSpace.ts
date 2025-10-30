@@ -19,7 +19,7 @@ const createInitialTokenSpaceConfigForAddress = (
 			background: "linear-gradient(135deg, #2d1b69 0%, #11998e 100%)",
 			backgroundHTML: "",
 			musicURL: "",
-			fidgetBackground: "rgba(255, 215, 0, 0.1)",
+			fidgetBackground: "#ffd700",
 			fidgetBorderWidth: "2px",
 			fidgetBorderColor: "#ffd700",
 			fidgetShadow: "0 4px 20px rgba(255, 215, 0, 0.2)",

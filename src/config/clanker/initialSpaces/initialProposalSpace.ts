@@ -20,7 +20,7 @@ const createInitialProposalSpaceConfigForProposalId = (
 				"linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%)",
 			backgroundHTML: "",
 			musicURL: "",
-			fidgetBackground: "rgba(255, 107, 107, 0.1)",
+			fidgetBackground: "#ff6b6b",
 			fidgetBorderWidth: "2px",
 			fidgetBorderColor: "#ff6b6b",
 			fidgetShadow: "0 6px 24px rgba(255, 107, 107, 0.3)",
