@@ -18,40 +18,35 @@ const DIRECTORY_QUERY_SCHEMA = z.object({
   pageSize: z.coerce.number().int().positive().max(500).default(200),
 });
 
-const ALCHEMY_BASE_URL = "https://api.g.alchemy.com/data/v1";
-const ALCHEMY_NETWORK_SLUGS: Record<DirectoryNetwork, string> = {
-  base: "base-mainnet",
-  polygon: "polygon-mainnet",
-  mainnet: "eth-mainnet",
+const ALCHEMY_NFT_BASE_URLS: Record<DirectoryNetwork, string> = {
+  base: "https://base-mainnet.g.alchemy.com",
+  polygon: "https://polygon-mainnet.g.alchemy.com",
+  mainnet: "https://eth-mainnet.g.alchemy.com",
 };
 const NEYNAR_LOOKUP_BATCH_SIZE = 25;
 
 type DirectoryQuery = z.infer<typeof DIRECTORY_QUERY_SCHEMA>;
 type DirectoryNetwork = DirectoryQuery["network"];
 
-type AlchemyTokenBalanceObject = {
-  tokenBalance?: string;
-  balance?: string;
-  value?: string;
+type AlchemyNftTokenBalance = {
+  tokenId?: string | null;
+  balance?: string | null;
 };
 
-type AlchemyTokenHolder = {
-  address?: string;
-  holderAddress?: string;
-  tokenBalance?: string | AlchemyTokenBalanceObject | null;
-  lastUpdatedBlockTimestamp?: string | null;
-  lastUpdatedBlock?: string | null;
-  acquiredAt?: string | null;
+type AlchemyNftOwner = {
+  ownerAddress?: string | null;
+  tokenBalances?: AlchemyNftTokenBalance[] | null;
 };
 
-type AlchemyTokenHolderPayload = {
-  tokenBalances?: AlchemyTokenHolder[];
-  holders?: AlchemyTokenHolder[];
+type AlchemyNftOwnersResponse = {
+  ownerAddresses?: AlchemyNftOwner[] | null;
   pageKey?: string | null;
-  tokenDecimals?: number | string | null;
-  tokenSymbol?: string | null;
-  lastUpdated?: string | null;
-  lastUpdatedBlockTimestamp?: string | null;
+  totalCount?: number | string | null;
+  contractMetadata?: {
+    name?: string | null;
+    symbol?: string | null;
+    tokenType?: string | null;
+  } | null;
 };
 
 type NeynarBulkUsersResponse = Awaited<
@@ -107,68 +102,46 @@ function normalizeAddress(address: string): string {
   return address.toLowerCase();
 }
 
-function coerceNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
+function extractOwnerAddress(owner: AlchemyNftOwner): string | null {
+  if (typeof owner.ownerAddress === "string" && owner.ownerAddress) {
+    return owner.ownerAddress;
   }
   return null;
 }
 
-function extractTokenBalances(payload: unknown): AlchemyTokenHolderPayload {
-  if (!payload || typeof payload !== "object") {
-    return {};
+function parseBalanceValue(value: string | null | undefined): bigint {
+  if (!value) {
+    return 0n;
   }
 
-  if (
-    "result" in payload &&
-    payload.result &&
-    typeof payload.result === "object" &&
-    !Array.isArray(payload.result)
-  ) {
-    return extractTokenBalances(payload.result);
+  try {
+    if (value.startsWith("0x") || value.startsWith("0X")) {
+      return BigInt(value);
+    }
+    return BigInt(value);
+  } catch (error) {
+    console.error("Unable to parse token balance", value, error);
+    return 0n;
   }
-
-  const record = payload as AlchemyTokenHolderPayload;
-  return record;
 }
 
-function extractHolderAddress(holder: AlchemyTokenHolder): string | null {
-  if (typeof holder.holderAddress === "string") {
-    return holder.holderAddress;
+function extractOwnerBalanceRaw(owner: AlchemyNftOwner): string {
+  if (!Array.isArray(owner.tokenBalances) || owner.tokenBalances.length === 0) {
+    return "0";
   }
-  if (typeof holder.address === "string") {
-    return holder.address;
-  }
-  return null;
-}
 
-function extractBalanceRaw(balance: AlchemyTokenHolder["tokenBalance"]): string {
-  if (typeof balance === "string" && balance) {
-    return balance;
-  }
-  if (balance && typeof balance === "object") {
-    if ("tokenBalance" in balance && typeof balance.tokenBalance === "string") {
-      return balance.tokenBalance;
-    }
-    if ("balance" in balance && typeof balance.balance === "string") {
-      return balance.balance;
-    }
-    if ("value" in balance && typeof balance.value === "string") {
-      return balance.value;
-    }
-  }
-  return "0";
+  const total = owner.tokenBalances.reduce((sum, tokenBalance) => {
+    return sum + parseBalanceValue(tokenBalance?.balance ?? null);
+  }, 0n);
+
+  return total.toString();
 }
 
 async function fetchAlchemyTokenHolders(
   params: DirectoryQuery,
   deps: DirectoryDependencies,
 ): Promise<{
-  holders: AlchemyTokenHolder[];
+  holders: AlchemyNftOwner[];
   tokenDecimals: number | null;
   tokenSymbol: string | null;
   updatedAt: string;
@@ -178,38 +151,32 @@ async function fetchAlchemyTokenHolders(
     throw new Error("NEXT_PUBLIC_ALCHEMY_API_KEY is not configured");
   }
 
-  const chainSlug = ALCHEMY_NETWORK_SLUGS[params.network];
-  const url = `${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`;
-  const authorization = `Bearer ${apiKey}`;
+  const baseUrl = ALCHEMY_NFT_BASE_URLS[params.network];
+  const endpoint = `${baseUrl}/nft/v3/${apiKey}/getOwnersForContract`;
 
-  const holders: AlchemyTokenHolder[] = [];
-  let tokenDecimals: number | null = null;
+  const holders: AlchemyNftOwner[] = [];
+  const tokenDecimals: number | null = 0;
   let tokenSymbol: string | null = null;
-  let updatedAt: string = new Date().toISOString();
+  const updatedAt: string = new Date().toISOString();
   let pageKey: string | undefined;
 
   while (holders.length < params.pageSize) {
     const remaining = params.pageSize - holders.length;
-    const requestBody: Record<string, unknown> = {
-      contractAddress: params.contractAddress,
-      pageKey,
-      limit: Math.min(remaining, 100),
-      order: "desc",
-    };
-
-    if (!requestBody.pageKey) {
-      delete requestBody.pageKey;
+    const url = new URL(endpoint);
+    url.searchParams.set("contractAddress", params.contractAddress);
+    url.searchParams.set("withTokenBalances", "true");
+    url.searchParams.set("pageSize", String(Math.min(remaining, 100)));
+    if (pageKey) {
+      url.searchParams.set("pageKey", pageKey);
     }
 
-    const response = await deps.fetchFn(url, {
-      method: "POST",
+    const response = await deps.fetchFn(url.toString(), {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: authorization,
+        Authorization: `Bearer ${apiKey}`,
         "X-Alchemy-Token": apiKey,
       },
-      body: JSON.stringify(requestBody),
       cache: "no-store",
     });
 
@@ -220,27 +187,21 @@ async function fetchAlchemyTokenHolders(
       );
     }
 
-    const json = await response.json();
-    const payload = extractTokenBalances(json);
-
-    const batch = Array.isArray(payload.tokenBalances)
-      ? payload.tokenBalances
-      : Array.isArray(payload.holders)
-        ? payload.holders
-        : [];
+    const payload = (await response.json()) as AlchemyNftOwnersResponse;
+    const batch = Array.isArray(payload.ownerAddresses)
+      ? payload.ownerAddresses
+      : [];
 
     holders.push(...batch);
 
-    if (tokenDecimals === null) {
-      tokenDecimals = coerceNumber(payload.tokenDecimals);
-    }
-    if (tokenSymbol === null && typeof payload.tokenSymbol === "string") {
-      tokenSymbol = payload.tokenSymbol;
-    }
-    if (typeof payload.lastUpdatedBlockTimestamp === "string") {
-      updatedAt = payload.lastUpdatedBlockTimestamp;
-    } else if (typeof payload.lastUpdated === "string") {
-      updatedAt = payload.lastUpdated;
+    if (
+      tokenSymbol === null &&
+      payload.contractMetadata &&
+      typeof payload.contractMetadata === "object" &&
+      payload.contractMetadata !== null &&
+      typeof payload.contractMetadata.symbol === "string"
+    ) {
+      tokenSymbol = payload.contractMetadata.symbol;
     }
 
     pageKey =
@@ -282,7 +243,7 @@ export async function fetchDirectoryData(
 
   const addresses = holders
     .map((holder) => {
-      const address = extractHolderAddress(holder);
+      const address = extractOwnerAddress(holder);
       return address ? normalizeAddress(address) : null;
     })
     .filter((value): value is string => Boolean(value));
@@ -323,14 +284,14 @@ export async function fetchDirectoryData(
 
   const members: DirectoryMember[] = [];
   for (const holder of holders) {
-    const address = extractHolderAddress(holder);
+    const address = extractOwnerAddress(holder);
     if (!address) {
       continue;
     }
 
     const key = normalizeAddress(address);
     const profile = neynarProfiles[key];
-    const balanceRaw = extractBalanceRaw(holder.tokenBalance);
+    const balanceRaw = extractOwnerBalanceRaw(holder);
     let balanceFormatted = balanceRaw;
 
     if (resolvedDecimals !== null) {
@@ -345,11 +306,7 @@ export async function fetchDirectoryData(
       address: key,
       balanceRaw,
       balanceFormatted,
-      lastTransferAt:
-        holder.lastUpdatedBlockTimestamp ??
-        holder.acquiredAt ??
-        holder.lastUpdatedBlock ??
-        null,
+      lastTransferAt: null,
       username: profile && "username" in profile ? profile.username ?? null : null,
       displayName:
         profile && "display_name" in profile

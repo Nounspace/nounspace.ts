@@ -4,7 +4,7 @@ import { fetchDirectoryData } from "@/pages/api/token/directory";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 
 vi.mock("@/common/lib/utils/fetchTokenData", () => ({
-  fetchTokenData: vi.fn(async () => ({ decimals: 8 })),
+  fetchTokenData: vi.fn(async () => ({ decimals: 0 })),
 }));
 
 const mockedFetchTokenData = vi.mocked(fetchTokenData);
@@ -15,20 +15,24 @@ describe("token directory API", () => {
     vi.resetAllMocks();
   });
 
-  it("aggregates holders with neynar profiles", async () => {
+  it("aggregates NFT owners with neynar profiles", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        tokenBalances: [
+        ownerAddresses: [
           {
-            holderAddress: "0x000000000000000000000000000000000000abcd",
-            tokenBalance: "1234500",
-            lastUpdatedBlockTimestamp: "2024-05-31T12:00:00Z",
+            ownerAddress: "0x000000000000000000000000000000000000abcd",
+            tokenBalances: [
+              {
+                tokenId: "0x1",
+                balance: "0x2d3",
+              },
+            ],
           },
         ],
-        tokenSymbol: "TEST",
-        tokenDecimals: 6,
-        lastUpdatedBlockTimestamp: "2024-06-01T00:00:00Z",
+        contractMetadata: {
+          symbol: "NFTEST",
+        },
       }),
     });
 
@@ -60,8 +64,9 @@ describe("token directory API", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("/token/holders"),
+      expect.stringContaining("/nft/v3/test-key/getOwnersForContract"),
       expect.objectContaining({
+        method: "GET",
         headers: expect.objectContaining({
           Authorization: "Bearer test-key",
           "X-Alchemy-Token": "test-key",
@@ -71,17 +76,17 @@ describe("token directory API", () => {
     expect(neynarMock.fetchBulkUsersByEthOrSolAddress).toHaveBeenCalledWith({
       addresses: ["0x000000000000000000000000000000000000abcd"],
     });
-    expect(result.tokenSymbol).toBe("TEST");
-    expect(result.tokenDecimals).toBe(6);
+    expect(result.tokenSymbol).toBe("NFTEST");
+    expect(result.tokenDecimals).toBe(0);
     expect(result.members).toHaveLength(1);
     expect(result.members[0]).toMatchObject({
       address: "0x000000000000000000000000000000000000abcd",
-      balanceFormatted: "1.2345",
+      balanceFormatted: "723",
       followers: 321,
       username: "alice",
       displayName: "Alice",
       pfpUrl: "https://example.com/alice.png",
-      lastTransferAt: "2024-05-31T12:00:00Z",
+      lastTransferAt: null,
     });
     expect(result.fetchContext).toEqual({
       network: "base",
@@ -90,23 +95,39 @@ describe("token directory API", () => {
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
   });
 
-  it("falls back to fetchTokenData when decimals missing", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
+  it("paginates through NFT owners until page size reached", async () => {
+    const firstResponse = {
       ok: true,
       json: async () => ({
-        tokenBalances: [
+        ownerAddresses: [
           {
-            holderAddress: "0x000000000000000000000000000000000000aaaa",
-            tokenBalance: "100000000",
+            ownerAddress: "0x000000000000000000000000000000000000aaaa",
+            tokenBalances: [
+              { tokenId: "0x1", balance: "0x1" },
+              { tokenId: "0x2", balance: "0x1" },
+            ],
           },
         ],
-        tokenSymbol: null,
-        tokenDecimals: null,
-        lastUpdatedBlockTimestamp: "2024-06-01T00:00:00Z",
+        pageKey: "next-page",
       }),
-    });
+    };
 
-    mockedFetchTokenData.mockResolvedValueOnce({ decimals: 8 } as any);
+    const secondResponse = {
+      ok: true,
+      json: async () => ({
+        ownerAddresses: [
+          {
+            ownerAddress: "0x000000000000000000000000000000000000bbbb",
+            tokenBalances: null,
+          },
+        ],
+      }),
+    };
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(firstResponse as any)
+      .mockResolvedValueOnce(secondResponse as any);
 
     const neynarMock = {
       fetchBulkUsersByEthOrSolAddress: vi.fn().mockResolvedValue({}),
@@ -114,9 +135,9 @@ describe("token directory API", () => {
 
     const result = await fetchDirectoryData(
       {
-        network: "polygon",
+        network: "mainnet",
         contractAddress: "0x000000000000000000000000000000000000aaaa",
-        pageSize: 5,
+        pageSize: 2,
       },
       {
         fetchFn: fetchMock,
@@ -124,17 +145,23 @@ describe("token directory API", () => {
       },
     );
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("/token/holders"),
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: "Bearer test-key",
-          "X-Alchemy-Token": "test-key",
-        }),
-      }),
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toContain(
+      "/nft/v3/test-key/getOwnersForContract",
     );
-    expect(result.tokenDecimals).toBe(8);
-    expect(mockedFetchTokenData).toHaveBeenCalled();
-    expect(result.members[0].balanceFormatted).toBe("1");
+    expect(fetchMock.mock.calls[1][0]).toContain("pageKey=next-page");
+
+    expect(result.members).toHaveLength(2);
+    expect(result.members[0]).toMatchObject({
+      address: "0x000000000000000000000000000000000000aaaa",
+      balanceRaw: "2",
+      balanceFormatted: "2",
+    });
+    expect(result.members[1]).toMatchObject({
+      address: "0x000000000000000000000000000000000000bbbb",
+      balanceRaw: "0",
+      balanceFormatted: "0",
+    });
+    expect(mockedFetchTokenData).not.toHaveBeenCalled();
   });
 });
