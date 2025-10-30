@@ -9,10 +9,12 @@ import {
 import { Tooltip, TooltipArrow } from "@radix-ui/react-tooltip";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { Londrina_Solid } from "next/font/google";
+import { loadSystemConfig } from "@/config";
 
 const Londrina = Londrina_Solid({ subsets: ["latin"], weight: "400" });
 
 const BrandHeader = () => {
+  const { assets, brand } = loadSystemConfig();
   return (
     <>
       <TooltipProvider>
@@ -25,8 +27,8 @@ const BrandHeader = () => {
             <TooltipTrigger asChild>
               <div className="w-12 h-8 sm:w-16 sm:h-10 me-3 flex items-center justify-center">
                 <Image
-                  src="/images/noggles.svg"
-                  alt="Nounspace Logo"
+                  src={assets.logos.icon || assets.logos.main}
+                  alt={`${brand.displayName} Logo`}
                   width={60}
                   height={40}
                   priority
