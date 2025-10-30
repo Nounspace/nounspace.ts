@@ -54,7 +54,6 @@ export const CastDiscardPrompt: React.FC<{
         <Dialog.Content
           className="fixed left-1/2 top-1/2 z-[10000] w-[min(560px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg focus:outline-none"
           aria-labelledby="cast-discard-title"
-          onEscapeKeyDown={() => onClose()}
         >
           <h2 id="cast-discard-title" className="text-lg font-semibold text-gray-900">
             Cancel Cast

@@ -149,12 +149,33 @@ const Navigation = React.memo(
     NonNullable<DialogContentProps["onInteractOutside"]>
   >(
     (event) => {
-      const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
-      const eventTarget =
-        (originalEvent?.target as EventTarget | null) ??
-        ((event as any)?.target as EventTarget | null);
+      // Type guard to check if event has the expected structure
+      const hasDetailWithOriginalEvent = (
+        e: unknown
+      ): e is { detail?: { originalEvent?: unknown } } => {
+        return typeof e === "object" && e !== null && "detail" in e;
+      };
 
-      if (eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
+      // Type guard to check if target exists on event
+      const hasTarget = (e: unknown): e is { target?: unknown } => {
+        return typeof e === "object" && e !== null && "target" in e;
+      };
+
+      // Safely extract originalEvent if it exists and is an Event
+      const originalEvent = hasDetailWithOriginalEvent(event) && 
+        event.detail?.originalEvent instanceof Event
+        ? event.detail.originalEvent
+        : undefined;
+
+      // Safely extract eventTarget from originalEvent or fallback to event target
+      const eventTarget = originalEvent?.target instanceof EventTarget
+        ? originalEvent.target
+        : hasTarget(event) && event.target instanceof EventTarget
+        ? event.target
+        : null;
+
+      if (originalEvent && eventTarget && 
+          eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
         event.preventDefault();
         return;
       }
