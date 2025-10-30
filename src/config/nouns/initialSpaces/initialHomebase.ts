@@ -99,7 +99,7 @@ const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
   fidgetInstanceDatums: {
     [onboardingFidgetID]: onboardingFidgetConfig,
   },
-  isEditable: true,
+  isEditable: false,
   fidgetTrayContents: [],
 };
 
