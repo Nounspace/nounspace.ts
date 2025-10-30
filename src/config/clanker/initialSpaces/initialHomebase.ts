@@ -1,0 +1,160 @@
+import { TabConfig } from '../../systemConfig';
+
+const INITIAL_HOMEBASE_CONFIG: TabConfig = {
+  name: "homebase",
+  displayName: "Homebase",
+  layoutID: "clanker-homebase-layout",
+      layoutDetails: {
+        layoutConfig: {
+          layout: [
+            { w: 6, h: 4, x: 0, y: 0, i: "market-data" },
+            { w: 6, h: 4, x: 6, y: 0, i: "portfolio" },
+            { w: 4, h: 3, x: 0, y: 4, i: "rss" },
+            { w: 4, h: 3, x: 4, y: 4, i: "gallery" },
+            { w: 4, h: 3, x: 8, y: 4, i: "feed" },
+            { w: 8, h: 4, x: 0, y: 7, i: "links" },
+            { w: 4, h: 4, x: 8, y: 7, i: "text" },
+            { w: 12, h: 3, x: 0, y: 11, i: "iframe" }
+          ]
+        },
+        layoutFidget: "grid"
+      },
+  theme: {
+    id: "clanker-homebase-theme",
+    name: "Clanker Homebase Theme",
+    properties: {
+      font: "Inter, system-ui, sans-serif",
+      fontColor: "#ffffff",
+      headingsFont: "Inter, system-ui, sans-serif",
+      headingsFontColor: "#a8e6cf",
+      background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+      backgroundHTML: "",
+      musicURL: "",
+      fidgetBackground: "rgba(168, 230, 207, 0.15)",
+      fidgetBorderWidth: "1px",
+      fidgetBorderColor: "rgba(168, 230, 207, 0.4)",
+      fidgetShadow: "0 10px 40px rgba(168, 230, 207, 0.2)",
+      fidgetBorderRadius: "20px",
+      gridSpacing: "24px"
+    }
+  },
+  fidgetInstanceDatums: {
+    "market-data": {
+      id: "market-data",
+      fidgetType: "Market",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemOverview: true,
+          showMarketCap: true,
+          showVolume: true
+        }
+      }
+    },
+    "portfolio": {
+      id: "portfolio",
+      fidgetType: "Portfolio",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemMetrics: true,
+          showPerformance: true,
+          showTrends: true
+        }
+      }
+    },
+    "rss": {
+      id: "rss",
+      fidgetType: "Rss",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemNews: true,
+          showTokenNews: true,
+          maxItems: 8
+        }
+      }
+    },
+    "gallery": {
+      id: "gallery",
+      fidgetType: "gallery",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemImages: true,
+          showDataVisualizations: true,
+          maxImages: 10
+        }
+      }
+    },
+    "feed": {
+      id: "feed",
+      fidgetType: "feed",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemDiscussions: true,
+          showTrendingTopics: true,
+          maxCasts: 12
+        }
+      }
+    },
+    "links": {
+      id: "links",
+      fidgetType: "links",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemLinks: true,
+          showExternalTools: true
+        }
+      }
+    },
+    "text": {
+      id: "text",
+      fidgetType: "text",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemDescription: true,
+          showStats: true
+        }
+      }
+    },
+    "iframe": {
+      id: "iframe",
+      fidgetType: "iframe",
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          showEcosystemAnalytics: true,
+          url: "https://analytics.clanker.world"
+        }
+      }
+    }
+  },
+  fidgetTrayContents: [
+    "Market",
+    "Portfolio",
+    "Rss",
+    "gallery",
+    "feed",
+    "links",
+    "text",
+    "iframe",
+    "Video",
+    "Chat"
+  ],
+  isEditable: true,
+  timestamp: new Date().toISOString()
+};
+
+export default INITIAL_HOMEBASE_CONFIG;
