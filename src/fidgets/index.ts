@@ -10,6 +10,7 @@ import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
+import Top8 from "./farcaster/Top8";
 // import CreateCast from "./farcaster/CreateCast";
 import Links from "./ui/Links";
 import snapShot from "./snapshot/SnapShot";
@@ -54,6 +55,7 @@ export const CompleteFidgets = {
   Market: marketData,
   Portfolio: Portfolio,
   Chat: chat,
+  Top8: Top8,
   BuilderScore: BuilderScore,
   FramesV2: FramesFidget,
 };
