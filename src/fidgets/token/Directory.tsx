@@ -40,7 +40,6 @@ export interface DirectoryMemberData {
   address: string;
   balanceRaw: string;
   balanceFormatted: string;
-  balanceQuoteUSD?: number | null;
   username?: string | null;
   displayName?: string | null;
   fid?: number | null;

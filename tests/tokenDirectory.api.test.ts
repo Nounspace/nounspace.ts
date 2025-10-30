@@ -11,7 +11,7 @@ const mockedFetchTokenData = vi.mocked(fetchTokenData);
 
 describe("token directory API", () => {
   beforeEach(() => {
-    process.env.COVALENT_API_KEY = "test-key";
+    process.env.ALCHEMY_API_KEY = "test-key";
     vi.resetAllMocks();
   });
 
@@ -19,19 +19,16 @@ describe("token directory API", () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        data: {
-          updated_at: "2024-06-01T00:00:00Z",
-          contract_ticker_symbol: "TEST",
-          contract_decimals: 6,
-          items: [
-            {
-              address: "0x000000000000000000000000000000000000abcd",
-              balance: "1234500",
-              last_transferred_at: "2024-05-31T12:00:00Z",
-              quote: 42,
-            },
-          ],
-        },
+        tokenBalances: [
+          {
+            holderAddress: "0x000000000000000000000000000000000000abcd",
+            tokenBalance: "1234500",
+            lastUpdatedBlockTimestamp: "2024-05-31T12:00:00Z",
+          },
+        ],
+        tokenSymbol: "TEST",
+        tokenDecimals: 6,
+        lastUpdatedBlockTimestamp: "2024-06-01T00:00:00Z",
       }),
     });
 
@@ -75,7 +72,7 @@ describe("token directory API", () => {
       username: "alice",
       displayName: "Alice",
       pfpUrl: "https://example.com/alice.png",
-      balanceQuoteUSD: 42,
+      lastTransferAt: "2024-05-31T12:00:00Z",
     });
     expect(result.fetchContext).toEqual({
       network: "base",
@@ -88,17 +85,15 @@ describe("token directory API", () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        data: {
-          updated_at: "2024-06-01T00:00:00Z",
-          contract_ticker_symbol: null,
-          contract_decimals: null,
-          items: [
-            {
-              address: "0x000000000000000000000000000000000000aaaa",
-              balance: "100000000",
-            },
-          ],
-        },
+        tokenBalances: [
+          {
+            holderAddress: "0x000000000000000000000000000000000000aaaa",
+            tokenBalance: "100000000",
+          },
+        ],
+        tokenSymbol: null,
+        tokenDecimals: null,
+        lastUpdatedBlockTimestamp: "2024-06-01T00:00:00Z",
       }),
     });
 

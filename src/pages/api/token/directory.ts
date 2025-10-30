@@ -18,36 +18,40 @@ const DIRECTORY_QUERY_SCHEMA = z.object({
   pageSize: z.coerce.number().int().positive().max(500).default(200),
 });
 
-const NETWORK_CHAIN_IDS: Record<DirectoryNetwork, number> = {
-  base: 8453,
-  polygon: 137,
-  mainnet: 1,
+const ALCHEMY_BASE_URL = "https://api.g.alchemy.com/data/v1";
+const ALCHEMY_NETWORK_SLUGS: Record<DirectoryNetwork, string> = {
+  base: "base-mainnet",
+  polygon: "polygon-mainnet",
+  mainnet: "eth-mainnet",
 };
-
-const COVALENT_BASE_URL = "https://api.covalenthq.com/v1";
-const COVALENT_BATCH_SIZE = 25;
+const NEYNAR_LOOKUP_BATCH_SIZE = 25;
 
 type DirectoryQuery = z.infer<typeof DIRECTORY_QUERY_SCHEMA>;
 type DirectoryNetwork = DirectoryQuery["network"];
 
-type CovalentTokenHolder = {
-  address: string;
-  balance: string;
-  balance_24h?: string | null;
-  quote?: number | null;
-  pretty_quote?: string | null;
-  last_transferred_at?: string | null;
+type AlchemyTokenBalanceObject = {
+  tokenBalance?: string;
+  balance?: string;
+  value?: string;
 };
 
-type CovalentTokenHolderResponse = {
-  data?: {
-    updated_at?: string;
-    contract_ticker_symbol?: string | null;
-    contract_decimals?: number | null;
-    items?: CovalentTokenHolder[];
-  };
-  error?: boolean;
-  error_message?: string;
+type AlchemyTokenHolder = {
+  address?: string;
+  holderAddress?: string;
+  tokenBalance?: string | AlchemyTokenBalanceObject | null;
+  lastUpdatedBlockTimestamp?: string | null;
+  lastUpdatedBlock?: string | null;
+  acquiredAt?: string | null;
+};
+
+type AlchemyTokenHolderPayload = {
+  tokenBalances?: AlchemyTokenHolder[];
+  holders?: AlchemyTokenHolder[];
+  pageKey?: string | null;
+  tokenDecimals?: number | string | null;
+  tokenSymbol?: string | null;
+  lastUpdated?: string | null;
+  lastUpdatedBlockTimestamp?: string | null;
 };
 
 type NeynarBulkUsersResponse = Awaited<
@@ -64,7 +68,6 @@ type DirectoryMember = {
   address: string;
   balanceRaw: string;
   balanceFormatted: string;
-  balanceQuoteUSD?: number | null;
   username?: string | null;
   displayName?: string | null;
   fid?: number | null;
@@ -104,52 +107,154 @@ function normalizeAddress(address: string): string {
   return address.toLowerCase();
 }
 
-async function fetchCovalentTokenHolders(
+function coerceNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function extractTokenBalances(payload: unknown): AlchemyTokenHolderPayload {
+  if (!payload || typeof payload !== "object") {
+    return {};
+  }
+
+  if (
+    "result" in payload &&
+    payload.result &&
+    typeof payload.result === "object" &&
+    !Array.isArray(payload.result)
+  ) {
+    return extractTokenBalances(payload.result);
+  }
+
+  const record = payload as AlchemyTokenHolderPayload;
+  return record;
+}
+
+function extractHolderAddress(holder: AlchemyTokenHolder): string | null {
+  if (typeof holder.holderAddress === "string") {
+    return holder.holderAddress;
+  }
+  if (typeof holder.address === "string") {
+    return holder.address;
+  }
+  return null;
+}
+
+function extractBalanceRaw(balance: AlchemyTokenHolder["tokenBalance"]): string {
+  if (typeof balance === "string" && balance) {
+    return balance;
+  }
+  if (balance && typeof balance === "object") {
+    if ("tokenBalance" in balance && typeof balance.tokenBalance === "string") {
+      return balance.tokenBalance;
+    }
+    if ("balance" in balance && typeof balance.balance === "string") {
+      return balance.balance;
+    }
+    if ("value" in balance && typeof balance.value === "string") {
+      return balance.value;
+    }
+  }
+  return "0";
+}
+
+async function fetchAlchemyTokenHolders(
   params: DirectoryQuery,
   deps: DirectoryDependencies,
 ): Promise<{
-  holders: CovalentTokenHolder[];
+  holders: AlchemyTokenHolder[];
   tokenDecimals: number | null;
   tokenSymbol: string | null;
   updatedAt: string;
 }> {
-  const apiKey = process.env.COVALENT_API_KEY;
+  const apiKey = process.env.ALCHEMY_API_KEY;
   if (!apiKey) {
-    throw new Error("COVALENT_API_KEY is not configured");
+    throw new Error("ALCHEMY_API_KEY is not configured");
   }
 
-  const chainId = NETWORK_CHAIN_IDS[params.network];
-  const url = new URL(
-    `${COVALENT_BASE_URL}/${chainId}/tokens/${params.contractAddress}/token_holders_v2/`,
-  );
-  url.searchParams.set("page-size", params.pageSize.toString());
+  const chainSlug = ALCHEMY_NETWORK_SLUGS[params.network];
+  const url = `${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`;
 
-  const response = await deps.fetchFn(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-    cache: "no-store",
-  });
+  const holders: AlchemyTokenHolder[] = [];
+  let tokenDecimals: number | null = null;
+  let tokenSymbol: string | null = null;
+  let updatedAt: string = new Date().toISOString();
+  let pageKey: string | undefined;
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(
-      `Failed to fetch token holders (status ${response.status}): ${message}`,
-    );
+  while (holders.length < params.pageSize) {
+    const remaining = params.pageSize - holders.length;
+    const requestBody: Record<string, unknown> = {
+      contractAddress: params.contractAddress,
+      pageKey,
+      limit: Math.min(remaining, 100),
+      order: "desc",
+    };
+
+    if (!requestBody.pageKey) {
+      delete requestBody.pageKey;
+    }
+
+    const response = await deps.fetchFn(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Alchemy-Token": apiKey,
+      },
+      body: JSON.stringify(requestBody),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(
+        `Failed to fetch token holders (status ${response.status}): ${message}`,
+      );
+    }
+
+    const json = await response.json();
+    const payload = extractTokenBalances(json);
+
+    const batch = Array.isArray(payload.tokenBalances)
+      ? payload.tokenBalances
+      : Array.isArray(payload.holders)
+        ? payload.holders
+        : [];
+
+    holders.push(...batch);
+
+    if (tokenDecimals === null) {
+      tokenDecimals = coerceNumber(payload.tokenDecimals);
+    }
+    if (tokenSymbol === null && typeof payload.tokenSymbol === "string") {
+      tokenSymbol = payload.tokenSymbol;
+    }
+    if (typeof payload.lastUpdatedBlockTimestamp === "string") {
+      updatedAt = payload.lastUpdatedBlockTimestamp;
+    } else if (typeof payload.lastUpdated === "string") {
+      updatedAt = payload.lastUpdated;
+    }
+
+    pageKey =
+      typeof payload.pageKey === "string" && payload.pageKey.length > 0
+        ? payload.pageKey
+        : undefined;
+
+    if (!pageKey) {
+      break;
+    }
   }
-
-  const json = (await response.json()) as CovalentTokenHolderResponse;
-  if (json.error) {
-    throw new Error(json.error_message || "Covalent returned an error response");
-  }
-
-  const holders = json.data?.items ?? [];
-  const updatedAt = json.data?.updated_at ?? new Date().toISOString();
 
   return {
-    holders,
-    tokenDecimals: json.data?.contract_decimals ?? null,
-    tokenSymbol: json.data?.contract_ticker_symbol ?? null,
+    holders: holders.slice(0, params.pageSize),
+    tokenDecimals,
+    tokenSymbol,
     updatedAt,
   };
 }
@@ -171,14 +276,19 @@ export async function fetchDirectoryData(
 ): Promise<DirectoryApiResponse> {
   const normalizedAddress = normalizeAddress(params.contractAddress);
   const { holders, tokenDecimals, tokenSymbol, updatedAt } =
-    await fetchCovalentTokenHolders(params, deps);
+    await fetchAlchemyTokenHolders(params, deps);
 
-  const addresses = holders.map((holder) => normalizeAddress(holder.address));
+  const addresses = holders
+    .map((holder) => {
+      const address = extractHolderAddress(holder);
+      return address ? normalizeAddress(address) : null;
+    })
+    .filter((value): value is string => Boolean(value));
   const uniqueAddresses = Array.from(new Set(addresses));
 
   let neynarProfiles: Record<string, NeynarUser | undefined> = {};
   if (process.env.NEYNAR_API_KEY) {
-    const batches = chunk(uniqueAddresses, COVALENT_BATCH_SIZE);
+    const batches = chunk(uniqueAddresses, NEYNAR_LOOKUP_BATCH_SIZE);
     for (const batch of batches) {
       if (batch.length === 0) continue;
       try {
@@ -209,10 +319,16 @@ export async function fetchDirectoryData(
     }
   }
 
-  const members: DirectoryMember[] = holders.map((holder) => {
-    const key = normalizeAddress(holder.address);
+  const members: DirectoryMember[] = [];
+  for (const holder of holders) {
+    const address = extractHolderAddress(holder);
+    if (!address) {
+      continue;
+    }
+
+    const key = normalizeAddress(address);
     const profile = neynarProfiles[key];
-    const balanceRaw = holder.balance ?? "0";
+    const balanceRaw = extractBalanceRaw(holder.tokenBalance);
     let balanceFormatted = balanceRaw;
 
     if (resolvedDecimals !== null) {
@@ -223,18 +339,22 @@ export async function fetchDirectoryData(
       }
     }
 
-    return {
+    members.push({
       address: key,
       balanceRaw,
       balanceFormatted,
-      balanceQuoteUSD: holder.quote ?? null,
-      lastTransferAt: holder.last_transferred_at ?? null,
+      lastTransferAt:
+        holder.lastUpdatedBlockTimestamp ??
+        holder.acquiredAt ??
+        holder.lastUpdatedBlock ??
+        null,
       username: profile && "username" in profile ? profile.username ?? null : null,
       displayName:
         profile && "display_name" in profile
           ? (profile as { display_name?: string | null }).display_name ?? null
           : null,
-      fid: profile && "fid" in profile ? (profile as { fid?: number }).fid ?? null : null,
+      fid:
+        profile && "fid" in profile ? (profile as { fid?: number }).fid ?? null : null,
       followers:
         profile && "follower_count" in profile
           ? (profile as { follower_count?: number | null }).follower_count ?? null
@@ -254,8 +374,8 @@ export async function fetchDirectoryData(
                 null
               )
             : null,
-    };
-  });
+    });
+  }
 
   return {
     fetchedAt: updatedAt,
