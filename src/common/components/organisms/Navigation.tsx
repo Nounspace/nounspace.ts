@@ -34,6 +34,7 @@ import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import SearchModal, { SearchModalHandle } from "./SearchModal";
+import { loadSystemConfig } from "@/config";
 
 type NavItemProps = {
   label: string;
@@ -56,6 +57,19 @@ type NavProps = {
 };
 
 const NavIconBadge = ({ children }) => {
+  const iconFor = useCallback((key?: string): React.FC => {
+    switch (key) {
+      case 'home': return HomeIcon;
+      case 'explore': return ExploreIcon;
+      case 'notifications': return NotificationsIcon;
+      case 'space': return RocketIcon;
+      default: return HomeIcon;
+    }
+  }, []);
+
+  const configuredNavItems = community?.navigation?.items || [];
+  const hasSpaceToken = configuredNavItems.some(i => i.id === 'space-token');
+
   return (
     <Badge
       variant="primary"
@@ -86,6 +100,8 @@ const Navigation = React.memo(
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
+  const { community } = loadSystemConfig();
+  const discordUrl = community?.urls?.discord || "https://discord.gg/eYQeXU2WuH";
 
   const [shrunk, setShrunk] = useState(mobile ? false : true);
 
@@ -275,25 +291,30 @@ const Navigation = React.memo(
           >
             <div className="flex-auto">
               <ul className="space-y-2">
-                <NavItem
-                  label={isLoggedIn ? "Homebase" : "Home"}
-                  Icon={HomeIcon}
-                  href={isLoggedIn ? "/homebase" : "/home"}
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
-                  }
-                />
-                {isLoggedIn && (
-                  <NavItem
-                    label="Notifications"
-                    Icon={NotificationsIcon}
-                    href="/notifications"
-                    onClick={() =>
-                      trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS)
-                    }
-                    badgeText={notificationBadgeText}
-                  />
-                )}
+                {(configuredNavItems.length ? configuredNavItems : [
+                  { id: 'home', label: isLoggedIn ? 'Homebase' : 'Home', href: isLoggedIn ? '/homebase' : '/home', icon: 'home' },
+                  { id: 'explore', label: 'Explore', href: '/explore', icon: 'explore' },
+                  { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'notifications', requiresAuth: true },
+                ]).map((item) => {
+                  if (item.requiresAuth && !isLoggedIn) return null;
+                  const IconComp = iconFor(item.icon);
+                  const badge = item.id === 'notifications' ? notificationBadgeText : null;
+                  return (
+                    <NavItem
+                      key={item.id}
+                      label={item.label}
+                      Icon={IconComp}
+                      href={item.href}
+                      onClick={() => {
+                        if (item.id === 'explore') trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE);
+                        if (item.id === 'notifications') trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS);
+                        if (item.id === 'home') trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE);
+                      }}
+                      openInNewTab={item.openInNewTab}
+                      badgeText={badge}
+                    />
+                  );
+                })}
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
@@ -302,23 +323,17 @@ const Navigation = React.memo(
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
                   }}
                 />
-                <NavItem
-                  label="Explore"
-                  Icon={ExploreIcon}
-                  href="/explore"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
-                  }
-                />
-                <NavItem
-                  label="$SPACE"
-                  Icon={RocketIcon}
-                  href="https://nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab/Profile"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
-                  }
-                  openInNewTab
-                />
+                {!hasSpaceToken && (
+                  <NavItem
+                    label="$SPACE"
+                    Icon={RocketIcon}
+                    href="https://nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab/Profile"
+                    onClick={() =>
+                      trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
+                    }
+                    openInNewTab
+                  />
+                )}
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
@@ -380,7 +395,7 @@ const Navigation = React.memo(
             {!isLoggedIn && (
               <div className="flex flex-col items-center gap-2">
                 <Link
-                  href="https://discord.gg/eYQeXU2WuH"
+                href={discordUrl}
                   className={mergeClasses(
                     "flex items-center p-2 text-gray-900 rounded-lg dark:text-white group w-full gap-2 text-lg font-medium",
                     shrunk ? "justify-center gap-0" : ""
