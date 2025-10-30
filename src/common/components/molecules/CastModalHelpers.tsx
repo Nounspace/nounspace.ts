@@ -3,9 +3,10 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useModalContentContainer } from "./Modal";
 import {
   CastModalPortalProvider,
+  CAST_MODAL_INTERACTIVE_ATTR,
 } from "@/common/lib/utils/castModalInteractivity";
 
-export const CAST_MODAL_INTERACTIVE_ATTR = "data-cast-modal-interactive";
+export { CAST_MODAL_INTERACTIVE_ATTR };
 
 export const CastModalPortalBoundary: React.FC<{ children: React.ReactNode }> = ({
   children,

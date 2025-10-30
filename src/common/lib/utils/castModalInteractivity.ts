@@ -1,6 +1,7 @@
 import React from "react";
 import { Branch as DismissableLayerBranch } from "@radix-ui/react-dismissable-layer";
-import { CAST_MODAL_INTERACTIVE_ATTR } from "@/common/components/molecules/CastModalHelpers";
+
+export const CAST_MODAL_INTERACTIVE_ATTR = "data-cast-modal-interactive";
 
 const CastModalPortalContext = React.createContext<HTMLElement | null>(null);
 
