@@ -234,6 +234,27 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsEmojiPickerOpen(nextOpen);
   }, []);
 
+  const handleEmojiPickerInteraction = useCallback((event: CustomEvent<{ originalEvent?: Event }> | Event) => {
+    const originalEvent =
+      (event as CustomEvent<{ originalEvent?: Event }>)
+        ?.detail?.originalEvent;
+    const fallbackTarget =
+      originalEvent?.target ??
+      ((event as unknown as Event)?.target ?? null);
+
+    if (
+      isTargetInsideEmojiPicker(
+        event as unknown as Event,
+        fallbackTarget,
+      )
+    ) {
+      event.preventDefault();
+      return;
+    }
+
+    setIsEmojiPickerOpen(false);
+  }, []);
+
   const shouldConfirmClose = useMemo(() => {
     const hasText = (draft.text ?? "").trim().length > 0;
     const hasEmbeds = (draft.embeds?.length ?? 0) > 0;
@@ -899,46 +920,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     sideOffset={8}
                     className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
                     {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}
-                    onInteractOutside={(event) => {
-                      const originalEvent =
-                        (event as CustomEvent<{ originalEvent?: Event }>)
-                          ?.detail?.originalEvent;
-                      const fallbackTarget =
-                        originalEvent?.target ??
-                        ((event as unknown as Event)?.target ?? null);
-
-                      if (
-                        isTargetInsideEmojiPicker(
-                          event as unknown as Event,
-                          fallbackTarget,
-                        )
-                      ) {
-                        event.preventDefault();
-                        return;
-                      }
-
-                      setIsEmojiPickerOpen(false);
-                    }}
-                    onPointerDownOutside={(event) => {
-                      const originalEvent =
-                        (event as CustomEvent<{ originalEvent?: Event }>)
-                          ?.detail?.originalEvent;
-                      const fallbackTarget =
-                        originalEvent?.target ??
-                        ((event as unknown as Event)?.target ?? null);
-
-                      if (
-                        isTargetInsideEmojiPicker(
-                          event as unknown as Event,
-                          fallbackTarget,
-                        )
-                      ) {
-                        event.preventDefault();
-                        return;
-                      }
-
-                      setIsEmojiPickerOpen(false);
-                    }}
+                    onInteractOutside={handleEmojiPickerInteraction}
+                    onPointerDownOutside={handleEmojiPickerInteraction}
                     onEscapeKeyDown={() => setIsEmojiPickerOpen(false)}
                   >
                     <EmojiPicker
