@@ -1,5 +1,4 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { Buffer } from "node:buffer";
 
 import { fetchDirectoryData } from "@/pages/api/token/directory";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
@@ -64,7 +63,7 @@ describe("token directory API", () => {
       expect.stringContaining("/token/holders"),
       expect.objectContaining({
         headers: expect.objectContaining({
-          Authorization: `Basic ${Buffer.from(":test-key").toString("base64")}`,
+          Authorization: "Bearer test-key",
           "X-Alchemy-Token": "test-key",
         }),
       }),
@@ -129,7 +128,7 @@ describe("token directory API", () => {
       expect.stringContaining("/token/holders"),
       expect.objectContaining({
         headers: expect.objectContaining({
-          Authorization: `Basic ${Buffer.from(":test-key").toString("base64")}`,
+          Authorization: "Bearer test-key",
           "X-Alchemy-Token": "test-key",
         }),
       }),

@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { chunk } from "lodash";
 import { formatUnits } from "viem";
-import { Buffer } from "node:buffer";
 
 import requestHandler, {
   type NounspaceResponse,
@@ -181,7 +180,7 @@ async function fetchAlchemyTokenHolders(
 
   const chainSlug = ALCHEMY_NETWORK_SLUGS[params.network];
   const url = `${ALCHEMY_BASE_URL}/${chainSlug}/token/holders`;
-  const authorization = `Basic ${Buffer.from(`:${apiKey}`).toString("base64")}`;
+  const authorization = `Bearer ${apiKey}`;
 
   const holders: AlchemyTokenHolder[] = [];
   let tokenDecimals: number | null = null;
