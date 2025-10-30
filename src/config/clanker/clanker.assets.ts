@@ -1,17 +1,18 @@
-// Local, colocated assets bundled by Next.js
-// Place files in ./assets/ (e.g., ./assets/logo.png)
+// Source images colocated with config, emitted by bundler
 import logo from './assets/logo.jpg';
 import icon from './assets/favicon.ico';
 import og from './assets/og.jpg';
+import applePng from './assets/apple.png';
 
 export const clankerAssets = {
   logos: {
-    main: logo,
-    icon: icon,
-    // Keep favicon/appleTouch in public if you need fixed URLs for meta/PWA; otherwise bundle here
-    favicon: icon,
-    appleTouch: icon,
-    og: og,
-    splash: og
+    // Export plain strings resolved by the bundler
+    main: logo.src,
+    icon: icon.src,
+    favicon: icon.src,
+    // Apple touch must be PNG; use local clanker asset
+    appleTouch: applePng.src,
+    og: og.src,
+    splash: og.src
   }
 };
