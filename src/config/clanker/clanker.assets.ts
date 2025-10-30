@@ -2,7 +2,7 @@
 // Place files in ./assets/ (e.g., ./assets/logo.png)
 import logo from './assets/logo.jpg';
 import icon from './assets/favicon.ico';
-import og from './assets/og.png';
+import og from './assets/og.jpg';
 
 export const clankerAssets = {
   logos: {
