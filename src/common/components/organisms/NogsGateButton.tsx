@@ -11,6 +11,10 @@ import { Button, ButtonProps } from "../atoms/button";
 import NogsChecker from "./NogsChecker";
 import Modal from "../molecules/Modal";
 import { isUndefined } from "lodash";
+import { useBalance } from "wagmi";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { base } from "viem/chains";
+import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 
 const NogsGateButton = (props: ButtonProps) => {
   const { user } = usePrivy();
@@ -127,6 +131,20 @@ const NogsGateButton = (props: ButtonProps) => {
     };
   }, []);
 
+  const walletAddress = user?.wallet?.address as Address | undefined;
+  const { data: spaceBalanceData } = useBalance({
+    address: walletAddress ?? zeroAddress,
+    token: SPACE_CONTRACT_ADDR as `0x${string}`,
+    chainId: base.id,
+    query: { enabled: Boolean(walletAddress) },
+  });
+  const MIN_SPACE_TOKENS_FOR_UNLOCK = 1111;
+  const userHoldEnoughSpace = spaceBalanceData
+    ? Number(formatUnits(spaceBalanceData.value, spaceBalanceData.decimals)) >= MIN_SPACE_TOKENS_FOR_UNLOCK
+    : false;
+
+
+    
   return (
     <>
       <Modal setOpen={setModalOpen} open={modalOpen} showClose>
@@ -135,7 +153,7 @@ const NogsGateButton = (props: ButtonProps) => {
       <Button
         {...props}
         onClick={(e) =>
-          hasNogs
+          hasNogs || userHoldEnoughSpace
             ? isUndefined(props.onClick)
               ? undefined
               : props.onClick(e)
