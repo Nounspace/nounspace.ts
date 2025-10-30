@@ -8,6 +8,7 @@ export interface SystemConfig {
   community: CommunityConfig;
   fidgets: FidgetConfig;
   homePage: HomePageConfig;
+  navigation?: NavigationConfig;
 }
 
 export interface BrandConfig {
@@ -122,6 +123,19 @@ export interface HomePageConfig {
       fontColor: string;
     };
   };
+}
+
+export interface NavigationConfig {
+  items: NavigationItem[];
+}
+
+export interface NavigationItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'custom';
+  openInNewTab?: boolean;
+  requiresAuth?: boolean;
 }
 
 export interface TabConfig {

@@ -4,6 +4,7 @@ import { nounsTheme } from './nouns.theme';
 import { nounsCommunity } from './nouns.community';
 import { nounsFidgets } from './nouns.fidgets';
 import { nounsHomePage } from './nouns.home';
+import { nounsNavigation } from './nouns.navigation';
 
 export const nounsSystemConfig = {
   brand: nounsBrand,
@@ -12,6 +13,7 @@ export const nounsSystemConfig = {
   community: nounsCommunity,
   fidgets: nounsFidgets,
   homePage: nounsHomePage,
+  navigation: nounsNavigation,
 };
 
 export { nounsBrand } from './nouns.brand';

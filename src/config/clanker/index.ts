@@ -4,6 +4,7 @@ import { clankerTheme } from './clanker.theme';
 import { clankerCommunity } from './clanker.community';
 import { clankerFidgets } from './clanker.fidgets';
 import { clankerHomePage } from './clanker.home';
+import { clankerNavigation } from './clanker.navigation';
 
 export const clankerSystemConfig = {
   brand: clankerBrand,
@@ -12,6 +13,7 @@ export const clankerSystemConfig = {
   community: clankerCommunity,
   fidgets: clankerFidgets,
   homePage: clankerHomePage,
+  navigation: clankerNavigation,
 };
 
 export { clankerBrand } from './clanker.brand';
