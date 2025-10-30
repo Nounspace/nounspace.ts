@@ -10,7 +10,7 @@ import {
 } from "@/common/data/database/supabase/serverHelpers";
 import { tokenRequestorFromContractAddress, TokenOwnerLookup } from "@/common/data/queries/clanker";
 import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
-import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_noStore as noStore } from "next/cache";
 import { Address, getAddress, isAddress } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { TokenSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
@@ -19,6 +19,7 @@ import { fetchMasterTokenServer } from "@/common/data/queries/serverTokenData";
 import { createInitialTokenSpaceConfigForAddress } from "@/constants/initialTokenSpace";
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 /**
  * Validates a contract address format
@@ -101,6 +102,9 @@ export async function resolveTokenOwnership(
   ownerId: string | null;
   ownerIdType: OwnerType;
   owningIdentities: string[];
+  ownerAddressFromEmpire: string | null;
+  ownerAddressFromClanker: string | null;
+  ownerAddressFromContract: string | null;
 }> {
   // First try the token requestor which checks Clanker + Empire
   let tokenOwnership: TokenOwnerLookup | null = null;
@@ -109,11 +113,13 @@ export async function resolveTokenOwnership(
   } catch (error) {
     console.error("[resolveTokenOwnership] Error in token requestor:", error);
   }
-  
+
   // If no owner found via APIs, try blockchain fallback
   let ownerId = tokenOwnership?.ownerId || null;
   let ownerIdType = tokenOwnership?.ownerIdType || "address";
-  
+  const ownerAddressFromEmpire = tokenOwnership?.empireData?.owner ?? null;
+  const ownerAddressFromClanker = tokenOwnership?.clankerData?.admin ?? null;
+
   if (isNil(ownerId)) {
     console.log("[resolveTokenOwnership] No owner found from APIs, trying contract fallback...");
     try {
@@ -158,11 +164,16 @@ export async function resolveTokenOwnership(
       owningIdentities = await loadOwnedItentitiesForFid(ownerId);
     }
   }
-  
+
+  const ownerAddressFromContract = ownerIdType === "address" ? ownerId : null;
+
   return {
     ownerId,
     ownerIdType,
-    owningIdentities
+    owningIdentities,
+    ownerAddressFromEmpire,
+    ownerAddressFromClanker,
+    ownerAddressFromContract,
   };
 }
 
@@ -225,17 +236,31 @@ export const loadTokenSpacePageData = async (
 
   const ownerAddressCandidates: Array<string | null | undefined> = [
     tokenData?.empireData?.owner,
+    ownership.ownerAddressFromEmpire,
     tokenData?.clankerData?.admin,
+    ownership.ownerAddressFromClanker,
+    ownership.ownerAddressFromContract,
     ownership.ownerIdType === 'address' ? ownership.ownerId : null,
   ];
 
   const resolvedOwnerAddressCandidate = ownerAddressCandidates.find(
-    (candidate): candidate is string =>
-      typeof candidate === 'string' && isAddress(candidate as `0x${string}`),
+    (candidate): candidate is string => {
+      if (typeof candidate !== 'string') {
+        return false;
+      }
+
+      const trimmedCandidate = candidate.trim();
+
+      if (trimmedCandidate === ZERO_ADDRESS) {
+        return false;
+      }
+
+      return trimmedCandidate.length > 0 && isAddress(trimmedCandidate as `0x${string}`);
+    },
   );
 
   const normalizedOwnerAddress: Address | null = resolvedOwnerAddressCandidate
-    ? getAddress(resolvedOwnerAddressCandidate as `0x${string}`)
+    ? getAddress(resolvedOwnerAddressCandidate.trim() as `0x${string}`)
     : null;
 
   const resolvedOwnerAddress = normalizedOwnerAddress ?? "";
@@ -257,7 +282,7 @@ export const loadTokenSpacePageData = async (
   // Convert ownerId to the appropriate type based on ownerIdType
   const spaceOwnerFid = finalOwnerType === 'fid' ? Number(finalOwnerId) : undefined;
   const spaceOwnerAddress: Address =
-    normalizedOwnerAddress ?? ("0x0000000000000000000000000000000000000000" as Address);
+    normalizedOwnerAddress ?? (ZERO_ADDRESS as Address);
     
   return {
     spaceId: internalData.spaceId,
