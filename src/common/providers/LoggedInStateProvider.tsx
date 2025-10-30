@@ -5,13 +5,9 @@ import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
 import { SetupStep } from "@/common/data/stores/app/setup";
 import useValueHistory from "@/common/lib/hooks/useValueHistory";
 
-import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
-import { ALCHEMY_API } from "@/constants/urls";
-import { AlchemyIsHolderOfContract } from "@/pages/api/signerRequests";
 import { bytesToHex } from "@noble/ciphers/utils";
 import { usePrivy } from "@privy-io/react-auth";
-import axios from "axios";
 import { isEqual, isUndefined } from "lodash";
 import React, { useEffect } from "react";
 import LoginModal from "../components/templates/LoginModal";
@@ -38,11 +34,10 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     modalOpen,
     setModalOpen,
     keepModalOpen,
-    // nogs
-    setHasNogs,
     // wallet signatures
     isRequestingWalletSignature,
     setIsRequestingWalletSignature,
+    hasNogs,
   } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -64,11 +59,10 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     modalOpen: state.setup.modalOpen,
     setModalOpen: state.setup.setModalOpen,
     keepModalOpen: state.setup.keepModalOpen,
-    // nogs
-    setHasNogs: state.account.setHasNogs,
     // wallet signatures
     isRequestingWalletSignature: state.setup.isRequestingWalletSignature,
     setIsRequestingWalletSignature: state.setup.setIsRequestingWalletSignature,
+    hasNogs: state.account.hasNogs,
   }));
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
@@ -96,10 +90,10 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
       previousSteps[3] === SetupStep.NOT_SIGNED_IN
     ) {
       analytics.track(AnalyticsEvent.CONNECT_WALLET, {
-        hasNogs: previousSteps[0] === SetupStep.TOKENS_FOUND,
+        hasNogs,
       });
     }
-  }, [previousSteps]);
+  }, [previousSteps, hasNogs]);
 
   async function loadIdentity() {
     if (walletsReady && ready && authenticated && user) {
@@ -235,7 +229,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
         if (currentStep === SetupStep.SIGNED_IN) {
           loadWallet();
         } else if (currentStep === SetupStep.WALLET_CONNECTED) {
-          checkForNogs();
+          setCurrentStep(SetupStep.TOKENS_FOUND);
         } else if (currentStep === SetupStep.TOKENS_FOUND) {
           loadIdentity();
         } else if (currentStep === SetupStep.IDENTITY_LOADED) {
@@ -257,33 +251,6 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
       setCurrentStep(SetupStep.NOT_SIGNED_IN);
     }
   }, [currentStep, walletsReady, ready, authenticated, user]);
-
-  async function isHoldingNogs(address): Promise<boolean> {
-    if (process.env.NODE_ENV === "development") {
-      return true;
-    }
-    try {
-      const { data } = await axios.get<AlchemyIsHolderOfContract>(
-        `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
-        {
-          params: {
-            wallet: address,
-            contractAddress: NOGS_CONTRACT_ADDR,
-          },
-        },
-      );
-      return data.isHolderOfContract;
-    } catch {
-      return false;
-    }
-  }
-
-  async function checkForNogs() {
-    if (user && user.wallet) {
-      setHasNogs(await isHoldingNogs(user.wallet.address));
-      setCurrentStep(SetupStep.TOKENS_FOUND);
-    }
-  }
 
   return (
     <>
