@@ -173,9 +173,9 @@ async function fetchAlchemyTokenHolders(
   tokenSymbol: string | null;
   updatedAt: string;
 }> {
-  const apiKey = process.env.ALCHEMY_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
   if (!apiKey) {
-    throw new Error("ALCHEMY_API_KEY is not configured");
+    throw new Error("NEXT_PUBLIC_ALCHEMY_API_KEY is not configured");
   }
 
   const chainSlug = ALCHEMY_NETWORK_SLUGS[params.network];

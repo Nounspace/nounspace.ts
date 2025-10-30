@@ -29,15 +29,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 # Authentication Configuration (Privy)
 NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id_here
 
-# Blockchain Configuration
+# Blockchain Configuration (also used by the Token Directory fidget)
 NEXT_PUBLIC_ALCHEMY_API_KEY=your_alchemy_api_key_here
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id_here
 
 # Neynar API Configuration
 NEYNAR_API_KEY=your_neynar_api_key_here
-
-# Token Directory Fidget
-ALCHEMY_API_KEY=your_alchemy_api_key_here
 
 # Application URLs
 NEXT_PUBLIC_WEBSITE_URL=http://localhost:3000

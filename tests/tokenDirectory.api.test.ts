@@ -11,7 +11,7 @@ const mockedFetchTokenData = vi.mocked(fetchTokenData);
 
 describe("token directory API", () => {
   beforeEach(() => {
-    process.env.ALCHEMY_API_KEY = "test-key";
+    process.env.NEXT_PUBLIC_ALCHEMY_API_KEY = "test-key";
     vi.resetAllMocks();
   });
 
