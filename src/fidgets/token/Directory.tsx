@@ -236,8 +236,24 @@ const getMemberSecondaryLabel = (member: DirectoryMemberData) => {
   return null;
 };
 
-const getMemberAvatarSrc = (member: DirectoryMemberData) =>
-  member.pfpUrl ?? member.ensAvatarUrl ?? undefined;
+const getIdenticonUrl = (address: string) =>
+  `https://effigy.im/a/${normalizeAddress(address)}.png`;
+
+const getMemberAvatarSrc = (member: DirectoryMemberData) => {
+  if (member.pfpUrl) {
+    return member.pfpUrl;
+  }
+
+  if (member.ensAvatarUrl) {
+    return member.ensAvatarUrl;
+  }
+
+  if (!member.username && !member.ensName) {
+    return getIdenticonUrl(member.address);
+  }
+
+  return undefined;
+};
 
 const getMemberAvatarFallback = (member: DirectoryMemberData) =>
   getMemberPrimaryLabel(member)?.slice(0, 2)?.toUpperCase();
@@ -458,6 +474,15 @@ const Directory: React.FC<
     return members;
   }, [directoryData.members, include, sortBy]);
 
+  const tokenLabel =
+    directoryData.tokenSymbol?.trim() || (isConfigured ? normalizedAddress : "Token");
+  const tokenLabelUpper = tokenLabel.toUpperCase();
+  const includeFarcasterOnly = include === "holdersWithFarcasterAccount";
+  const holdingsTitle = `${tokenLabelUpper} HOLDINGS`;
+  const headerTitle = includeFarcasterOnly
+    ? `${tokenLabelUpper} HOLDERS ON FARCASTER`
+    : `${tokenLabelUpper} HOLDERS`;
+
   const emptyStateMessage =
     include === "allHolders"
       ? "No holders found for this token yet."
@@ -493,7 +518,7 @@ const Directory: React.FC<
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
-          <span className="font-semibold text-foreground">Community Directory</span>
+          <span className="font-semibold text-foreground">{headerTitle}</span>
           {directoryData.tokenSymbol && (
             <span className="text-muted-foreground/80">
               {directoryData.tokenSymbol} • {network}
@@ -555,16 +580,16 @@ const Directory: React.FC<
                       </AvatarFallback>
                     </Avatar>
                   </ProfileLink>
-                  <div className="flex flex-1 flex-col gap-1 text-sm">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
                     <ProfileLink
                       username={member.username}
                       fallbackHref={fallbackHref}
-                      className="font-semibold text-foreground hover:underline"
+                      className="block truncate font-semibold text-foreground hover:underline"
                     >
                       {primaryLabel}
                     </ProfileLink>
                     {secondaryLabel && (
-                      <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
@@ -572,11 +597,9 @@ const Directory: React.FC<
                       {member.balanceFormatted}
                       {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                     </span>
-                    <span>
-                      {typeof member.followers === "number"
-                        ? `${member.followers.toLocaleString()} followers`
-                        : "Followers n/a"}
-                    </span>
+                    {typeof member.followers === "number" && (
+                      <span>{`${member.followers.toLocaleString()} followers`}</span>
+                    )}
                     {lastActivity && <span>{lastActivity}</span>}
                   </div>
                 </li>
@@ -598,7 +621,7 @@ const Directory: React.FC<
                   key={member.address}
                   username={member.username}
                   fallbackHref={fallbackHref}
-                  className="flex h-full flex-col gap-3 rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
+                  className="flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="size-12">
@@ -610,29 +633,29 @@ const Directory: React.FC<
                         {getMemberAvatarFallback(member)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col text-sm">
-                      <span className="font-semibold text-foreground">{primaryLabel}</span>
+                    <div className="flex min-w-0 flex-col text-sm">
+                      <span className="truncate font-semibold text-foreground">{primaryLabel}</span>
                       {secondaryLabel && (
-                        <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                       )}
                     </div>
                   </div>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
                     <div>
-                      <dt className="uppercase tracking-wide">Holdings</dt>
+                      <dt className="uppercase tracking-wide">{holdingsTitle}</dt>
                       <dd className="font-semibold text-foreground">
                         {member.balanceFormatted}
                         {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                       </dd>
                     </div>
-                    <div>
-                      <dt className="uppercase tracking-wide">Followers</dt>
-                      <dd className="font-semibold text-foreground">
-                        {typeof member.followers === "number"
-                          ? member.followers.toLocaleString()
-                          : "n/a"}
-                      </dd>
-                    </div>
+                    {typeof member.followers === "number" && (
+                      <div>
+                        <dt className="uppercase tracking-wide">Followers</dt>
+                        <dd className="font-semibold text-foreground">
+                          {member.followers.toLocaleString()}
+                        </dd>
+                      </div>
+                    )}
                     {lastActivity && (
                       <div className="col-span-2 text-xs">
                         <dt className="uppercase tracking-wide">Last activity</dt>
