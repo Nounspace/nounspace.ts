@@ -57,19 +57,6 @@ type NavProps = {
 };
 
 const NavIconBadge = ({ children }) => {
-  const iconFor = useCallback((key?: string): React.FC => {
-    switch (key) {
-      case 'home': return HomeIcon;
-      case 'explore': return ExploreIcon;
-      case 'notifications': return NotificationsIcon;
-      case 'space': return RocketIcon;
-      default: return HomeIcon;
-    }
-  }, []);
-
-  const configuredNavItems = community?.navigation?.items || [];
-  const hasSpaceToken = configuredNavItems.some(i => i.id === 'space-token');
-
   return (
     <Badge
       variant="primary"
@@ -100,7 +87,7 @@ const Navigation = React.memo(
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
-  const { community } = loadSystemConfig();
+  const { community, navigation } = loadSystemConfig();
   const discordUrl = community?.urls?.discord || "https://discord.gg/eYQeXU2WuH";
 
   const [shrunk, setShrunk] = useState(mobile ? false : true);
@@ -142,6 +129,19 @@ const Navigation = React.memo(
   );
 
   const router = useRouter();
+
+  const iconFor = useCallback((key?: string): React.FC => {
+    switch (key) {
+      case 'home': return HomeIcon;
+      case 'explore': return ExploreIcon;
+      case 'notifications': return NotificationsIcon;
+      case 'space': return RocketIcon;
+      default: return HomeIcon;
+    }
+  }, []);
+
+  const configuredNavItems = navigation?.items || [];
+  const hasSpaceToken = configuredNavItems.some(i => i.id === 'space-token');
 
   const NavItem: React.FC<NavItemProps> = ({
     label,
