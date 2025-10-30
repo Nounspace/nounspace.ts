@@ -83,15 +83,15 @@ function resolveCommunity(): CommunityConfig {
   return isValidCommunityConfig(c) ? (c as CommunityConfig) : 'nouns';
 }
 
-export const createInitialProfileSpaceConfigForFid = (fid: number) => {
+export const createInitialProfileSpaceConfigForFid = (fid: number, username?: string) => {
   switch (resolveCommunity()) {
     case 'clanker':
       return clankerCreateInitialProfileSpaceConfigForFid(fid);
     case 'example':
-      return exampleCreateInitialProfileSpaceConfigForFid(fid);
+      return exampleCreateInitialProfileSpaceConfigForFid(fid, username);
     case 'nouns':
     default:
-      return nounsCreateInitialProfileSpaceConfigForFid(fid);
+      return nounsCreateInitialProfileSpaceConfigForFid(fid, username);
   }
 };
 
