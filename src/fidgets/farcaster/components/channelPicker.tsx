@@ -19,6 +19,7 @@ import {
   CastModalInteractiveBranch,
   useCastModalPortalContainer,
 } from "@/common/lib/utils/castModalInteractivity";
+import { CAST_MODAL_INTERACTIVE_ATTR } from "@/common/components/molecules/CastModalHelpers";
 import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
 
 type Props = {
@@ -90,15 +91,15 @@ export function ChannelPicker(props: Props) {
           container={castModalPortalContainer ?? undefined}
           className="w-[400px] p-0"
           align="start"
-          data-cast-modal-interactive="true"
+          {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}
         >
-          <Command data-cast-modal-interactive="true">
+          <Command {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}>
             <CommandInput
               placeholder="Search Channels"
               value={query}
               onValueChange={setQuery} // Update query state on input change
             />
-            <CommandList data-cast-modal-interactive="true">
+            <CommandList {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}>
               {channelResults.length === 0 ? (
                 <CommandEmpty>No channels found.</CommandEmpty>
               ) : (
@@ -107,7 +108,7 @@ export function ChannelPicker(props: Props) {
                     key={channel.parent_url || "home"}
                     value={channel.name || "home"}
                     className="cursor-pointer flex items-center px-4 py-2 hover:bg-gray-100"
-                    data-cast-modal-interactive="true"
+                    {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}
                     onSelect={() => handleSelect(channel)}
                   >
                     <img

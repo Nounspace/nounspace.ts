@@ -33,6 +33,7 @@ import {
   CastModalInteractiveBranch,
   useCastModalPortalContainer,
 } from "@/common/lib/utils/castModalInteractivity";
+import { CAST_MODAL_INTERACTIVE_ATTR } from "@/common/components/molecules/CastModalHelpers";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/common/stores/bannerStore";
@@ -892,7 +893,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     align="end"
                     sideOffset={8}
                     className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
-                    data-cast-modal-interactive="true"
+                    {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}
                     onInteractOutside={(event) => {
                       const originalEvent =
                         (event as CustomEvent<{ originalEvent?: Event }>)
