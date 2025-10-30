@@ -70,6 +70,8 @@ type DirectoryMember = {
   pfpUrl?: string | null;
   followers?: number | null;
   lastTransferAt?: string | null;
+  ensName?: string | null;
+  ensAvatarUrl?: string | null;
 };
 
 type DirectoryFetchContext = {
@@ -97,6 +99,11 @@ type DirectoryDependencies = {
 const defaultDependencies: DirectoryDependencies = {
   fetchFn: fetch,
   neynarClient: neynar,
+};
+
+type EnsMetadata = {
+  ensName: string | null;
+  ensAvatarUrl: string | null;
 };
 
 function normalizeAddress(address: string): string {
@@ -225,6 +232,166 @@ async function fetchAlchemyTokenHolders(
   };
 }
 
+async function fetchEnsMetadata(
+  addresses: string[],
+  deps: DirectoryDependencies,
+): Promise<Record<string, EnsMetadata>> {
+  const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+  if (!apiKey) {
+    return {};
+  }
+
+  const uniqueAddresses = Array.from(
+    new Set(addresses.map((address) => normalizeAddress(address))),
+  );
+
+  if (uniqueAddresses.length === 0) {
+    return {};
+  }
+
+  const endpoint = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+
+  const nameRequests = uniqueAddresses.map((address) => ({
+    jsonrpc: "2.0" as const,
+    id: address,
+    method: "alchemy_getEnsName" as const,
+    params: [address],
+  }));
+
+  let namePayload: unknown;
+  try {
+    const response = await deps.fetchFn(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${apiKey}`,
+        "X-Alchemy-Token": apiKey,
+      },
+      body: JSON.stringify(nameRequests),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      console.error(
+        `Failed to resolve ENS names (status ${response.status}): ${message}`,
+      );
+      return {};
+    }
+
+    namePayload = await response.json();
+  } catch (error) {
+    console.error("Failed to resolve ENS names", error);
+    return {};
+  }
+
+  const ensNames: Record<string, string | null> = Object.fromEntries(
+    uniqueAddresses.map((address) => [normalizeAddress(address), null]),
+  );
+
+  const nameEntries = Array.isArray(namePayload) ? namePayload : [namePayload];
+
+  for (const entry of nameEntries) {
+    if (!entry || typeof entry !== "object") {
+      continue;
+    }
+
+    const idValue =
+      typeof (entry as { id?: unknown }).id === "string"
+        ? normalizeAddress((entry as { id?: string }).id!)
+        : null;
+
+    if (!idValue || !(idValue in ensNames)) {
+      continue;
+    }
+
+    const resultValue = (entry as { result?: unknown }).result;
+    ensNames[idValue] =
+      typeof resultValue === "string" && resultValue.length > 0
+        ? resultValue
+        : null;
+  }
+
+  const addressesWithEns = uniqueAddresses.filter((address) => {
+    const normalized = normalizeAddress(address);
+    return Boolean(ensNames[normalized]);
+  });
+
+  const ensAvatars: Record<string, string | null> = {};
+
+  if (addressesWithEns.length > 0) {
+    const avatarRequests = addressesWithEns.map((address) => ({
+      jsonrpc: "2.0" as const,
+      id: address,
+      method: "alchemy_getAvatar" as const,
+      params: [ensNames[normalizeAddress(address)]],
+    }));
+
+    try {
+      const avatarResponse = await deps.fetchFn(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${apiKey}`,
+          "X-Alchemy-Token": apiKey,
+        },
+        body: JSON.stringify(avatarRequests),
+        cache: "no-store",
+      });
+
+      if (!avatarResponse.ok) {
+        const message = await avatarResponse.text();
+        console.error(
+          `Failed to resolve ENS avatars (status ${avatarResponse.status}): ${message}`,
+        );
+      } else {
+        const avatarPayload = await avatarResponse.json();
+        const avatarEntries = Array.isArray(avatarPayload)
+          ? avatarPayload
+          : [avatarPayload];
+
+        for (const entry of avatarEntries) {
+          if (!entry || typeof entry !== "object") {
+            continue;
+          }
+
+          const idValue =
+            typeof (entry as { id?: unknown }).id === "string"
+              ? normalizeAddress((entry as { id?: string }).id!)
+              : null;
+
+          if (!idValue) {
+            continue;
+          }
+
+          const resultValue = (entry as { result?: unknown }).result;
+          ensAvatars[idValue] =
+            typeof resultValue === "string" && resultValue.length > 0
+              ? resultValue
+              : null;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to resolve ENS avatars", error);
+    }
+  }
+
+  return Object.fromEntries(
+    uniqueAddresses.map((address) => {
+      const normalized = normalizeAddress(address);
+      return [
+        normalized,
+        {
+          ensName: ensNames[normalized] ?? null,
+          ensAvatarUrl: ensAvatars[normalized] ?? null,
+        },
+      ];
+    }),
+  );
+}
+
 function mapNeynarUsersByAddress(
   addressRecords: NeynarBulkUsersResponse,
 ): Record<string, NeynarUser | undefined> {
@@ -271,6 +438,16 @@ export async function fetchDirectoryData(
     }
   }
 
+  let ensMetadata: Record<string, EnsMetadata> = {};
+  const addressesMissingProfiles = uniqueAddresses.filter((address) => {
+    const profile = neynarProfiles[address];
+    return !profile || !("username" in profile) || !profile.username;
+  });
+
+  if (addressesMissingProfiles.length > 0) {
+    ensMetadata = await fetchEnsMetadata(addressesMissingProfiles, deps);
+  }
+
   let resolvedDecimals = tokenDecimals ?? null;
   if (resolvedDecimals === null) {
     try {
@@ -296,6 +473,8 @@ export async function fetchDirectoryData(
     const profile = neynarProfiles[key];
     const balanceRaw = extractOwnerBalanceRaw(holder);
     let balanceFormatted = balanceRaw;
+
+    const ensInfo = ensMetadata[key];
 
     if (resolvedDecimals !== null) {
       try {
@@ -336,6 +515,8 @@ export async function fetchDirectoryData(
                 null
               )
             : null,
+      ensName: ensInfo?.ensName ?? null,
+      ensAvatarUrl: ensInfo?.ensAvatarUrl ?? null,
     });
   }
 

@@ -87,6 +87,8 @@ describe("token directory API", () => {
       displayName: "Alice",
       pfpUrl: "https://example.com/alice.png",
       lastTransferAt: null,
+      ensName: null,
+      ensAvatarUrl: null,
     });
     expect(result.fetchContext).toEqual({
       network: "base",
@@ -124,10 +126,36 @@ describe("token directory API", () => {
       }),
     };
 
+    const ensNameResponse = {
+      ok: true,
+      json: async () => [
+        {
+          id: "0x000000000000000000000000000000000000aaaa",
+          result: "example.eth",
+        },
+        {
+          id: "0x000000000000000000000000000000000000bbbb",
+          result: null,
+        },
+      ],
+    };
+
+    const ensAvatarResponse = {
+      ok: true,
+      json: async () => [
+        {
+          id: "0x000000000000000000000000000000000000aaaa",
+          result: "https://example.com/avatar.png",
+        },
+      ],
+    };
+
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(firstResponse as any)
-      .mockResolvedValueOnce(secondResponse as any);
+      .mockResolvedValueOnce(secondResponse as any)
+      .mockResolvedValueOnce(ensNameResponse as any)
+      .mockResolvedValueOnce(ensAvatarResponse as any);
 
     const neynarMock = {
       fetchBulkUsersByEthOrSolAddress: vi.fn().mockResolvedValue({}),
@@ -145,22 +173,28 @@ describe("token directory API", () => {
       },
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(fetchMock.mock.calls[0][0]).toContain(
       "/nft/v3/test-key/getOwnersForContract",
     );
     expect(fetchMock.mock.calls[1][0]).toContain("pageKey=next-page");
+    expect(fetchMock.mock.calls[2][0]).toContain("/v2/test-key");
+    expect(fetchMock.mock.calls[3][0]).toContain("/v2/test-key");
 
     expect(result.members).toHaveLength(2);
     expect(result.members[0]).toMatchObject({
       address: "0x000000000000000000000000000000000000aaaa",
       balanceRaw: "2",
       balanceFormatted: "2",
+      ensName: "example.eth",
+      ensAvatarUrl: "https://example.com/avatar.png",
     });
     expect(result.members[1]).toMatchObject({
       address: "0x000000000000000000000000000000000000bbbb",
       balanceRaw: "0",
       balanceFormatted: "0",
+      ensName: null,
+      ensAvatarUrl: null,
     });
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
   });

@@ -49,6 +49,8 @@ export interface DirectoryMemberData {
   pfpUrl?: string | null;
   followers?: number | null;
   lastTransferAt?: string | null;
+  ensName?: string | null;
+  ensAvatarUrl?: string | null;
 }
 
 export interface DirectoryFetchContext {
@@ -218,6 +220,27 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
 
 const getBlockExplorerLink = (network: DirectoryNetwork, address: string) =>
   `${blockExplorerForNetwork[network]}${address}`;
+
+const getMemberPrimaryLabel = (member: DirectoryMemberData) =>
+  member.displayName || member.username || member.ensName || member.address;
+
+const getMemberSecondaryLabel = (member: DirectoryMemberData) => {
+  if (member.username) {
+    return `@${member.username}`;
+  }
+
+  if (member.ensName) {
+    return member.address;
+  }
+
+  return null;
+};
+
+const getMemberAvatarSrc = (member: DirectoryMemberData) =>
+  member.pfpUrl ?? member.ensAvatarUrl ?? undefined;
+
+const getMemberAvatarFallback = (member: DirectoryMemberData) =>
+  getMemberPrimaryLabel(member)?.slice(0, 2)?.toUpperCase();
 
 const getLastActivityLabel = (timestamp?: string | null) => {
   if (!timestamp) {
@@ -517,18 +540,18 @@ const Directory: React.FC<
                 include === "allHolders" && !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
+              const primaryLabel = getMemberPrimaryLabel(member);
+              const secondaryLabel = getMemberSecondaryLabel(member);
               return (
                 <li key={member.address} className="flex items-center gap-3 py-3">
                   <ProfileLink username={member.username} fallbackHref={fallbackHref}>
                     <Avatar className="size-11 shrink-0">
                       <AvatarImage
-                        src={member.pfpUrl ?? undefined}
-                        alt={member.displayName ?? member.username ?? member.address}
+                        src={getMemberAvatarSrc(member)}
+                        alt={primaryLabel}
                       />
                       <AvatarFallback className="bg-black/5 text-xs">
-                        {(member.displayName || member.username || member.address)
-                          ?.slice(0, 2)
-                          ?.toUpperCase()}
+                        {getMemberAvatarFallback(member)}
                       </AvatarFallback>
                     </Avatar>
                   </ProfileLink>
@@ -538,10 +561,10 @@ const Directory: React.FC<
                       fallbackHref={fallbackHref}
                       className="font-semibold text-foreground hover:underline"
                     >
-                      {member.displayName || member.username || member.address}
+                      {primaryLabel}
                     </ProfileLink>
-                    {member.username && (
-                      <span className="text-xs text-muted-foreground">@{member.username}</span>
+                    {secondaryLabel && (
+                      <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
@@ -568,6 +591,8 @@ const Directory: React.FC<
                 include === "allHolders" && !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
+              const primaryLabel = getMemberPrimaryLabel(member);
+              const secondaryLabel = getMemberSecondaryLabel(member);
               return (
                 <ProfileLink
                   key={member.address}
@@ -578,21 +603,17 @@ const Directory: React.FC<
                   <div className="flex items-center gap-3">
                     <Avatar className="size-12">
                       <AvatarImage
-                        src={member.pfpUrl ?? undefined}
-                        alt={member.displayName ?? member.username ?? member.address}
+                        src={getMemberAvatarSrc(member)}
+                        alt={primaryLabel}
                       />
                       <AvatarFallback className="bg-black/5 text-sm font-semibold">
-                        {(member.displayName || member.username || member.address)
-                          ?.slice(0, 2)
-                          ?.toUpperCase()}
+                        {getMemberAvatarFallback(member)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col text-sm">
-                      <span className="font-semibold text-foreground">
-                        {member.displayName || member.username || member.address}
-                      </span>
-                      {member.username && (
-                        <span className="text-xs text-muted-foreground">@{member.username}</span>
+                      <span className="font-semibold text-foreground">{primaryLabel}</span>
+                      {secondaryLabel && (
+                        <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
                       )}
                     </div>
                   </div>
