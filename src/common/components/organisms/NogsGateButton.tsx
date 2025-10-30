@@ -131,13 +131,18 @@ const NogsGateButton = (props: ButtonProps) => {
     };
   }, []);
 
-  const walletAddress = user?.wallet?.address as Address | undefined;
-  const { data: spaceBalanceData } = useBalance({
-    address: walletAddress ?? zeroAddress,
-    token: SPACE_CONTRACT_ADDR as `0x${string}`,
-    chainId: base.id,
-    query: { enabled: Boolean(walletAddress) },
-  });
+  const isClient = typeof window !== "undefined";
+  const walletAddress = isClient ? (user?.wallet?.address as Address | undefined) : undefined;
+
+  const { data: spaceBalanceData } = isClient
+    ? useBalance({
+        address: walletAddress ?? zeroAddress,
+        token: SPACE_CONTRACT_ADDR as `0x${string}`,
+        chainId: base.id,
+        query: { enabled: Boolean(walletAddress) },
+      })
+    : { data: undefined };
+
   const MIN_SPACE_TOKENS_FOR_UNLOCK = 1111;
   const userHoldEnoughSpace = spaceBalanceData
     ? Number(formatUnits(spaceBalanceData.value, spaceBalanceData.decimals)) >= MIN_SPACE_TOKENS_FOR_UNLOCK
@@ -153,7 +158,7 @@ const NogsGateButton = (props: ButtonProps) => {
       <Button
         {...props}
         onClick={(e) =>
-          hasNogs || userHoldEnoughSpace
+          (hasNogs || userHoldEnoughSpace)
             ? isUndefined(props.onClick)
               ? undefined
               : props.onClick(e)
