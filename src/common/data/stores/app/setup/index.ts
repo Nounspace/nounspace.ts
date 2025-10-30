@@ -10,7 +10,7 @@ export enum SetupStep {
   UNINITIALIZED = "Uninitialized",
   NOT_SIGNED_IN = "Please Sign in with Privy",
   SIGNED_IN = "Connecting to wallet...",
-  WALLET_CONNECTED = "Checking for nOGs...",
+  WALLET_CONNECTED = "Preparing your account...",
   TOKENS_FOUND = "Loading Identity...",
   IDENTITY_LOADED = "Loading Authenticators...",
   AUTHENTICATORS_LOADED = "Installing required Authenticators...",
