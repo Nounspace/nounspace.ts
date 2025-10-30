@@ -24,6 +24,7 @@ import BuilderScore from "./farcaster/BuilderScore";
 import MobileStack from "./layout/tabFullScreen";
 import FramesFidget from "./framesV2/components/FramesFidget";
 import NounsHome from "./nouns-home";
+import Directory from "./community/Directory";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -47,6 +48,7 @@ export const CompleteFidgets = {
   governance: NounishGovernance,
   nounsHome: NounsHome,
   links: Links,
+  Directory: Directory,
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
   Swap: Swap,
