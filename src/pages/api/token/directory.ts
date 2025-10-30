@@ -1,7 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { chunk } from "lodash";
-import { formatUnits } from "viem";
+import { formatUnits, type Address } from "viem";
+import { mainnet } from "viem/chains";
+import { createConfig } from "wagmi";
+import {
+  getEnsName as wagmiGetEnsName,
+  getEnsAvatar as wagmiGetEnsAvatar,
+} from "wagmi/actions";
+import { http } from "@wagmi/core";
 
 import requestHandler, {
   type NounspaceResponse,
@@ -9,6 +16,7 @@ import requestHandler, {
 import neynar from "@/common/data/api/neynar";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import type { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { ALCHEMY_API } from "@/constants/urls";
 
 const DIRECTORY_QUERY_SCHEMA = z.object({
   network: z.enum(["base", "polygon", "mainnet"]),
@@ -95,11 +103,35 @@ type DirectoryErrorResponse = {
 type DirectoryDependencies = {
   fetchFn: typeof fetch;
   neynarClient: typeof neynar;
+  getEnsNameFn: (address: Address) => Promise<string | null>;
+  getEnsAvatarFn: (name: string) => Promise<string | null>;
 };
+
+let ensLookupConfig: ReturnType<typeof createConfig> | null = null;
+
+function getEnsLookupConfig() {
+  if (!ensLookupConfig) {
+    const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+    if (!apiKey) {
+      throw new Error("NEXT_PUBLIC_ALCHEMY_API_KEY is not configured");
+    }
+
+    ensLookupConfig = createConfig({
+      chains: [mainnet],
+      transports: {
+        [mainnet.id]: http(`${ALCHEMY_API("eth")}v2/${apiKey}`),
+      },
+    });
+  }
+
+  return ensLookupConfig;
+}
 
 const defaultDependencies: DirectoryDependencies = {
   fetchFn: fetch,
   neynarClient: neynar,
+  getEnsNameFn: (address) => wagmiGetEnsName(getEnsLookupConfig(), { address }),
+  getEnsAvatarFn: (name) => wagmiGetEnsAvatar(getEnsLookupConfig(), { name }),
 };
 
 type EnsMetadata = {
@@ -247,209 +279,59 @@ async function fetchEnsMetadata(
   }
 
   const uniqueAddresses = Array.from(
-    new Set(addresses.map((address) => normalizeAddress(address))),
+    new Set(
+      addresses
+        .map((address) => normalizeAddress(address))
+        .filter((address) => isAddress(address)),
+    ),
   );
 
   if (uniqueAddresses.length === 0) {
     return {};
   }
 
-  const endpoint = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
-
-  const nameRequestIdToAddress = new Map<string, string>();
-  const nameRequests = uniqueAddresses.map((address, index) => {
-    const normalized = normalizeAddress(address);
-    const requestId = `ens-name-${index}`;
-    nameRequestIdToAddress.set(requestId, normalized);
-
-    return {
-      jsonrpc: "2.0" as const,
-      id: requestId,
-      method: "alchemy_getEnsName" as const,
-      params: [normalized],
-    };
-  });
-
-  const resolveResponseAddress = (
-    entryId: unknown,
-    mapping: Map<string, string>,
-  ): string | null => {
-    if (entryId === undefined || entryId === null) {
-      return null;
-    }
-
-    if (typeof entryId === "string") {
-      if (mapping.has(entryId)) {
-        return mapping.get(entryId)!;
-      }
-
-      if (isAddress(entryId)) {
-        return normalizeAddress(entryId);
-      }
-    }
-
-    if (typeof entryId === "number") {
-      const key = entryId.toString();
-      if (mapping.has(key)) {
-        return mapping.get(key)!;
-      }
-    }
-
-    return null;
-  };
-
-  const requestHeaders = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  } as const;
-
-  const nameRequestsPayload = JSON.stringify(nameRequests);
-
-  let namePayload: unknown;
-  try {
-    const response = await deps.fetchFn(endpoint, {
-      method: "POST",
-      headers: requestHeaders,
-      body: nameRequestsPayload,
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      const message = await response.text();
-      console.error(
-        `Failed to resolve ENS names (status ${response.status}): ${message}`,
-      );
-      return {};
-    }
-
-    namePayload = await response.json();
-  } catch (error) {
-    console.error("Failed to resolve ENS names", error);
-    return {};
-  }
-
-  const ensNames: Record<string, string | null> = Object.fromEntries(
-    uniqueAddresses.map((address) => [normalizeAddress(address), null]),
-  );
-
-  const nameEntries = Array.isArray(namePayload) ? namePayload : [namePayload];
-
-  for (const entry of nameEntries) {
-    if (!entry || typeof entry !== "object") {
-      continue;
-    }
-
-    const resolvedAddress = resolveResponseAddress(
-      (entry as { id?: unknown }).id,
-      nameRequestIdToAddress,
-    );
-
-    if (!resolvedAddress || !(resolvedAddress in ensNames)) {
-      continue;
-    }
-
-    const resultValue = (entry as { result?: unknown }).result;
-    ensNames[resolvedAddress] =
-      typeof resultValue === "string" && resultValue.length > 0
-        ? resultValue
-        : null;
-  }
-
-  const addressesWithEns = uniqueAddresses.filter((address) => {
-    const normalized = normalizeAddress(address);
-    return Boolean(ensNames[normalized]);
-  });
-
-  const ensAvatars: Record<string, string | null> = {};
-
-  if (addressesWithEns.length > 0) {
-    const avatarRequestIdToAddress = new Map<string, string>();
-    const avatarRequests = addressesWithEns
-      .map((address, index) => {
-        const normalized = normalizeAddress(address);
-        const ensName = ensNames[normalized];
-        if (!ensName) {
-          return null;
-        }
-
-        const requestId = `ens-avatar-${index}`;
-        avatarRequestIdToAddress.set(requestId, normalized);
-
-        return {
-          jsonrpc: "2.0" as const,
-          id: requestId,
-          method: "alchemy_getAvatar" as const,
-          params: [ensName],
-        };
-      })
-      .filter(
-        (value): value is {
-          jsonrpc: "2.0";
-          id: string;
-          method: "alchemy_getAvatar";
-          params: [string];
-        } => value !== null,
-      );
-
-    if (avatarRequests.length > 0) {
+  const entries = await Promise.all(
+    uniqueAddresses.map(async (address) => {
+      const viemAddress = address as Address;
       try {
-        const avatarResponse = await deps.fetchFn(endpoint, {
-          method: "POST",
-          headers: requestHeaders,
-          body: JSON.stringify(avatarRequests),
-          cache: "no-store",
-        });
+        const ensName = await deps.getEnsNameFn(viemAddress);
+        let ensAvatarUrl: string | null = null;
 
-        if (!avatarResponse.ok) {
-          const message = await avatarResponse.text();
-          console.error(
-            `Failed to resolve ENS avatars (status ${avatarResponse.status}): ${message}`,
-          );
-        } else {
-          const avatarPayload = await avatarResponse.json();
-          const avatarEntries = Array.isArray(avatarPayload)
-            ? avatarPayload
-            : [avatarPayload];
-
-          for (const entry of avatarEntries) {
-            if (!entry || typeof entry !== "object") {
-              continue;
-            }
-
-            const resolvedAddress = resolveResponseAddress(
-              (entry as { id?: unknown }).id,
-              avatarRequestIdToAddress,
+        if (ensName) {
+          try {
+            ensAvatarUrl = await deps.getEnsAvatarFn(ensName);
+          } catch (avatarError) {
+            console.error(
+              `Failed to resolve ENS avatar for ${ensName}`,
+              avatarError,
             );
-
-            if (!resolvedAddress) {
-              continue;
-            }
-
-            const resultValue = (entry as { result?: unknown }).result;
-            ensAvatars[resolvedAddress] =
-              typeof resultValue === "string" && resultValue.length > 0
-                ? resultValue
-                : null;
           }
         }
-      } catch (error) {
-        console.error("Failed to resolve ENS avatars", error);
-      }
-    }
-  }
 
-  return Object.fromEntries(
-    uniqueAddresses.map((address) => {
-      const normalized = normalizeAddress(address);
-      return [
-        normalized,
-        {
-          ensName: ensNames[normalized] ?? null,
-          ensAvatarUrl: ensAvatars[normalized] ?? null,
-        },
-      ];
+        return [
+          address,
+          {
+            ensName: ensName ?? null,
+            ensAvatarUrl: ensAvatarUrl ?? null,
+          },
+        ] as const;
+      } catch (error) {
+        console.error(
+          `Failed to resolve ENS metadata for address ${address}`,
+          error,
+        );
+        return [
+          address,
+          {
+            ensName: null,
+            ensAvatarUrl: null,
+          },
+        ] as const;
+      }
     }),
   );
+
+  return Object.fromEntries(entries);
 }
 
 function mapNeynarUsersByAddress(

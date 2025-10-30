@@ -50,6 +50,9 @@ describe("token directory API", () => {
       }),
     };
 
+    const getEnsNameMock = vi.fn().mockResolvedValue(null);
+    const getEnsAvatarMock = vi.fn().mockResolvedValue(null);
+
     const result = await fetchDirectoryData(
       {
         network: "base",
@@ -59,6 +62,8 @@ describe("token directory API", () => {
       {
         fetchFn: fetchMock,
         neynarClient: neynarMock as any,
+        getEnsNameFn: getEnsNameMock,
+        getEnsAvatarFn: getEnsAvatarMock,
       },
     );
 
@@ -95,6 +100,8 @@ describe("token directory API", () => {
       contractAddress: "0x000000000000000000000000000000000000abcd",
     });
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
+    expect(getEnsNameMock).not.toHaveBeenCalled();
+    expect(getEnsAvatarMock).not.toHaveBeenCalled();
   });
 
   it("paginates through NFT owners until page size reached", async () => {
@@ -126,40 +133,22 @@ describe("token directory API", () => {
       }),
     };
 
-    const ensNameResponse = {
-      ok: true,
-      json: async () => [
-        {
-          id: "0x000000000000000000000000000000000000aaaa",
-          result: "example.eth",
-        },
-        {
-          id: "0x000000000000000000000000000000000000bbbb",
-          result: null,
-        },
-      ],
-    };
-
-    const ensAvatarResponse = {
-      ok: true,
-      json: async () => [
-        {
-          id: "0x000000000000000000000000000000000000aaaa",
-          result: "https://example.com/avatar.png",
-        },
-      ],
-    };
-
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(firstResponse as any)
-      .mockResolvedValueOnce(secondResponse as any)
-      .mockResolvedValueOnce(ensNameResponse as any)
-      .mockResolvedValueOnce(ensAvatarResponse as any);
+      .mockResolvedValueOnce(secondResponse as any);
 
     const neynarMock = {
       fetchBulkUsersByEthOrSolAddress: vi.fn().mockResolvedValue({}),
     };
+
+    const getEnsNameMock = vi
+      .fn()
+      .mockResolvedValueOnce("example.eth")
+      .mockResolvedValueOnce(null);
+    const getEnsAvatarMock = vi
+      .fn()
+      .mockResolvedValueOnce("https://example.com/avatar.png");
 
     const result = await fetchDirectoryData(
       {
@@ -170,16 +159,16 @@ describe("token directory API", () => {
       {
         fetchFn: fetchMock,
         neynarClient: neynarMock as any,
+        getEnsNameFn: getEnsNameMock,
+        getEnsAvatarFn: getEnsAvatarMock,
       },
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0][0]).toContain(
       "/nft/v3/test-key/getOwnersForContract",
     );
     expect(fetchMock.mock.calls[1][0]).toContain("pageKey=next-page");
-    expect(fetchMock.mock.calls[2][0]).toContain("/v2/test-key");
-    expect(fetchMock.mock.calls[3][0]).toContain("/v2/test-key");
 
     expect(result.members).toHaveLength(2);
     expect(result.members[0]).toMatchObject({
@@ -197,5 +186,15 @@ describe("token directory API", () => {
       ensAvatarUrl: null,
     });
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
+    expect(getEnsNameMock).toHaveBeenNthCalledWith(
+      1,
+      "0x000000000000000000000000000000000000aaaa",
+    );
+    expect(getEnsNameMock).toHaveBeenNthCalledWith(
+      2,
+      "0x000000000000000000000000000000000000bbbb",
+    );
+    expect(getEnsAvatarMock).toHaveBeenCalledTimes(1);
+    expect(getEnsAvatarMock).toHaveBeenCalledWith("example.eth");
   });
 });
