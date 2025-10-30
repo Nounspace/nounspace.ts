@@ -271,10 +271,6 @@ const Directory: React.FC<
       return false;
     }
 
-    if (!directoryData.members?.length) {
-      return true;
-    }
-
     const lastUpdated = directoryData.lastUpdatedTimestamp
       ? Date.parse(directoryData.lastUpdatedTimestamp)
       : 0;
@@ -299,7 +295,6 @@ const Directory: React.FC<
   }, [
     directoryData.fetchContext,
     directoryData.lastUpdatedTimestamp,
-    directoryData.members,
     isConfigured,
     network,
     normalizedAddress,
