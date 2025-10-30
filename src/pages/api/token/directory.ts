@@ -39,6 +39,7 @@ type AlchemyNftOwner = {
 };
 
 type AlchemyNftOwnersResponse = {
+  owners?: AlchemyNftOwner[] | null;
   ownerAddresses?: AlchemyNftOwner[] | null;
   pageKey?: string | null;
   totalCount?: number | string | null;
@@ -188,9 +189,11 @@ async function fetchAlchemyTokenHolders(
     }
 
     const payload = (await response.json()) as AlchemyNftOwnersResponse;
-    const batch = Array.isArray(payload.ownerAddresses)
-      ? payload.ownerAddresses
-      : [];
+    const batch = Array.isArray(payload.owners)
+      ? payload.owners
+      : Array.isArray(payload.ownerAddresses)
+        ? payload.ownerAddresses
+        : [];
 
     holders.push(...batch);
 

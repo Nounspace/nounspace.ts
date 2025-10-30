@@ -19,7 +19,7 @@ describe("token directory API", () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        ownerAddresses: [
+        owners: [
           {
             ownerAddress: "0x000000000000000000000000000000000000abcd",
             tokenBalances: [
@@ -99,7 +99,7 @@ describe("token directory API", () => {
     const firstResponse = {
       ok: true,
       json: async () => ({
-        ownerAddresses: [
+        owners: [
           {
             ownerAddress: "0x000000000000000000000000000000000000aaaa",
             tokenBalances: [
@@ -115,7 +115,7 @@ describe("token directory API", () => {
     const secondResponse = {
       ok: true,
       json: async () => ({
-        ownerAddresses: [
+        owners: [
           {
             ownerAddress: "0x000000000000000000000000000000000000bbbb",
             tokenBalances: null,
