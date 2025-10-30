@@ -141,7 +141,19 @@ const Navigation = React.memo(
   }, []);
 
   const configuredNavItems = navigation?.items || [];
-  const hasSpaceToken = configuredNavItems.some(i => i.id === 'space-token');
+  
+  // Process nav items: adjust labels and hrefs based on login status when needed
+  const allNavItems = configuredNavItems.map((item) => {
+    // Dynamically adjust home label and href based on login status
+    if (item.id === 'home') {
+      return {
+        ...item,
+        label: isLoggedIn ? 'Homebase' : item.label,
+        href: isLoggedIn ? '/homebase' : item.href,
+      };
+    }
+    return item;
+  });
 
   const NavItem: React.FC<NavItemProps> = ({
     label,
@@ -291,11 +303,7 @@ const Navigation = React.memo(
           >
             <div className="flex-auto">
               <ul className="space-y-2">
-                {(configuredNavItems.length ? configuredNavItems : [
-                  { id: 'home', label: isLoggedIn ? 'Homebase' : 'Home', href: isLoggedIn ? '/homebase' : '/home', icon: 'home' },
-                  { id: 'explore', label: 'Explore', href: '/explore', icon: 'explore' },
-                  { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'notifications', requiresAuth: true },
-                ]).map((item) => {
+                {allNavItems.map((item) => {
                   if (item.requiresAuth && !isLoggedIn) return null;
                   const IconComp = iconFor(item.icon);
                   const badge = item.id === 'notifications' ? notificationBadgeText : null;
@@ -309,6 +317,7 @@ const Navigation = React.memo(
                         if (item.id === 'explore') trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE);
                         if (item.id === 'notifications') trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS);
                         if (item.id === 'home') trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE);
+                        if (item.id === 'space-token') trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH);
                       }}
                       openInNewTab={item.openInNewTab}
                       badgeText={badge}
@@ -323,17 +332,6 @@ const Navigation = React.memo(
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
                   }}
                 />
-                {!hasSpaceToken && (
-                  <NavItem
-                    label="$SPACE"
-                    Icon={RocketIcon}
-                    href="https://nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab/Profile"
-                    onClick={() =>
-                      trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
-                    }
-                    openInNewTab
-                  />
-                )}
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
