@@ -3,7 +3,7 @@ import { cloneDeep } from "lodash";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "../../initialSpaceConfig";
 
-const INITIAL_HOMEBASE_CONFIG: Omit<SpaceConfig, "isEditable"> = (() => {
+const INITIAL_HOMEBASE_CONFIG: SpaceConfig = (() => {
 	const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 
 	config.theme = {
@@ -146,6 +146,9 @@ const INITIAL_HOMEBASE_CONFIG: Omit<SpaceConfig, "isEditable"> = (() => {
 	layoutConfig.layout = layoutItems;
 
 	config.tabNames = ["Homebase"];
+
+	// Ensure required SpaceConfig field present
+	(config as SpaceConfig).isEditable = true;
 
 	return config;
 })();
