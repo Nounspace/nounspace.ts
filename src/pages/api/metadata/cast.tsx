@@ -1,6 +1,7 @@
 import React from "react";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 
 export const config = {
   runtime: "edge",
@@ -50,7 +51,7 @@ const CastCard = ({ data }: { data: CastCardData }) => (
     <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
       {data.pfpUrl && (
         <img
-          src={data.pfpUrl}
+          src={toFarcasterCdnUrl(data.pfpUrl)}
           width="120"
           height="120"
           style={{ borderRadius: "60px" }}

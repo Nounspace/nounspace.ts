@@ -2,6 +2,7 @@ import React from "react";
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 
 export const config = {
   runtime: "edge",
@@ -52,7 +53,7 @@ const ProfileCard = ({ userMetadata }: { userMetadata: UserMetadata }) => {
       }}
     >
       <img
-        src={userMetadata.pfpUrl}
+        src={toFarcasterCdnUrl(userMetadata.pfpUrl)}
         width={"180px"}
         height={"180px"}
         style={{ borderRadius: "300px" }}

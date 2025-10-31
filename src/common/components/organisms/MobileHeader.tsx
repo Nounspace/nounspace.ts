@@ -15,6 +15,7 @@ import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
 import Navigation from "./Navigation";
 import { useSidebarContext } from "./Sidebar";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 
 const MobileHeader = () => {
   const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
@@ -75,7 +76,7 @@ const MobileHeader = () => {
         className="rounded-full overflow-hidden w-8 h-8 bg-gray-200 flex items-center justify-center"
       >
         {user?.pfp_url ? (
-          <img src={user.pfp_url} alt={user?.username} className="object-cover w-full h-full" />
+          <img src={toFarcasterCdnUrl(user.pfp_url || '')} alt={user?.username} className="object-cover w-full h-full" />
         ) : (
           <CgProfile />
         )}

@@ -15,6 +15,7 @@ import {
   AvatarImage,
 } from "@/common/components/atoms/avatar";
 import BoringAvatar from "boring-avatars";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
@@ -311,8 +312,10 @@ const getMemberSecondaryLabel = (member: DirectoryMemberData) => {
   return null;
 };
 
-const getMemberAvatarSrc = (member: DirectoryMemberData) =>
-  member.pfpUrl ?? member.ensAvatarUrl ?? undefined;
+const getMemberAvatarSrc = (member: DirectoryMemberData) => {
+  const proxied = member.pfpUrl ? toFarcasterCdnUrl(member.pfpUrl) : undefined;
+  return proxied ?? member.ensAvatarUrl ?? undefined;
+};
 
 const getMemberAvatarFallback = (member: DirectoryMemberData) =>
   getMemberPrimaryLabel(member)?.slice(0, 2)?.toUpperCase();
