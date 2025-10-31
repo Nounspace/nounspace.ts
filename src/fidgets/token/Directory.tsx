@@ -14,6 +14,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/atoms/avatar";
+import BoringAvatar from "boring-avatars";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
@@ -186,7 +187,7 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
     },
     {
       fieldName: "include",
-      displayName: "Include",
+      displayName: "Filter",
       default: "holdersWithFarcasterAccount",
       required: true,
       inputSelector: (props) => (
@@ -293,7 +294,23 @@ const sortMembers = (
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
-  const { network, contractAddress, sortBy, layoutStyle, include } = settings;
+  const { network, contractAddress } = settings;
+  // Local view state (defaults from settings)
+  const [currentSort, setCurrentSort] = useState<DirectorySortOption>(
+    settings.sortBy,
+  );
+  const [currentLayout, setCurrentLayout] = useState<DirectoryLayoutStyle>(
+    settings.layoutStyle,
+  );
+  const [currentFilter, setCurrentFilter] = useState<DirectoryIncludeOption>(
+    settings.include,
+  );
+  // Keep defaults in sync if the fidget settings change
+  useEffect(() => {
+    setCurrentSort(settings.sortBy);
+    setCurrentLayout(settings.layoutStyle);
+    setCurrentFilter(settings.include);
+  }, [settings.include, settings.layoutStyle, settings.sortBy]);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const isConfigured = normalizedAddress.length === 42;
 
@@ -415,7 +432,10 @@ const Directory: React.FC<
         throw new Error(json.error?.message || "Failed to load directory");
       }
 
-      const sortedMembers = sortMembers(json.value.members ?? [], sortBy);
+      const sortedMembers = sortMembers(
+        json.value.members ?? [],
+        settings.sortBy,
+      );
       const timestamp = new Date().toISOString();
 
       await persistDataIfChanged({
@@ -439,7 +459,7 @@ const Directory: React.FC<
     network,
     normalizedAddress,
     persistDataIfChanged,
-    sortBy,
+    settings.sortBy,
   ]);
 
   useEffect(() => {
@@ -449,17 +469,17 @@ const Directory: React.FC<
   }, [fetchDirectory, isRefreshing, shouldRefresh]);
 
   const displayedMembers = useMemo(() => {
-    const members = sortMembers(directoryData.members ?? [], sortBy);
+    const members = sortMembers(directoryData.members ?? [], currentSort);
 
-    if (include === "holdersWithFarcasterAccount") {
+    if (currentFilter === "holdersWithFarcasterAccount") {
       return members.filter((member) => Boolean(member.username));
     }
 
     return members;
-  }, [directoryData.members, include, sortBy]);
+  }, [directoryData.members, currentFilter, currentSort]);
 
   const emptyStateMessage =
-    include === "allHolders"
+    currentFilter === "allHolders"
       ? "No holders found for this token yet."
       : "No Farcaster profiles found for this token yet.";
 
@@ -517,6 +537,34 @@ const Directory: React.FC<
         </div>
       </div>
 
+      {/* View controls */}
+      <div className="flex flex-wrap items-center gap-3 border-b border-black/5 px-4 py-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="uppercase tracking-wide text-muted-foreground">Style</span>
+          <SettingsSelector
+            onChange={(value) => setCurrentLayout(value as DirectoryLayoutStyle)}
+            value={currentLayout}
+            settings={LAYOUT_OPTIONS as unknown as { name: string; value: string }[]}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="uppercase tracking-wide text-muted-foreground">Sort by</span>
+          <SettingsSelector
+            onChange={(value) => setCurrentSort(value as DirectorySortOption)}
+            value={currentSort}
+            settings={SORT_OPTIONS as unknown as { name: string; value: string }[]}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="uppercase tracking-wide text-muted-foreground">Filter</span>
+          <SettingsSelector
+            onChange={(value) => setCurrentFilter(value as DirectoryIncludeOption)}
+            value={currentFilter}
+            settings={INCLUDE_OPTIONS as unknown as { name: string; value: string }[]}
+          />
+        </div>
+      </div>
+
       {error && (
         <div className="m-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
           {error}
@@ -532,12 +580,12 @@ const Directory: React.FC<
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             {emptyStateMessage}
           </div>
-        ) : layoutStyle === "list" ? (
+        ) : currentLayout === "list" ? (
           <ul className="divide-y divide-black/5">
             {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
               const fallbackHref =
-                include === "allHolders" && !member.username
+                currentFilter === "allHolders" && !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
@@ -551,20 +599,28 @@ const Directory: React.FC<
                         alt={primaryLabel}
                       />
                       <AvatarFallback className="bg-black/5 text-xs">
-                        {getMemberAvatarFallback(member)}
+                        {!member.username && !member.ensName ? (
+                          <BoringAvatar
+                            size={44}
+                            name={member.address}
+                            variant="beam"
+                          />
+                        ) : (
+                          getMemberAvatarFallback(member)
+                        )}
                       </AvatarFallback>
                     </Avatar>
                   </ProfileLink>
-                  <div className="flex flex-1 flex-col gap-1 text-sm">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
                     <ProfileLink
                       username={member.username}
                       fallbackHref={fallbackHref}
-                      className="font-semibold text-foreground hover:underline"
+                      className="block truncate font-semibold text-foreground hover:underline"
                     >
                       {primaryLabel}
                     </ProfileLink>
                     {secondaryLabel && (
-                      <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
@@ -572,11 +628,9 @@ const Directory: React.FC<
                       {member.balanceFormatted}
                       {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                     </span>
-                    <span>
-                      {typeof member.followers === "number"
-                        ? `${member.followers.toLocaleString()} followers`
-                        : "Followers n/a"}
-                    </span>
+                    {typeof member.followers === "number" && (
+                      <span>{`${member.followers.toLocaleString()} followers`}</span>
+                    )}
                     {lastActivity && <span>{lastActivity}</span>}
                   </div>
                 </li>
@@ -588,7 +642,7 @@ const Directory: React.FC<
             {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
               const fallbackHref =
-                include === "allHolders" && !member.username
+                currentFilter === "allHolders" && !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
@@ -607,13 +661,21 @@ const Directory: React.FC<
                         alt={primaryLabel}
                       />
                       <AvatarFallback className="bg-black/5 text-sm font-semibold">
-                        {getMemberAvatarFallback(member)}
+                        {!member.username && !member.ensName ? (
+                          <BoringAvatar
+                            size={48}
+                            name={member.address}
+                            variant="beam"
+                          />
+                        ) : (
+                          getMemberAvatarFallback(member)
+                        )}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col text-sm">
-                      <span className="font-semibold text-foreground">{primaryLabel}</span>
+                    <div className="min-w-0 flex flex-col text-sm">
+                      <span className="block truncate font-semibold text-foreground">{primaryLabel}</span>
                       {secondaryLabel && (
-                        <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                       )}
                     </div>
                   </div>
@@ -625,14 +687,14 @@ const Directory: React.FC<
                         {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                       </dd>
                     </div>
-                    <div>
-                      <dt className="uppercase tracking-wide">Followers</dt>
-                      <dd className="font-semibold text-foreground">
-                        {typeof member.followers === "number"
-                          ? member.followers.toLocaleString()
-                          : "n/a"}
-                      </dd>
-                    </div>
+                    {typeof member.followers === "number" && (
+                      <div>
+                        <dt className="uppercase tracking-wide">Followers</dt>
+                        <dd className="font-semibold text-foreground">
+                          {member.followers.toLocaleString()}
+                        </dd>
+                      </div>
+                    )}
                     {lastActivity && (
                       <div className="col-span-2 text-xs">
                         <dt className="uppercase tracking-wide">Last activity</dt>
