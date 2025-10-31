@@ -1,0 +1,113 @@
+import { SpaceConfig } from "@/app/(spaces)/Space";
+import { cloneDeep } from "lodash";
+import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "../../initialSpaceConfig";
+
+const createInitialProposalSpaceConfigForProposalId = (
+	proposalId: string,
+): Omit<SpaceConfig, "isEditable"> => {
+	const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+
+	config.theme = {
+		id: "clanker-proposal-theme",
+		name: "Clanker Proposal Theme",
+		properties: {
+			font: "Inter, system-ui, sans-serif",
+			fontColor: "#ffffff",
+			headingsFont: "Inter, system-ui, sans-serif",
+			headingsFontColor: "#ff6b6b",
+			background:
+				"linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%)",
+			backgroundHTML: "",
+			musicURL: "",
+			fidgetBackground: "#ff6b6b",
+			fidgetBorderWidth: "2px",
+			fidgetBorderColor: "#ff6b6b",
+			fidgetShadow: "0 6px 24px rgba(255, 107, 107, 0.3)",
+			fidgetBorderRadius: "16px",
+			gridSpacing: "20",
+		},
+	};
+
+	config.fidgetInstanceDatums = {
+		text: {
+			id: "text",
+			fidgetType: "text",
+			config: {
+				data: { proposalId },
+				editable: true,
+				settings: {
+					showProposalText: true,
+					showTitle: true,
+					showDescription: true,
+				},
+			},
+		},
+		SnapShot: {
+			id: "SnapShot",
+			fidgetType: "SnapShot",
+			config: {
+				data: { proposalId },
+				editable: true,
+				settings: {
+					showVoting: true,
+					showResults: true,
+					showVoteCount: true,
+				},
+			},
+		},
+		feed: {
+			id: "feed",
+			fidgetType: "feed",
+			config: {
+				data: { proposalId },
+				editable: true,
+				settings: {
+					showProposalDiscussions: true,
+					maxCasts: 15,
+				},
+			},
+		},
+		links: {
+			id: "links",
+			fidgetType: "links",
+			config: {
+				data: { proposalId },
+				editable: true,
+				settings: {
+					showProposalLinks: true,
+					showExternalVoting: true,
+				},
+			},
+		},
+		gallery: {
+			id: "gallery",
+			fidgetType: "gallery",
+			config: {
+				data: { proposalId },
+				editable: true,
+				settings: {
+					showProposalImages: true,
+					maxImages: 8,
+				},
+			},
+		},
+	};
+
+	const layoutItems = [
+		{ w: 8, h: 4, x: 0, y: 0, i: "text" },
+		{ w: 4, h: 4, x: 8, y: 0, i: "SnapShot" },
+		{ w: 6, h: 4, x: 0, y: 4, i: "feed" },
+		{ w: 6, h: 4, x: 6, y: 4, i: "links" },
+		{ w: 12, h: 3, x: 0, y: 8, i: "gallery" },
+	];
+
+	const layoutConfig = getLayoutConfig(config.layoutDetails);
+	layoutConfig.layout = layoutItems;
+
+	config.tabNames = ["Proposal"];
+
+	return config;
+};
+
+export default createInitialProposalSpaceConfigForProposalId;
