@@ -9,6 +9,9 @@ import {
   getAllMarkdownFiles,
   PostData,
 } from "@/common/data/explore/loadExploreMarkdown";
+
+// Mark route as dynamic to avoid build-time Supabase calls
+export const dynamic = 'force-dynamic';
 import {
   tabContentClasses,
   tabListClasses,

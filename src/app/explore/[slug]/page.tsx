@@ -8,6 +8,9 @@ import {
 import { isNull, isObject, isUndefined, map } from "lodash";
 import Image from "next/image";
 
+// Mark route as dynamic to avoid build-time Supabase calls
+export const dynamic = 'force-dynamic';
+
 type ExplorePost = {
   title: string;
   image: string;
@@ -33,8 +36,15 @@ function isExplorePost(maybe: unknown): maybe is ExplorePost {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllSlugs();
-  return map(slugs, (s) => ({ slug: s }));
+  try {
+    const slugs = await getAllSlugs();
+    return map(slugs, (s) => ({ slug: s }));
+  } catch (error) {
+    // During build, Supabase may not be available
+    // Return empty array - routes will be generated on-demand
+    console.warn('Could not fetch explore slugs during build:', error);
+    return [];
+  }
 }
 
 const getPostOrSlug = async (

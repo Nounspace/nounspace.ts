@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { JSDOM } from "jsdom";
+
+// Mark route as dynamic to prevent build-time execution
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -67,18 +70,62 @@ export async function GET(request: NextRequest) {
     }
 
     const html = await response.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
 
-    // Extract OpenGraph metadata
+    // Extract meta content using regex (lightweight alternative to jsdom)
+    // Handles both single and double quotes, escaped quotes, and whitespace variations
     const getMetaContent = (property: string): string | null => {
-      const element = document.querySelector(`meta[property="${property}"], meta[name="${property}"]`);
-      return element?.getAttribute("content") || null;
+      // Escape special regex characters in property name
+      const escapedProperty = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // Match meta tags with property or name attribute, handling various quote styles
+      // Supports: property="value", property='value', property=value
+      const patterns = [
+        // Double quotes
+        new RegExp(`<meta[^>]+(?:property|name)=["']${escapedProperty}["'][^>]+content=["']([^"']*)["']`, 'is'),
+        // Single quotes
+        new RegExp(`<meta[^>]+(?:property|name)=['"]${escapedProperty}['"][^>]+content=['"]([^'"]*)['"]`, 'is'),
+        // Content attribute first
+        new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']${escapedProperty}["']`, 'is'),
+        // Content attribute first, single quotes
+        new RegExp(`<meta[^>]+content=['"]([^'"]*)['"'][^>]+(?:property|name)=['"]${escapedProperty}['"]`, 'is'),
+      ];
+      
+      for (const pattern of patterns) {
+        const match = html.match(pattern);
+        if (match && match[1]) {
+          // Decode HTML entities
+          return match[1]
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .trim();
+        }
+      }
+      return null;
+    };
+
+    // Extract title tag content
+    const getTitle = (): string | null => {
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/is);
+      if (titleMatch && titleMatch[1]) {
+        return titleMatch[1]
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&nbsp;/g, ' ')
+          .trim();
+      }
+      return null;
     };
 
     const title = getMetaContent("og:title") || 
                   getMetaContent("twitter:title") || 
-                  document.querySelector("title")?.textContent || 
+                  getTitle() || 
                   null;
 
     const description = getMetaContent("og:description") || 
