@@ -219,6 +219,80 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
   polygon: "https://polygonscan.com/address/",
 };
 
+const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
+const ENS_BADGE_SRC = "/images/ens.png"; // place provided ENS icon here
+
+const FarcasterProfileURL = (username?: string | null) =>
+  username ? `http://farcaster.xyz/${username}` : null;
+
+const EnsProfileURL = (ensName?: string | null) =>
+  ensName ? `https://app.ens.domains/${ensName}` : null;
+
+type BadgeIconsProps = {
+  username?: string | null;
+  ensName?: string | null;
+  size?: number; // px
+  gapClassName?: string;
+};
+
+const BadgeIcons: React.FC<BadgeIconsProps> = ({
+  username,
+  ensName,
+  size = 16,
+  gapClassName,
+}) => {
+  const farcasterUrl = FarcasterProfileURL(username);
+  const ensUrl = EnsProfileURL(ensName);
+
+  if (!farcasterUrl && !ensUrl) return null;
+
+  const dim = `${size}px`;
+  const imgClass = "rounded-full object-cover ring-1 ring-black/10";
+
+  return (
+    <div className={mergeClasses("flex items-center gap-1", gapClassName)}>
+      {farcasterUrl && (
+        <a
+          href={farcasterUrl}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="View Farcaster profile"
+          title="Farcaster"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={FARCASTER_BADGE_SRC}
+            alt="Farcaster"
+            width={size}
+            height={size}
+            style={{ width: dim, height: dim }}
+            className={imgClass}
+          />
+        </a>
+      )}
+      {ensUrl && (
+        <a
+          href={ensUrl}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="View ENS profile"
+          title="ENS"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={ENS_BADGE_SRC}
+            alt="ENS"
+            width={size}
+            height={size}
+            style={{ width: dim, height: dim }}
+            className={imgClass}
+          />
+        </a>
+      )}
+    </div>
+  );
+};
+
 const getBlockExplorerLink = (network: DirectoryNetwork, address: string) =>
   `${blockExplorerForNetwork[network]}${address}`;
 
@@ -612,13 +686,20 @@ const Directory: React.FC<
                     </Avatar>
                   </ProfileLink>
                   <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
-                    <ProfileLink
-                      username={member.username}
-                      fallbackHref={fallbackHref}
-                      className="block truncate font-semibold text-foreground hover:underline"
-                    >
-                      {primaryLabel}
-                    </ProfileLink>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <ProfileLink
+                        username={member.username}
+                        fallbackHref={fallbackHref}
+                        className="block truncate font-semibold text-foreground hover:underline"
+                      >
+                        {primaryLabel}
+                      </ProfileLink>
+                      <BadgeIcons
+                        username={member.username}
+                        ensName={member.ensName}
+                        size={16}
+                      />
+                    </div>
                     {secondaryLabel && (
                       <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                     )}
@@ -648,61 +729,67 @@ const Directory: React.FC<
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
               return (
-                <ProfileLink
-                  key={member.address}
-                  username={member.username}
-                  fallbackHref={fallbackHref}
-                  className="flex h-full flex-col gap-3 rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-12">
-                      <AvatarImage
-                        src={getMemberAvatarSrc(member)}
-                        alt={primaryLabel}
-                      />
-                      <AvatarFallback className="bg-black/5 text-sm font-semibold">
-                        {!member.username && !member.ensName ? (
-                          <BoringAvatar
-                            size={48}
-                            name={member.address}
-                            variant="beam"
-                          />
-                        ) : (
-                          getMemberAvatarFallback(member)
+                <div key={member.address} className="relative h-full">
+                  {/* Card content as link */}
+                  <ProfileLink
+                    username={member.username}
+                    fallbackHref={fallbackHref}
+                    className="flex h-full flex-col gap-3 rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-12">
+                        <AvatarImage
+                          src={getMemberAvatarSrc(member)}
+                          alt={primaryLabel}
+                        />
+                        <AvatarFallback className="bg-black/5 text-sm font-semibold">
+                          {!member.username && !member.ensName ? (
+                            <BoringAvatar
+                              size={48}
+                              name={member.address}
+                              variant="beam"
+                            />
+                          ) : (
+                            getMemberAvatarFallback(member)
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex flex-col text-sm">
+                        <span className="block truncate font-semibold text-foreground">{primaryLabel}</span>
+                        {secondaryLabel && (
+                          <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                         )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex flex-col text-sm">
-                      <span className="block truncate font-semibold text-foreground">{primaryLabel}</span>
-                      {secondaryLabel && (
-                        <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                    <div>
-                      <dt className="uppercase tracking-wide">Holdings</dt>
-                      <dd className="font-semibold text-foreground">
-                        {member.balanceFormatted}
-                        {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
-                      </dd>
-                    </div>
-                    {typeof member.followers === "number" && (
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
                       <div>
-                        <dt className="uppercase tracking-wide">Followers</dt>
+                        <dt className="uppercase tracking-wide">Holdings</dt>
                         <dd className="font-semibold text-foreground">
-                          {member.followers.toLocaleString()}
+                          {member.balanceFormatted}
+                          {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                         </dd>
                       </div>
-                    )}
-                    {lastActivity && (
-                      <div className="col-span-2 text-xs">
-                        <dt className="uppercase tracking-wide">Last activity</dt>
-                        <dd>{lastActivity}</dd>
-                      </div>
-                    )}
-                  </dl>
-                </ProfileLink>
+                      {typeof member.followers === "number" && (
+                        <div>
+                          <dt className="uppercase tracking-wide">Followers</dt>
+                          <dd className="font-semibold text-foreground">
+                            {member.followers.toLocaleString()}
+                          </dd>
+                        </div>
+                      )}
+                      {lastActivity && (
+                        <div className="col-span-2 text-xs">
+                          <dt className="uppercase tracking-wide">Last activity</dt>
+                          <dd>{lastActivity}</dd>
+                        </div>
+                      )}
+                    </dl>
+                  </ProfileLink>
+                  {/* Badges overlay top-right */}
+                  <div className="pointer-events-auto absolute right-2 top-2 z-10 flex items-center gap-1">
+                    <BadgeIcons username={member.username} ensName={member.ensName} size={18} />
+                  </div>
+                </div>
               );
             })}
           </div>
