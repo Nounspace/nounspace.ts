@@ -220,7 +220,7 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
 };
 
 const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
-const ENS_BADGE_SRC = "/images/ens.png"; // place provided ENS icon here
+const ENS_BADGE_SRC = "/images/ens.svg"; // ENS badge SVG placed in public/images
 
 const FarcasterProfileURL = (username?: string | null) =>
   username ? `http://farcaster.xyz/${username}` : null;

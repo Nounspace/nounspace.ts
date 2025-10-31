@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ENS logo">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6CC1FF"/>
+      <stop offset="100%" stop-color="#6B8AFF"/>
+    </linearGradient>
+    <clipPath id="c">
+      <circle cx="128" cy="128" r="128"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="256" height="256" fill="url(#g)"/>
+    <!-- Simplified ENS mark -->
+    <g fill="#ffffff" transform="translate(128 128)">
+      <path d="M-68,-12 L-8,-104 L-8,-44 L-56,4 Z"/>
+      <path d="M68,12 L8,104 L8,44 L56,-4 Z"/>
+    </g>
+  </g>
+</svg>
+
