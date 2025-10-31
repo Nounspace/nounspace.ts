@@ -286,12 +286,11 @@ async function fetchMoralisTokenHolders(
   while (holders.length < params.pageSize) {
     const remaining = params.pageSize - holders.length;
     const url = new URL(
-      `${baseUrl}/erc20/${params.contractAddress}/holders`,
+      `${baseUrl}/erc20/${params.contractAddress}/owners`,
     );
     url.searchParams.set("chain", chainCandidates[chainIndex] ?? getMoralisChain(params.network));
     url.searchParams.set("limit", String(Math.min(remaining, 100)));
-    url.searchParams.set("order", "desc");
-    url.searchParams.set("disable_total", "true");
+    url.searchParams.set("order", "DESC");
     if (cursor) url.searchParams.set("cursor", cursor);
 
     const response = await deps.fetchFn(url.toString(), {
