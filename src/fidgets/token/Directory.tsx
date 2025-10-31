@@ -32,6 +32,7 @@ import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 const STALE_AFTER_MS = 60 * 60 * 1000;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
+export type DirectoryAssetType = "token" | "nft";
 export type DirectorySortOption =
   | "tokenHoldings"
   | "followers"
@@ -58,6 +59,7 @@ export interface DirectoryMemberData {
 export interface DirectoryFetchContext {
   network: DirectoryNetwork;
   contractAddress: string;
+  assetType: DirectoryAssetType;
 }
 
 export interface DirectoryFidgetData extends FidgetData {
@@ -72,6 +74,7 @@ export type DirectoryFidgetSettings = FidgetSettings &
   FidgetSettingsStyle & {
     network: DirectoryNetwork;
     contractAddress: string;
+    assetType: DirectoryAssetType;
     sortBy: DirectorySortOption;
     layoutStyle: DirectoryLayoutStyle;
     include: DirectoryIncludeOption;
@@ -95,6 +98,11 @@ const SORT_OPTIONS = [
 const LAYOUT_OPTIONS = [
   { name: "Cards", value: "cards" },
   { name: "List", value: "list" },
+] as const;
+
+const ASSET_TYPE_OPTIONS = [
+  { name: "Token", value: "token" },
+  { name: "NFT", value: "nft" },
 ] as const;
 
 const INCLUDE_OPTIONS = [
@@ -135,6 +143,22 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
             {...props}
             className="[&_label]:!normal-case"
             settings={NETWORK_OPTIONS}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "assetType",
+      displayName: "Type",
+      default: "token",
+      required: true,
+      inputSelector: (props) => (
+        <WithMargin>
+          <SettingsSelector
+            {...props}
+            className="[&_label]:!normal-case"
+            settings={ASSET_TYPE_OPTIONS}
           />
         </WithMargin>
       ),
@@ -372,6 +396,7 @@ const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
   const { network, contractAddress } = settings;
+  const { assetType } = settings;
   // Local view state (defaults from settings)
   const [currentSort, setCurrentSort] = useState<DirectorySortOption>(
     settings.sortBy,
@@ -440,7 +465,8 @@ const Directory: React.FC<
     if (
       directoryData.fetchContext.network !== network ||
       normalizeAddress(directoryData.fetchContext.contractAddress) !==
-        normalizedAddress
+        normalizedAddress ||
+      directoryData.fetchContext.assetType !== assetType
     ) {
       return true;
     }
@@ -490,7 +516,7 @@ const Directory: React.FC<
 
     try {
       const response = await fetch(
-        `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}`,
+        `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}&assetType=${assetType}`,
         { signal: controller.signal },
       );
 
@@ -537,6 +563,7 @@ const Directory: React.FC<
     normalizedAddress,
     persistDataIfChanged,
     settings.sortBy,
+    assetType,
   ]);
 
   useEffect(() => {
@@ -580,7 +607,7 @@ const Directory: React.FC<
           Connect a contract address to build the directory.
         </p>
         <p className="max-w-[40ch] text-xs text-muted-foreground/80">
-          Provide an ERC-20 contract address and network to surface the Farcaster profiles holding that token.
+          Provide an ERC-20 token or NFT contract address and network to surface the holders with Farcaster profiles.
         </p>
       </div>
     );
