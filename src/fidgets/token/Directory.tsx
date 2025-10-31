@@ -14,7 +14,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/atoms/avatar";
-import BoringAvatar from "boring-avatars";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
@@ -237,17 +236,8 @@ const getMemberSecondaryLabel = (member: DirectoryMemberData) => {
   return null;
 };
 
-const getMemberAvatarSrc = (member: DirectoryMemberData) => {
-  if (member.pfpUrl) {
-    return member.pfpUrl;
-  }
-
-  if (member.ensAvatarUrl) {
-    return member.ensAvatarUrl;
-  }
-
-  return undefined;
-};
+const getMemberAvatarSrc = (member: DirectoryMemberData) =>
+  member.pfpUrl ?? member.ensAvatarUrl ?? undefined;
 
 const getMemberAvatarFallback = (member: DirectoryMemberData) =>
   getMemberPrimaryLabel(member)?.slice(0, 2)?.toUpperCase();
@@ -468,10 +458,6 @@ const Directory: React.FC<
     return members;
   }, [directoryData.members, include, sortBy]);
 
-  const includeFarcasterOnly = include === "holdersWithFarcasterAccount";
-  const holdingsTitle = "HOLDINGS";
-  const headerTitle = includeFarcasterOnly ? "HOLDERS ON FARCASTER" : "COMMUNITY DIRECTORY";
-
   const emptyStateMessage =
     include === "allHolders"
       ? "No holders found for this token yet."
@@ -507,8 +493,12 @@ const Directory: React.FC<
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
-          <span className="font-semibold text-foreground">{headerTitle}</span>
-          <span className="text-muted-foreground/80 capitalize">{network}</span>
+          <span className="font-semibold text-foreground">Community Directory</span>
+          {directoryData.tokenSymbol && (
+            <span className="text-muted-foreground/80">
+              {directoryData.tokenSymbol} • {network}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3 text-[11px]">
           {lastUpdatedLabel && (
@@ -552,43 +542,29 @@ const Directory: React.FC<
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
-              const avatarSrc = getMemberAvatarSrc(member);
-              const shouldRenderBoringAvatar = !avatarSrc;
               return (
                 <li key={member.address} className="flex items-center gap-3 py-3">
                   <ProfileLink username={member.username} fallbackHref={fallbackHref}>
                     <Avatar className="size-11 shrink-0">
-                      {avatarSrc ? (
-                        <AvatarImage src={avatarSrc} alt={primaryLabel} />
-                      ) : null}
-                      <AvatarFallback
-                        className={mergeClasses(
-                          "bg-black/5 text-xs",
-                          shouldRenderBoringAvatar && "bg-transparent p-0",
-                        )}
-                      >
-                        {shouldRenderBoringAvatar ? (
-                          <BoringAvatar
-                            name={normalizeAddress(member.address)}
-                            variant="beam"
-                            size="100%"
-                          />
-                        ) : (
-                          getMemberAvatarFallback(member)
-                        )}
+                      <AvatarImage
+                        src={getMemberAvatarSrc(member)}
+                        alt={primaryLabel}
+                      />
+                      <AvatarFallback className="bg-black/5 text-xs">
+                        {getMemberAvatarFallback(member)}
                       </AvatarFallback>
                     </Avatar>
                   </ProfileLink>
-                  <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
+                  <div className="flex flex-1 flex-col gap-1 text-sm">
                     <ProfileLink
                       username={member.username}
                       fallbackHref={fallbackHref}
-                      className="block truncate font-semibold text-foreground hover:underline"
+                      className="font-semibold text-foreground hover:underline"
                     >
                       {primaryLabel}
                     </ProfileLink>
                     {secondaryLabel && (
-                      <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
+                      <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
@@ -596,9 +572,11 @@ const Directory: React.FC<
                       {member.balanceFormatted}
                       {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                     </span>
-                    {typeof member.followers === "number" && (
-                      <span>{`${member.followers.toLocaleString()} followers`}</span>
-                    )}
+                    <span>
+                      {typeof member.followers === "number"
+                        ? `${member.followers.toLocaleString()} followers`
+                        : "Followers n/a"}
+                    </span>
                     {lastActivity && <span>{lastActivity}</span>}
                   </div>
                 </li>
@@ -615,60 +593,46 @@ const Directory: React.FC<
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
-              const avatarSrc = getMemberAvatarSrc(member);
-              const shouldRenderBoringAvatar = !avatarSrc;
               return (
                 <ProfileLink
                   key={member.address}
                   username={member.username}
                   fallbackHref={fallbackHref}
-                  className="flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
+                  className="flex h-full flex-col gap-3 rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="size-12">
-                      {avatarSrc ? (
-                        <AvatarImage src={avatarSrc} alt={primaryLabel} />
-                      ) : null}
-                      <AvatarFallback
-                        className={mergeClasses(
-                          "bg-black/5 text-sm font-semibold",
-                          shouldRenderBoringAvatar && "bg-transparent p-0",
-                        )}
-                      >
-                        {shouldRenderBoringAvatar ? (
-                          <BoringAvatar
-                            name={normalizeAddress(member.address)}
-                            variant="beam"
-                            size="100%"
-                          />
-                        ) : (
-                          getMemberAvatarFallback(member)
-                        )}
+                      <AvatarImage
+                        src={getMemberAvatarSrc(member)}
+                        alt={primaryLabel}
+                      />
+                      <AvatarFallback className="bg-black/5 text-sm font-semibold">
+                        {getMemberAvatarFallback(member)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex min-w-0 flex-col text-sm">
-                      <span className="truncate font-semibold text-foreground">{primaryLabel}</span>
+                    <div className="flex flex-col text-sm">
+                      <span className="font-semibold text-foreground">{primaryLabel}</span>
                       {secondaryLabel && (
-                        <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
+                        <span className="text-xs text-muted-foreground">{secondaryLabel}</span>
                       )}
                     </div>
                   </div>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
                     <div>
-                      <dt className="uppercase tracking-wide">{holdingsTitle}</dt>
+                      <dt className="uppercase tracking-wide">Holdings</dt>
                       <dd className="font-semibold text-foreground">
                         {member.balanceFormatted}
                         {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                       </dd>
                     </div>
-                    {typeof member.followers === "number" && (
-                      <div>
-                        <dt className="uppercase tracking-wide">Followers</dt>
-                        <dd className="font-semibold text-foreground">
-                          {member.followers.toLocaleString()}
-                        </dd>
-                      </div>
-                    )}
+                    <div>
+                      <dt className="uppercase tracking-wide">Followers</dt>
+                      <dd className="font-semibold text-foreground">
+                        {typeof member.followers === "number"
+                          ? member.followers.toLocaleString()
+                          : "n/a"}
+                      </dd>
+                    </div>
                     {lastActivity && (
                       <div className="col-span-2 text-xs">
                         <dt className="uppercase tracking-wide">Last activity</dt>
