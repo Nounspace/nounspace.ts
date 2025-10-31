@@ -30,6 +30,7 @@ import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 
 const STALE_AFTER_MS = 60 * 60 * 1000;
+const PAGE_SIZE = 100;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
 export type DirectoryAssetType = "token" | "nft";
@@ -407,11 +408,13 @@ const Directory: React.FC<
   const [currentFilter, setCurrentFilter] = useState<DirectoryIncludeOption>(
     settings.include,
   );
+  const [currentPage, setCurrentPage] = useState<number>(1);
   // Keep defaults in sync if the fidget settings change
   useEffect(() => {
     setCurrentSort(settings.sortBy);
     setCurrentLayout(settings.layoutStyle);
     setCurrentFilter(settings.include);
+    setCurrentPage(1);
   }, [settings.include, settings.layoutStyle, settings.sortBy]);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const isConfigured = normalizedAddress.length === 42;
@@ -448,6 +451,11 @@ const Directory: React.FC<
       abortControllerRef.current?.abort();
     };
   }, []);
+
+  // Reset or clamp page when filter/sort/data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentFilter, currentSort]);
 
   const shouldRefresh = useMemo(() => {
     if (!isConfigured) {
@@ -516,7 +524,7 @@ const Directory: React.FC<
 
     try {
       const response = await fetch(
-        `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}&assetType=${assetType}`,
+        `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}&assetType=${assetType}&pageSize=1000`,
         { signal: controller.signal },
       );
 
@@ -548,6 +556,7 @@ const Directory: React.FC<
         lastUpdatedTimestamp: timestamp,
         fetchContext: json.value.fetchContext,
       });
+      setCurrentPage(1);
     } catch (err) {
       if ((err as Error).name === "AbortError") {
         return;
@@ -572,20 +581,34 @@ const Directory: React.FC<
     }
   }, [fetchDirectory, isRefreshing, shouldRefresh]);
 
-  const displayedMembers = useMemo(() => {
+  const filteredSortedMembers = useMemo(() => {
     const members = sortMembers(directoryData.members ?? [], currentSort);
-
     if (currentFilter === "holdersWithFarcasterAccount") {
       return members.filter((member) => Boolean(member.username));
     }
-
     return members;
   }, [directoryData.members, currentFilter, currentSort]);
 
+  const pageCount = useMemo(() => {
+    const total = filteredSortedMembers.length;
+    return Math.max(1, Math.ceil(total / PAGE_SIZE));
+  }, [filteredSortedMembers.length]);
+
+  // Clamp current page if total changes
+  useEffect(() => {
+    setCurrentPage((p) => Math.min(p, pageCount));
+  }, [pageCount]);
+
+  const displayedMembers = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    return filteredSortedMembers.slice(start, end);
+  }, [filteredSortedMembers, currentPage]);
+
   const emptyStateMessage =
     currentFilter === "allHolders"
-      ? "No holders found for this token yet."
-      : "No Farcaster profiles found for this token yet.";
+      ? "No holders found for this asset yet."
+      : "No Farcaster profiles found for this asset yet.";
 
   const lastUpdatedLabel = useMemo(() => {
     if (!directoryData.lastUpdatedTimestamp) {
@@ -642,7 +665,7 @@ const Directory: React.FC<
       </div>
 
       {/* View controls */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-black/5 px-4 py-2 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="uppercase tracking-wide text-muted-foreground">Style</span>
           <SettingsSelector
@@ -665,6 +688,15 @@ const Directory: React.FC<
             onChange={(value) => setCurrentFilter(value as DirectoryIncludeOption)}
             value={currentFilter}
             settings={INCLUDE_OPTIONS as unknown as { name: string; value: string }[]}
+          />
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <PaginationControls
+            currentPage={currentPage}
+            pageCount={pageCount}
+            onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            onNext={() => setCurrentPage((p) => Math.min(pageCount, p + 1))}
+            totalCount={filteredSortedMembers.length}
           />
         </div>
       </div>
@@ -824,6 +856,18 @@ const Directory: React.FC<
             })}
           </div>
         )}
+        {/* Bottom pagination */}
+        {filteredSortedMembers.length > 0 && (
+          <div className="mt-4 flex items-center justify-end">
+            <PaginationControls
+              currentPage={currentPage}
+              pageCount={pageCount}
+              onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onNext={() => setCurrentPage((p) => Math.min(pageCount, p + 1))}
+              totalCount={filteredSortedMembers.length}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -860,6 +904,55 @@ const ProfileLink = ({ username, fallbackHref, className, children }: ProfileLin
     <a href={href} className={baseClassName} target="_blank" rel="noreferrer">
       {children}
     </a>
+  );
+};
+
+type PaginationControlsProps = {
+  currentPage: number;
+  pageCount: number;
+  onPrev: () => void;
+  onNext: () => void;
+  totalCount: number;
+};
+
+const PaginationControls: React.FC<PaginationControlsProps> = ({
+  currentPage,
+  pageCount,
+  onPrev,
+  onNext,
+  totalCount,
+}) => {
+  const start = (currentPage - 1) * PAGE_SIZE + 1;
+  const end = Math.min(totalCount, currentPage * PAGE_SIZE);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[11px] text-muted-foreground">
+        Showing {totalCount === 0 ? 0 : start}-{end} of {totalCount}
+      </span>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          aria-label="Previous page"
+          onClick={onPrev}
+          disabled={currentPage <= 1}
+          className="rounded-full border border-black/10 px-2 py-1 text-xs font-semibold text-foreground disabled:opacity-40"
+        >
+          Prev
+        </button>
+        <span className="text-[11px] text-muted-foreground">
+          Page {currentPage} / {pageCount}
+        </span>
+        <button
+          type="button"
+          aria-label="Next page"
+          onClick={onNext}
+          disabled={currentPage >= pageCount}
+          className="rounded-full border border-black/10 px-2 py-1 text-xs font-semibold text-foreground disabled:opacity-40"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   );
 };
 

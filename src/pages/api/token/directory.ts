@@ -23,7 +23,7 @@ const DIRECTORY_QUERY_SCHEMA = z.object({
   contractAddress: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/i, "Invalid contract address format"),
-  pageSize: z.coerce.number().int().positive().max(500).default(200),
+  pageSize: z.coerce.number().int().positive().max(1000).default(1000),
   // Whether to fetch ERC20 token holders or NFT owners
   assetType: z.enum(["token", "nft"]).default("token"),
 });
