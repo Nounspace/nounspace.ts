@@ -5,13 +5,34 @@ export const toFarcasterCdnUrl = (
   if (!url) return url;
   try {
     const u = new URL(url);
-    const alreadyProxied =
-      u.hostname.includes('wrpcd.net') && u.pathname.startsWith('/cdn-cgi/image/');
-    if (alreadyProxied) return url;
+
+    // Respect already-proxied Warpcast CDN URLs
+    if (
+      u.hostname.includes('wrpcd.net') &&
+      (u.pathname.startsWith('/cdn-cgi/image/') ||
+        u.pathname.startsWith('/cdn-cgi/imagedelivery/'))
+    ) {
+      return url;
+    }
 
     const isHttp = u.protocol === 'http:' || u.protocol === 'https:';
     if (!isHttp) return url; // don't touch data:, blob:, etc.
 
+    // Special handling for Cloudflare Images (imagedelivery.net)
+    if (u.hostname.endsWith('imagedelivery.net')) {
+      // Expected path: /<account_hash>/<image_id>/<variant>
+      const segments = u.pathname.split('/').filter(Boolean);
+      const account = segments[0];
+      const imageId = segments[1];
+      if (account && imageId) {
+        // Warpcast uses a different path format for CF Images
+        return `https://wrpcd.net/cdn-cgi/imagedelivery/${account}/${imageId}/${params}`;
+      }
+      // If we can't parse, fall back to original URL (safer than a broken proxy)
+      return url;
+    }
+
+    // Generic image proxy via Warpcast CDN
     return `https://wrpcd.net/cdn-cgi/image/${params}/${encodeURIComponent(url)}`;
   } catch (_err) {
     return url;
@@ -19,4 +40,3 @@ export const toFarcasterCdnUrl = (
 };
 
 export default toFarcasterCdnUrl;
-
