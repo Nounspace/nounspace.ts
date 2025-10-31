@@ -184,15 +184,30 @@ function extractOwnerBalanceRaw(owner: AlchemyNftOwner): string {
 
 // Moralis helpers and types
 function getMoralisChain(network: DirectoryNetwork): string {
+  // Prefer hex chain IDs for widest Moralis compatibility
   switch (network) {
     case "mainnet":
-      return "eth";
+      return "0x1"; // Ethereum mainnet
     case "polygon":
-      return "polygon";
+      return "0x89"; // Polygon mainnet
     case "base":
-      return "base";
+      return "0x2105"; // Base mainnet
     default:
-      return "eth";
+      return "0x1";
+  }
+}
+
+function getMoralisChainFallbacks(network: DirectoryNetwork): string[] {
+  // Try both hex and named identifiers for resilience
+  switch (network) {
+    case "mainnet":
+      return ["0x1", "eth"];
+    case "polygon":
+      return ["0x89", "polygon"];
+    case "base":
+      return ["0x2105", "base"];
+    default:
+      return ["0x1", "eth"];
   }
 }
 
@@ -259,22 +274,24 @@ async function fetchMoralisTokenHolders(
 }> {
   const apiKey = ensureMoralisApiKey();
   const baseUrl = "https://deep-index.moralis.io/api/v2.2";
-  const chain = getMoralisChain(params.network);
+  const chainCandidates = getMoralisChainFallbacks(params.network);
 
   const holders: AlchemyNftOwner[] = [];
   let tokenDecimals: number | null = null;
   let tokenSymbol: string | null = null;
   const updatedAt: string = new Date().toISOString();
   let cursor: string | undefined;
+  let chainIndex = 0;
 
   while (holders.length < params.pageSize) {
     const remaining = params.pageSize - holders.length;
     const url = new URL(
       `${baseUrl}/erc20/${params.contractAddress}/holders`,
     );
-    url.searchParams.set("chain", chain);
+    url.searchParams.set("chain", chainCandidates[chainIndex] ?? getMoralisChain(params.network));
     url.searchParams.set("limit", String(Math.min(remaining, 100)));
-    url.searchParams.set("order", "DESC");
+    url.searchParams.set("order", "desc");
+    url.searchParams.set("disable_total", "true");
     if (cursor) url.searchParams.set("cursor", cursor);
 
     const response = await deps.fetchFn(url.toString(), {
@@ -319,7 +336,11 @@ async function fetchMoralisTokenHolders(
 
     for (const entry of batch) {
       const address =
-        entry.address ?? entry.wallet_address ?? entry.owner_address ?? null;
+        entry.address ??
+        (entry as any).holder_address ??
+        entry.wallet_address ??
+        entry.owner_address ??
+        null;
       if (!address) continue;
       const raw =
         entry.balance ?? entry.total ?? entry.value ?? "0";
@@ -333,7 +354,16 @@ async function fetchMoralisTokenHolders(
 
     // Pagination
     cursor = (payload.cursor ?? payload.next ?? undefined) || undefined;
-    if (!cursor) break;
+    if (!cursor) {
+      // If we didn't get any results and there is another chain candidate, try it
+      if (holders.length === 0 && chainIndex + 1 < chainCandidates.length) {
+        chainIndex += 1;
+        // reset cursor and try again with next chain id
+        cursor = undefined;
+        continue;
+      }
+      break;
+    }
   }
 
   return {
@@ -355,19 +385,20 @@ async function fetchMoralisNftOwners(
 }> {
   const apiKey = ensureMoralisApiKey();
   const baseUrl = "https://deep-index.moralis.io/api/v2.2";
-  const chain = getMoralisChain(params.network);
+  const chainCandidates = getMoralisChainFallbacks(params.network);
 
   // Aggregate counts per owner
   const counts = new Map<string, bigint>();
   let tokenSymbol: string | null = null;
   const updatedAt: string = new Date().toISOString();
   let cursor: string | undefined;
+  let chainIndex = 0;
 
   while (counts.size < params.pageSize) {
     const url = new URL(
       `${baseUrl}/nft/${params.contractAddress}/owners`,
     );
-    url.searchParams.set("chain", chain);
+    url.searchParams.set("chain", chainCandidates[chainIndex] ?? getMoralisChain(params.network));
     url.searchParams.set("limit", String(100));
     if (cursor) url.searchParams.set("cursor", cursor);
 
@@ -410,7 +441,15 @@ async function fetchMoralisNftOwners(
     }
 
     cursor = (payload.cursor ?? payload.next ?? undefined) || undefined;
-    if (!cursor) break;
+    if (!cursor) {
+      // If no results and another chain candidate exists, try it
+      if (counts.size === 0 && chainIndex + 1 < chainCandidates.length) {
+        chainIndex += 1;
+        cursor = undefined;
+        continue;
+      }
+      break;
+    }
   }
 
   const holders: AlchemyNftOwner[] = Array.from(counts.entries()).map(

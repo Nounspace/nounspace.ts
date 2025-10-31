@@ -396,7 +396,7 @@ const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
   const { network, contractAddress } = settings;
-  const { assetType } = settings;
+  const assetType: DirectoryAssetType = (settings.assetType ?? "token") as DirectoryAssetType;
   // Local view state (defaults from settings)
   const [currentSort, setCurrentSort] = useState<DirectorySortOption>(
     settings.sortBy,
