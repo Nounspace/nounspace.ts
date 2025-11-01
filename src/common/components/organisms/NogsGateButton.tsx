@@ -57,6 +57,9 @@ const NogsGateButton = (props: ButtonProps) => {
       return true;
     }
     try {
+     console.log("[DEBUG] Checking nOGs for address:", address); 
+     console.log("[DEBUG] Using API:", `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`); 
+     console.log("[DEBUG] nOGs Contract:", NOGS_CONTRACT_ADDR);
       const { data } = await axios.get<AlchemyIsHolderOfContract>(
         `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
         {
@@ -66,8 +69,10 @@ const NogsGateButton = (props: ButtonProps) => {
           },
         },
       );
+      console.log("[DEBUG] API response for nOGs:", data);
       return data.isHolderOfContract;
-    } catch {
+    } catch (err) {
+      console.error("[DEBUG] Error checking nOGs:", err);
       return false;
     } finally {
       setNogsIsChecking(false);
@@ -143,13 +148,51 @@ const NogsGateButton = (props: ButtonProps) => {
       })
     : { data: undefined };
 
+  useEffect(() => {
+    if (spaceBalanceData) {
+      console.log("[DEBUG] SPACE balance:", Number(formatUnits(spaceBalanceData.value, spaceBalanceData.decimals)));
+      console.log("[DEBUG] SPACE contract address:", SPACE_CONTRACT_ADDR);
+      console.log("[DEBUG] Connected wallet:", walletAddress);
+    }
+  }, [spaceBalanceData, walletAddress]);
+
   const MIN_SPACE_TOKENS_FOR_UNLOCK = 1111;
   const userHoldEnoughSpace = spaceBalanceData
     ? Number(formatUnits(spaceBalanceData.value, spaceBalanceData.decimals)) >= MIN_SPACE_TOKENS_FOR_UNLOCK
     : false;
 
-
+  useEffect(() => {
+    console.log("[DEBUG] userHoldEnoughSpace:", userHoldEnoughSpace);
+    console.log("[DEBUG] hasNogs:", hasNogs);
+  }, [userHoldEnoughSpace, hasNogs]);
     
+  // NFT nOGs debug status
+  const [nogsCheckResult, setNogsCheckResult] = useState<string>("?");
+
+    // Automatically check nOGs on load
+  useEffect(() => {
+    async function checkNogsAuto() {
+      if (walletAddress) {
+        try {
+          const { data } = await axios.get(
+            `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
+            {
+              params: {
+                wallet: walletAddress,
+                contractAddress: NOGS_CONTRACT_ADDR,
+              },
+            },
+          );
+          setNogsCheckResult(data.isHolderOfContract ? "YES" : "NO"); // debug: "YES" if present, "NO" if not present
+          if (data.isHolderOfContract) setHasNogs(true); // Open the gate
+        } catch {
+         setNogsCheckResult("ERROR"); // debug: error in the request
+        }
+      }
+    }
+    checkNogsAuto();
+  }, [walletAddress, NOGS_CONTRACT_ADDR]);
+
   return (
     <>
       <Modal setOpen={setModalOpen} open={modalOpen} showClose>
