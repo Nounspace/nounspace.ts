@@ -43,8 +43,10 @@ export type DirectoryIncludeOption =
   | "holdersWithFarcasterAccount"
   | "allHolders";
 
-export type DirectorySource = "tokenHolders" | "farcasterChannel";
+export type DirectorySource = "tokenHolders" | "farcasterChannel" | "csv";
 export type DirectoryChannelFilterOption = "members" | "followers" | "all";
+export type CsvTypeOption = "address" | "fid" | "username";
+export type CsvSortOption = "followers" | "csvOrder";
 
 export interface DirectoryMemberData {
   address: string;
@@ -67,6 +69,9 @@ export interface DirectoryFetchContext {
   assetType?: DirectoryAssetType;
   channelName?: string;
   channelFilter?: DirectoryChannelFilterOption;
+  csvUploadedAt?: string;
+  csvType?: CsvTypeOption;
+  csvSortBy?: CsvSortOption;
 }
 
 export interface DirectoryFidgetData extends FidgetData {
@@ -88,6 +93,10 @@ export type DirectoryFidgetSettings = FidgetSettings &
     include: DirectoryIncludeOption;
     channelName?: string;
     channelFilter?: DirectoryChannelFilterOption;
+    csvType?: CsvTypeOption;
+    csvSortBy?: CsvSortOption;
+    csvContent?: string; // raw csv text
+    csvUploadedAt?: string; // iso timestamp
   };
 
 const NETWORK_OPTIONS = [
@@ -129,6 +138,7 @@ const INCLUDE_OPTIONS = [
 const SOURCE_OPTIONS = [
   { name: "Token Holders", value: "tokenHolders" },
   { name: "Farcaster Channel", value: "farcasterChannel" },
+  { name: "CSV", value: "csv" },
 ] as const satisfies ReadonlyArray<{
   name: string;
   value: DirectorySource;
@@ -141,6 +151,23 @@ const CHANNEL_FILTER_OPTIONS = [
 ] as const satisfies ReadonlyArray<{
   name: string;
   value: DirectoryChannelFilterOption;
+}>;
+
+const CSV_TYPE_OPTIONS = [
+  { name: "Address", value: "address" },
+  { name: "FID", value: "fid" },
+  { name: "Farcaster username", value: "username" },
+] as const satisfies ReadonlyArray<{
+  name: string;
+  value: CsvTypeOption;
+}>;
+
+const CSV_SORT_OPTIONS = [
+  { name: "Followers", value: "followers" },
+  { name: "CSV order", value: "csvOrder" },
+] as const satisfies ReadonlyArray<{
+  name: string;
+  value: CsvSortOption;
 }>;
 
 const styleFields = defaultStyleFields.filter((field) =>
@@ -170,6 +197,88 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
             {...props}
             className="[&_label]:!normal-case"
             settings={SOURCE_OPTIONS}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    // CSV-specific settings
+    {
+      fieldName: "csvType",
+      displayName: "Type",
+      default: "username",
+      required: true,
+      disabledIf: (settings) => settings?.source !== "csv",
+      inputSelector: (props) => (
+        <WithMargin>
+          <SettingsSelector
+            {...props}
+            className="[&_label]:!normal-case"
+            settings={CSV_TYPE_OPTIONS}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "csvUpload",
+      displayName: "Upload CSV",
+      required: false,
+      disabledIf: (settings) => settings?.source !== "csv",
+      inputSelector: ({ updateSettings }) => {
+        const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+        const onSelectFile = () => fileInputRef.current?.click();
+        const onFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          try {
+            const text = await file.text();
+            updateSettings?.({
+              csvContent: text,
+              csvUploadedAt: new Date().toISOString(),
+            });
+          } catch (err) {
+            console.error("Failed to read CSV", err);
+          } finally {
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }
+        };
+
+        return (
+          <WithMargin>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5"
+                onClick={onSelectFile}
+              >
+                Select CSV…
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={onFileChange}
+              />
+            </div>
+          </WithMargin>
+        );
+      },
+      group: "settings",
+    },
+    {
+      fieldName: "csvSortBy",
+      displayName: "Sort by",
+      default: "followers",
+      required: true,
+      disabledIf: (settings) => settings?.source !== "csv",
+      inputSelector: (props) => (
+        <WithMargin>
+          <SettingsSelector
+            {...props}
+            className="[&_label]:!normal-case"
+            settings={CSV_SORT_OPTIONS}
           />
         </WithMargin>
       ),
@@ -501,8 +610,13 @@ const Directory: React.FC<
   }, [settings.include, settings.layoutStyle, settings.sortBy, settings.channelFilter]);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
+  const csvContent = settings.csvContent ?? "";
   const isConfigured =
-    source === "tokenHolders" ? normalizedAddress.length === 42 : channelName.length > 0;
+    source === "tokenHolders"
+      ? normalizedAddress.length === 42
+      : source === "farcasterChannel"
+        ? channelName.length > 0
+        : csvContent.trim().length > 0;
 
   const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
     members: data?.members ?? [],
@@ -514,6 +628,7 @@ const Directory: React.FC<
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
 
   useEffect(() => {
     setDirectoryData({
@@ -576,6 +691,14 @@ const Directory: React.FC<
       ) {
         return true;
       }
+    } else if (source === "csv") {
+      if (
+        directoryData.fetchContext.csvUploadedAt !== (settings.csvUploadedAt ?? "") ||
+        directoryData.fetchContext.csvType !== (settings.csvType ?? "username") ||
+        directoryData.fetchContext.csvSortBy !== (settings.csvSortBy ?? "followers")
+      ) {
+        return true;
+      }
     }
 
     if (!lastUpdated) {
@@ -593,6 +716,9 @@ const Directory: React.FC<
     settings.channelName,
     settings.channelFilter,
     assetType,
+    settings.csvUploadedAt,
+    settings.csvType,
+    settings.csvSortBy,
   ]);
 
   const persistDataIfChanged = useCallback(
@@ -754,6 +880,212 @@ const Directory: React.FC<
     [persistDataIfChanged, settings.channelName, settings.channelFilter],
   );
 
+  const parseCsv = (raw: string, type: CsvTypeOption) => {
+    const text = raw.replace(/^\uFEFF/, "").trim();
+    if (!text) return [] as string[];
+    const rows = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (rows.length === 0) return [] as string[];
+
+    const split = (line: string) => {
+      // naive CSV split with basic quote handling
+      const result: string[] = [];
+      let cur = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+          continue;
+        }
+        if (ch === "," && !inQuotes) {
+          result.push(cur.trim());
+          cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      result.push(cur.trim());
+      return result.map((v) => v.replace(/^"|"$/g, ""));
+    };
+
+    const headerCols = split(rows[0]).map((c) => c.toLowerCase());
+    let colIndex = 0;
+    let hasHeader = false;
+    if (headerCols.length > 1) {
+      const candidates: Record<CsvTypeOption, string[]> = {
+        address: ["address", "eth", "wallet"],
+        fid: ["fid", "id"],
+        username: ["username", "handle", "fc"],
+      };
+      const idx = headerCols.findIndex((c) => candidates[type].includes(c));
+      if (idx >= 0) {
+        colIndex = idx;
+        hasHeader = true;
+      }
+    }
+
+    const items: string[] = [];
+    for (let i = hasHeader ? 1 : 0; i < rows.length; i++) {
+      const cols = split(rows[i]);
+      const rawVal = (cols[colIndex] || "").trim();
+      if (!rawVal) continue;
+      if (type === "username") {
+        items.push(rawVal.replace(/^@/, ""));
+      } else {
+        items.push(rawVal);
+      }
+    }
+    return items;
+  };
+
+  const fetchCsvDirectory = useCallback(
+    async (controller: AbortController) => {
+      const type = (settings.csvType ?? "username") as CsvTypeOption;
+      const csvSortBy = (settings.csvSortBy ?? "followers") as CsvSortOption;
+      const raw = settings.csvContent ?? "";
+      const entries = parseCsv(raw, type);
+      if (entries.length === 0) {
+        throw new Error("CSV appears empty or could not be parsed");
+      }
+
+      const unique = Array.from(new Set(entries));
+
+      const byKey = new Map<string, DirectoryMemberData>();
+
+      const mapUserToMember = (u: any): DirectoryMemberData => ({
+        address: `fc_fid_${u?.fid ?? Math.random().toString(36).slice(2)}`,
+        balanceRaw: "0",
+        balanceFormatted: "",
+        username: u?.username ?? null,
+        displayName: u?.display_name ?? null,
+        fid: typeof u?.fid === "number" ? u.fid : null,
+        pfpUrl: u?.pfp_url ?? null,
+        followers: typeof u?.follower_count === "number" ? u.follower_count : null,
+        lastTransferAt: null,
+        ensName: null,
+        ensAvatarUrl: null,
+      });
+
+      if (type === "username" || type === "fid") {
+        const paramName = type === "username" ? "usernames" : "fids";
+        const chunks: string[][] = [];
+        for (let i = 0; i < unique.length; i += 100) {
+          chunks.push(unique.slice(i, i + 100));
+        }
+        for (const chunk of chunks) {
+          const query = new URLSearchParams();
+          query.set(paramName, chunk.join(","));
+          const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          const users: any[] = Array.isArray(data?.users) ? data.users : [];
+          users.forEach((u) => {
+            const member = mapUserToMember(u);
+            if (member.fid != null) byKey.set(String(member.fid), member);
+            if (member.username) byKey.set(member.username.toLowerCase(), member);
+          });
+        }
+      } else if (type === "address") {
+        // Resolve Farcaster users by address using the search endpoint; ENS resolution omitted
+        for (const addr of unique) {
+          try {
+            const searchRes = await fetch(
+              `/api/search/users?q=${encodeURIComponent(addr)}&limit=1`,
+              { signal: controller.signal },
+            );
+            if (searchRes.ok) {
+              const data = await searchRes.json();
+              const user = (data?.value?.users || [])[0];
+              if (user) {
+                const member = mapUserToMember(user);
+                byKey.set(addr.toLowerCase(), member);
+              }
+            }
+          } catch (e) {
+            // ignore individual failures
+          }
+        }
+      }
+
+      // Build members preserving CSV order
+      const members: DirectoryMemberData[] = entries.map((val) => {
+        if (type === "username") {
+          const key = val.toLowerCase();
+          return (
+            byKey.get(key) || {
+              address: `fc_username_${key}`,
+              balanceRaw: "0",
+              balanceFormatted: "",
+              username: key,
+              displayName: null,
+              fid: null,
+              pfpUrl: null,
+              followers: null,
+              lastTransferAt: null,
+              ensName: null,
+              ensAvatarUrl: null,
+            }
+          );
+        }
+        if (type === "fid") {
+          const key = String(Number(val));
+          return (
+            byKey.get(key) || {
+              address: `fc_fid_${key}`,
+              balanceRaw: "0",
+              balanceFormatted: "",
+              username: null,
+              displayName: null,
+              fid: Number.isNaN(Number(key)) ? null : Number(key),
+              pfpUrl: null,
+              followers: null,
+              lastTransferAt: null,
+              ensName: null,
+              ensAvatarUrl: null,
+            }
+          );
+        }
+        // address
+        const key = val.toLowerCase();
+        return (
+          byKey.get(key) || {
+            address: key,
+            balanceRaw: "0",
+            balanceFormatted: "",
+            username: null,
+            displayName: null,
+            fid: null,
+            pfpUrl: null,
+            followers: null,
+            lastTransferAt: null,
+            ensName: null,
+            ensAvatarUrl: null,
+          }
+        );
+      });
+
+      const finalMembers =
+        csvSortBy === "followers" ? sortMembers(members, "followers") : members;
+
+      const timestamp = new Date().toISOString();
+      await persistDataIfChanged({
+        members: finalMembers,
+        tokenSymbol: null,
+        tokenDecimals: null,
+        lastUpdatedTimestamp: timestamp,
+        fetchContext: {
+          source: "csv",
+          csvUploadedAt: settings.csvUploadedAt ?? "",
+          csvType: type,
+          csvSortBy,
+        },
+      });
+    },
+    [persistDataIfChanged, settings.csvContent, settings.csvUploadedAt, settings.csvType, settings.csvSortBy],
+  );
+
   const fetchDirectory = useCallback(async () => {
     if (!isConfigured) {
       return;
@@ -769,8 +1101,10 @@ const Directory: React.FC<
     try {
       if ((settings.source ?? "tokenHolders") === "tokenHolders") {
         await fetchTokenDirectory(controller);
-      } else {
+      } else if ((settings.source ?? "tokenHolders") === "farcasterChannel") {
         await fetchChannelDirectory(controller);
+      } else {
+        await fetchCsvDirectory(controller);
       }
       setCurrentPage(1);
     } catch (err) {
@@ -786,7 +1120,7 @@ const Directory: React.FC<
     } finally {
       setIsRefreshing(false);
     }
-  }, [isConfigured, settings.source, fetchTokenDirectory, fetchChannelDirectory]);
+  }, [isConfigured, settings.source, fetchTokenDirectory, fetchChannelDirectory, fetchCsvDirectory]);
 
   useEffect(() => {
     if (shouldRefresh && !isRefreshing && !suppressAutoRefresh) {
@@ -805,10 +1139,13 @@ const Directory: React.FC<
     assetType,
     channelName,
     currentChannelFilter,
+    settings.csvUploadedAt,
+    settings.csvType,
+    settings.csvSortBy,
   ]);
 
   const filteredSortedMembers = useMemo(() => {
-    if ((settings.source ?? "tokenHolders") === "farcasterChannel") {
+    if ((settings.source ?? "tokenHolders") !== "tokenHolders") {
       // Already sorted when fetched
       return directoryData.members ?? [];
     }
@@ -887,17 +1224,17 @@ const Directory: React.FC<
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-foreground">Community Directory</span>
-          {(settings.source ?? "tokenHolders") === "tokenHolders"
-            ? (
-                directoryData.tokenSymbol && (
-                  <span className="text-muted-foreground/80">
-                    {directoryData.tokenSymbol} • {network}
-                  </span>
-                )
-              )
-            : (
-                <span className="text-muted-foreground/80">/{(settings.channelName ?? "").trim()}</span>
-              )}
+          {(settings.source ?? "tokenHolders") === "tokenHolders" ? (
+            directoryData.tokenSymbol && (
+              <span className="text-muted-foreground/80">
+                {directoryData.tokenSymbol} • {network}
+              </span>
+            )
+          ) : (settings.source ?? "tokenHolders") === "farcasterChannel" ? (
+            <span className="text-muted-foreground/80">/{(settings.channelName ?? "").trim()}</span>
+          ) : (
+            <span className="text-muted-foreground/80">CSV • {(settings.csvType ?? "username")}</span>
+          )}
         </div>
         <div className="flex items-center gap-3 text-[11px]">
           {lastUpdatedLabel && (
