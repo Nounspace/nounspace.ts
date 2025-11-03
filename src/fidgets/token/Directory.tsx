@@ -849,7 +849,8 @@ const Directory: React.FC<
           <>
             <p className="font-medium">Connect a contract address to build the directory.</p>
             <p className="max-w-[40ch] text-xs text-muted-foreground/80">
-              Provide an ERC-20 token or NFT contract address and network to surface the holders with Farcaster profiles.
+              Provide an ERC-20 token or NFT contract address and network to surface the
+              holders with Farcaster profiles.
             </p>
           </>
         ) : (
