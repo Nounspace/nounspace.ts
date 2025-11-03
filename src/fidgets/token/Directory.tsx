@@ -43,6 +43,9 @@ export type DirectoryIncludeOption =
   | "holdersWithFarcasterAccount"
   | "allHolders";
 
+export type DirectorySource = "tokenHolders" | "farcasterChannel";
+export type DirectoryChannelFilterOption = "members" | "followers" | "all";
+
 export interface DirectoryMemberData {
   address: string;
   balanceRaw: string;
@@ -58,9 +61,12 @@ export interface DirectoryMemberData {
 }
 
 export interface DirectoryFetchContext {
-  network: DirectoryNetwork;
-  contractAddress: string;
-  assetType: DirectoryAssetType;
+  source: DirectorySource;
+  network?: DirectoryNetwork;
+  contractAddress?: string;
+  assetType?: DirectoryAssetType;
+  channelName?: string;
+  channelFilter?: DirectoryChannelFilterOption;
 }
 
 export interface DirectoryFidgetData extends FidgetData {
@@ -73,12 +79,15 @@ export interface DirectoryFidgetData extends FidgetData {
 
 export type DirectoryFidgetSettings = FidgetSettings &
   FidgetSettingsStyle & {
+    source: DirectorySource;
     network: DirectoryNetwork;
     contractAddress: string;
     assetType: DirectoryAssetType;
     sortBy: DirectorySortOption;
     layoutStyle: DirectoryLayoutStyle;
     include: DirectoryIncludeOption;
+    channelName?: string;
+    channelFilter?: DirectoryChannelFilterOption;
   };
 
 const NETWORK_OPTIONS = [
@@ -117,6 +126,23 @@ const INCLUDE_OPTIONS = [
   value: DirectoryIncludeOption;
 }>;
 
+const SOURCE_OPTIONS = [
+  { name: "Token Holders", value: "tokenHolders" },
+  { name: "Farcaster Channel", value: "farcasterChannel" },
+] as const satisfies ReadonlyArray<{
+  name: string;
+  value: DirectorySource;
+}>;
+
+const CHANNEL_FILTER_OPTIONS = [
+  { name: "Members", value: "members" },
+  { name: "Followers", value: "followers" },
+  { name: "All", value: "all" },
+] as const satisfies ReadonlyArray<{
+  name: string;
+  value: DirectoryChannelFilterOption;
+}>;
+
 const styleFields = defaultStyleFields.filter((field) =>
   [
     "background",
@@ -134,10 +160,27 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
   icon: 0x1f465,
   fields: [
     {
+      fieldName: "source",
+      displayName: "Source",
+      default: "tokenHolders",
+      required: true,
+      inputSelector: (props) => (
+        <WithMargin>
+          <SettingsSelector
+            {...props}
+            className="[&_label]:!normal-case"
+            settings={SOURCE_OPTIONS}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
       fieldName: "network",
       displayName: "Network",
       default: "base",
       required: true,
+      disabledIf: (settings) => settings?.source !== "tokenHolders",
       inputSelector: (props) => (
         <WithMargin>
           <SettingsSelector
@@ -154,6 +197,7 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       displayName: "Type",
       default: "token",
       required: true,
+      disabledIf: (settings) => settings?.source !== "tokenHolders",
       inputSelector: (props) => (
         <WithMargin>
           <SettingsSelector
@@ -170,6 +214,7 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       displayName: "Contract Address",
       default: "",
       required: true,
+      disabledIf: (settings) => settings?.source !== "tokenHolders",
       validator: (value: string) =>
         !value || /^0x[a-fA-F0-9]{40}$/.test(value.trim()),
       inputSelector: (props) => (
@@ -184,6 +229,7 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       displayName: "Sort by",
       default: "tokenHoldings",
       required: true,
+      disabledIf: (settings) => settings?.source !== "tokenHolders",
       inputSelector: (props) => (
         <WithMargin>
           <SettingsSelector
@@ -216,12 +262,44 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       displayName: "Filter",
       default: "holdersWithFarcasterAccount",
       required: true,
+      disabledIf: (settings) => settings?.source !== "tokenHolders",
       inputSelector: (props) => (
         <WithMargin>
           <SettingsSelector
             {...props}
             className="[&_label]:!normal-case"
             settings={INCLUDE_OPTIONS}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    // Farcaster Channel specific settings
+    {
+      fieldName: "channelName",
+      displayName: "Channel Name",
+      default: "",
+      required: true,
+      disabledIf: (settings) => settings?.source !== "farcasterChannel",
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} className="[&_label]:!normal-case" />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "channelFilter",
+      displayName: "Filter",
+      default: "members",
+      required: true,
+      disabledIf: (settings) => settings?.source !== "farcasterChannel",
+      inputSelector: (props) => (
+        <WithMargin>
+          <SettingsSelector
+            {...props}
+            className="[&_label]:!normal-case"
+            settings={CHANNEL_FILTER_OPTIONS}
           />
         </WithMargin>
       ),
@@ -396,6 +474,7 @@ const sortMembers = (
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
+  const { source = "tokenHolders" } = settings;
   const { network, contractAddress } = settings;
   const assetType: DirectoryAssetType = (settings.assetType ?? "token") as DirectoryAssetType;
   // Local view state (defaults from settings)
@@ -408,16 +487,22 @@ const Directory: React.FC<
   const [currentFilter, setCurrentFilter] = useState<DirectoryIncludeOption>(
     settings.include,
   );
+  const [currentChannelFilter, setCurrentChannelFilter] = useState<DirectoryChannelFilterOption>(
+    (settings.channelFilter ?? "members") as DirectoryChannelFilterOption,
+  );
   const [currentPage, setCurrentPage] = useState<number>(1);
   // Keep defaults in sync if the fidget settings change
   useEffect(() => {
     setCurrentSort(settings.sortBy);
     setCurrentLayout(settings.layoutStyle);
     setCurrentFilter(settings.include);
+    setCurrentChannelFilter((settings.channelFilter ?? "members") as DirectoryChannelFilterOption);
     setCurrentPage(1);
-  }, [settings.include, settings.layoutStyle, settings.sortBy]);
+  }, [settings.include, settings.layoutStyle, settings.sortBy, settings.channelFilter]);
   const normalizedAddress = normalizeAddress(contractAddress || "");
-  const isConfigured = normalizedAddress.length === 42;
+  const channelName = (settings.channelName ?? "").trim();
+  const isConfigured =
+    source === "tokenHolders" ? normalizedAddress.length === 42 : channelName.length > 0;
 
   const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
     members: data?.members ?? [],
@@ -470,13 +555,27 @@ const Directory: React.FC<
       return true;
     }
 
-    if (
-      directoryData.fetchContext.network !== network ||
-      normalizeAddress(directoryData.fetchContext.contractAddress) !==
-        normalizedAddress ||
-      directoryData.fetchContext.assetType !== assetType
-    ) {
+    // Source changed
+    if (directoryData.fetchContext.source !== source) {
       return true;
+    }
+
+    if (source === "tokenHolders") {
+      if (
+        directoryData.fetchContext.network !== network ||
+        normalizeAddress(directoryData.fetchContext.contractAddress || "") !==
+          normalizedAddress ||
+        directoryData.fetchContext.assetType !== assetType
+      ) {
+        return true;
+      }
+    } else if (source === "farcasterChannel") {
+      if (
+        directoryData.fetchContext.channelName !== (settings.channelName ?? "").trim() ||
+        directoryData.fetchContext.channelFilter !== (settings.channelFilter ?? "members")
+      ) {
+        return true;
+      }
     }
 
     if (!lastUpdated) {
@@ -490,6 +589,10 @@ const Directory: React.FC<
     isConfigured,
     network,
     normalizedAddress,
+    source,
+    settings.channelName,
+    settings.channelFilter,
+    assetType,
   ]);
 
   const persistDataIfChanged = useCallback(
@@ -510,19 +613,8 @@ const Directory: React.FC<
     [directoryData, saveData],
   );
 
-  const fetchDirectory = useCallback(async () => {
-    if (!isConfigured) {
-      return;
-    }
-
-    abortControllerRef.current?.abort();
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setIsRefreshing(true);
-    setError(null);
-
-    try {
+  const fetchTokenDirectory = useCallback(
+    async (controller: AbortController) => {
       const response = await fetch(
         `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}&assetType=${assetType}&pageSize=1000`,
         { signal: controller.signal },
@@ -530,7 +622,7 @@ const Directory: React.FC<
 
       if (!response.ok) {
         const message = await response.text();
-        throw new Error(message || "Failed to load directory");
+        throw new Error(message || "Failed to load token directory");
       }
 
       const json = (await response.json()) as {
@@ -540,7 +632,7 @@ const Directory: React.FC<
       };
 
       if (json.result === "error" || !json.value) {
-        throw new Error(json.error?.message || "Failed to load directory");
+        throw new Error(json.error?.message || "Failed to load token directory");
       }
 
       const sortedMembers = sortMembers(
@@ -554,26 +646,143 @@ const Directory: React.FC<
         tokenSymbol: json.value.tokenSymbol,
         tokenDecimals: json.value.tokenDecimals,
         lastUpdatedTimestamp: timestamp,
-        fetchContext: json.value.fetchContext,
+        fetchContext: {
+          source: "tokenHolders",
+          network,
+          contractAddress: normalizedAddress,
+          assetType,
+        },
       });
+    },
+    [assetType, network, normalizedAddress, persistDataIfChanged, settings.sortBy],
+  );
+
+  const fetchChannelDirectory = useCallback(
+    async (controller: AbortController) => {
+      // Helper to normalize various user shapes coming from Neynar
+      type NeynarUser = {
+        fid?: number | null;
+        username?: string | null;
+        display_name?: string | null;
+        pfp_url?: string | null;
+        follower_count?: number | null;
+      };
+      const getNestedUser = (u: any): NeynarUser | undefined => {
+        if (!u) return undefined;
+        if (typeof u === "object" && u !== null) {
+          if ("user" in u && u.user) return getNestedUser(u.user);
+          return u as NeynarUser;
+        }
+        return undefined;
+      };
+
+      const fetchMembers = async () => {
+        const res = await fetch(
+          `/api/farcaster/neynar/channel/members?id=${encodeURIComponent(
+            (settings.channelName ?? "").trim(),
+          )}&limit=1000`,
+          { signal: controller.signal },
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const membersArray: any[] = Array.isArray(data?.members) ? data.members : [];
+        return membersArray
+          .map((m) => getNestedUser(m))
+          .filter(Boolean) as NeynarUser[];
+      };
+
+      const fetchFollowers = async () => {
+        const res = await fetch(
+          `/api/farcaster/neynar/channel/followers?id=${encodeURIComponent(
+            (settings.channelName ?? "").trim(),
+          )}&limit=1000`,
+          { signal: controller.signal },
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const usersArray: any[] = Array.isArray(data?.users) ? data.users : [];
+        return usersArray
+          .map((u) => getNestedUser(u))
+          .filter(Boolean) as NeynarUser[];
+      };
+
+      let users: NeynarUser[] = [];
+      const filter = (settings.channelFilter ?? "members") as DirectoryChannelFilterOption;
+      if (filter === "members") {
+        users = await fetchMembers();
+      } else if (filter === "followers") {
+        users = await fetchFollowers();
+      } else {
+        const [m, f] = await Promise.all([fetchMembers(), fetchFollowers()]);
+        const byFid = new Map<number, NeynarUser>();
+        for (const u of [...m, ...f]) {
+          if (typeof u.fid === "number") byFid.set(u.fid, u);
+        }
+        users = Array.from(byFid.values());
+      }
+
+      const members: DirectoryMemberData[] = users.map((u) => ({
+        address: `fc_fid_${u.fid ?? Math.random().toString(36).slice(2)}`,
+        balanceRaw: "0",
+        balanceFormatted: "",
+        username: u.username ?? undefined,
+        displayName: u.display_name ?? undefined,
+        fid: typeof u.fid === "number" ? u.fid : undefined,
+        pfpUrl: u.pfp_url ?? undefined,
+        followers: typeof u.follower_count === "number" ? u.follower_count : undefined,
+        lastTransferAt: null,
+        ensName: null,
+        ensAvatarUrl: null,
+      }));
+
+      // For channel lists, default to sorting by followers
+      const sortedMembers = sortMembers(members, "followers");
+      const timestamp = new Date().toISOString();
+
+      await persistDataIfChanged({
+        members: sortedMembers,
+        tokenSymbol: null,
+        tokenDecimals: null,
+        lastUpdatedTimestamp: timestamp,
+        fetchContext: {
+          source: "farcasterChannel",
+          channelName: (settings.channelName ?? "").trim(),
+          channelFilter: (settings.channelFilter ?? "members") as DirectoryChannelFilterOption,
+        },
+      });
+    },
+    [persistDataIfChanged, settings.channelName, settings.channelFilter],
+  );
+
+  const fetchDirectory = useCallback(async () => {
+    if (!isConfigured) {
+      return;
+    }
+
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setIsRefreshing(true);
+    setError(null);
+
+    try {
+      if ((settings.source ?? "tokenHolders") === "tokenHolders") {
+        await fetchTokenDirectory(controller);
+      } else {
+        await fetchChannelDirectory(controller);
+      }
       setCurrentPage(1);
     } catch (err) {
       if ((err as Error).name === "AbortError") {
         return;
       }
       console.error(err);
-      setError((err as Error).message);
+      setError((err as Error).message || "Failed to load directory");
     } finally {
       setIsRefreshing(false);
     }
-  }, [
-    isConfigured,
-    network,
-    normalizedAddress,
-    persistDataIfChanged,
-    settings.sortBy,
-    assetType,
-  ]);
+  }, [isConfigured, settings.source, fetchTokenDirectory, fetchChannelDirectory]);
 
   useEffect(() => {
     if (shouldRefresh && !isRefreshing) {
@@ -582,12 +791,16 @@ const Directory: React.FC<
   }, [fetchDirectory, isRefreshing, shouldRefresh]);
 
   const filteredSortedMembers = useMemo(() => {
+    if ((settings.source ?? "tokenHolders") === "farcasterChannel") {
+      // Already sorted when fetched
+      return directoryData.members ?? [];
+    }
     const members = sortMembers(directoryData.members ?? [], currentSort);
     if (currentFilter === "holdersWithFarcasterAccount") {
       return members.filter((member) => Boolean(member.username));
     }
     return members;
-  }, [directoryData.members, currentFilter, currentSort]);
+  }, [directoryData.members, currentFilter, currentSort, settings.source]);
 
   const pageCount = useMemo(() => {
     const total = filteredSortedMembers.length;
@@ -606,9 +819,15 @@ const Directory: React.FC<
   }, [filteredSortedMembers, currentPage]);
 
   const emptyStateMessage =
-    currentFilter === "allHolders"
-      ? "No holders found for this asset yet."
-      : "No Farcaster profiles found for this asset yet.";
+    (settings.source ?? "tokenHolders") === "farcasterChannel"
+      ? (currentChannelFilter === "members"
+          ? "No channel members found."
+          : currentChannelFilter === "followers"
+            ? "No channel followers found."
+            : "No users found for this channel.")
+      : currentFilter === "allHolders"
+        ? "No holders found for this asset yet."
+        : "No Farcaster profiles found for this asset yet.";
 
   const lastUpdatedLabel = useMemo(() => {
     if (!directoryData.lastUpdatedTimestamp) {
@@ -626,12 +845,21 @@ const Directory: React.FC<
   if (!isConfigured) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground">
-        <p className="font-medium">
-          Connect a contract address to build the directory.
-        </p>
-        <p className="max-w-[40ch] text-xs text-muted-foreground/80">
-          Provide an ERC-20 token or NFT contract address and network to surface the holders with Farcaster profiles.
-        </p>
+        {(settings.source ?? "tokenHolders") === "tokenHolders" ? (
+          <>
+            <p className="font-medium">Connect a contract address to build the directory.</p>
+            <p className="max-w-[40ch] text-xs text-muted-foreground/80">
+              Provide an ERC-20 token or NFT contract address and network to surface the holders with Farcaster profiles.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="font-medium">Enter a Farcaster channel name to build the directory.</p>
+            <p className="max-w-[40ch] text-xs text-muted-foreground/80">
+              Example: nouns, purple. The filter selects Members, Followers, or both.
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -641,11 +869,17 @@ const Directory: React.FC<
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-foreground">Community Directory</span>
-          {directoryData.tokenSymbol && (
-            <span className="text-muted-foreground/80">
-              {directoryData.tokenSymbol} • {network}
-            </span>
-          )}
+          {(settings.source ?? "tokenHolders") === "tokenHolders"
+            ? (
+                directoryData.tokenSymbol && (
+                  <span className="text-muted-foreground/80">
+                    {directoryData.tokenSymbol} • {network}
+                  </span>
+                )
+              )
+            : (
+                <span className="text-muted-foreground/80">/{(settings.channelName ?? "").trim()}</span>
+              )}
         </div>
         <div className="flex items-center gap-3 text-[11px]">
           {lastUpdatedLabel && (
@@ -674,22 +908,26 @@ const Directory: React.FC<
             settings={LAYOUT_OPTIONS as unknown as { name: string; value: string }[]}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="uppercase tracking-wide text-muted-foreground">Sort by</span>
-          <SettingsSelector
-            onChange={(value) => setCurrentSort(value as DirectorySortOption)}
-            value={currentSort}
-            settings={SORT_OPTIONS as unknown as { name: string; value: string }[]}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="uppercase tracking-wide text-muted-foreground">Filter</span>
-          <SettingsSelector
-            onChange={(value) => setCurrentFilter(value as DirectoryIncludeOption)}
-            value={currentFilter}
-            settings={INCLUDE_OPTIONS as unknown as { name: string; value: string }[]}
-          />
-        </div>
+        {(settings.source ?? "tokenHolders") === "tokenHolders" && (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="uppercase tracking-wide text-muted-foreground">Sort by</span>
+              <SettingsSelector
+                onChange={(value) => setCurrentSort(value as DirectorySortOption)}
+                value={currentSort}
+                settings={SORT_OPTIONS as unknown as { name: string; value: string }[]}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="uppercase tracking-wide text-muted-foreground">Filter</span>
+              <SettingsSelector
+                onChange={(value) => setCurrentFilter(value as DirectoryIncludeOption)}
+                value={currentFilter}
+                settings={INCLUDE_OPTIONS as unknown as { name: string; value: string }[]}
+              />
+            </div>
+          </>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <PaginationControls
             currentPage={currentPage}
@@ -721,13 +959,15 @@ const Directory: React.FC<
             {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
               const fallbackHref =
-                currentFilter === "allHolders" && !member.username
+                (settings.source ?? "tokenHolders") === "tokenHolders" &&
+                currentFilter === "allHolders" &&
+                !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
               return (
-                <li key={member.address} className="flex items-center gap-3 py-3">
+                <li key={`${member.fid ?? member.address}`} className="flex items-center gap-3 py-3">
                   <ProfileLink username={member.username} fallbackHref={fallbackHref}>
                     <Avatar className="size-11 shrink-0">
                       <AvatarImage
@@ -767,14 +1007,18 @@ const Directory: React.FC<
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">
-                      {member.balanceFormatted}
-                      {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
-                    </span>
+                    {(settings.source ?? "tokenHolders") === "tokenHolders" && (
+                      <span className="font-semibold text-foreground">
+                        {member.balanceFormatted}
+                        {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
+                      </span>
+                    )}
                     {typeof member.followers === "number" && (
                       <span>{`${member.followers.toLocaleString()} followers`}</span>
                     )}
-                    {lastActivity && <span>{lastActivity}</span>}
+                    {(settings.source ?? "tokenHolders") === "tokenHolders" && lastActivity && (
+                      <span>{lastActivity}</span>
+                    )}
                   </div>
                 </li>
               );
@@ -785,13 +1029,15 @@ const Directory: React.FC<
             {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
               const fallbackHref =
-                currentFilter === "allHolders" && !member.username
+                (settings.source ?? "tokenHolders") === "tokenHolders" &&
+                currentFilter === "allHolders" &&
+                !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
               return (
-                <div key={member.address} className="relative h-full">
+                <div key={`${member.fid ?? member.address}`} className="relative h-full">
                   {/* Card content as link */}
                   <ProfileLink
                     username={member.username}
@@ -824,13 +1070,15 @@ const Directory: React.FC<
                       </div>
                     </div>
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                      <div>
-                        <dt className="uppercase tracking-wide">Holdings</dt>
-                        <dd className="font-semibold text-foreground">
-                          {member.balanceFormatted}
-                          {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
-                        </dd>
-                      </div>
+                      {(settings.source ?? "tokenHolders") === "tokenHolders" && (
+                        <div>
+                          <dt className="uppercase tracking-wide">Holdings</dt>
+                          <dd className="font-semibold text-foreground">
+                            {member.balanceFormatted}
+                            {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
+                          </dd>
+                        </div>
+                      )}
                       {typeof member.followers === "number" && (
                         <div>
                           <dt className="uppercase tracking-wide">Followers</dt>
@@ -839,7 +1087,7 @@ const Directory: React.FC<
                           </dd>
                         </div>
                       )}
-                      {lastActivity && (
+                      {(settings.source ?? "tokenHolders") === "tokenHolders" && lastActivity && (
                         <div className="col-span-2 text-xs">
                           <dt className="uppercase tracking-wide">Last activity</dt>
                           <dd>{lastActivity}</dd>
