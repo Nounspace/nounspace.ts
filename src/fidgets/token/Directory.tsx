@@ -228,8 +228,6 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       required: false,
       disabledIf: (settings) => settings?.source !== "csv",
       inputSelector: ({ updateSettings }) => {
-        const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-        const onSelectFile = () => fileInputRef.current?.click();
         const onFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
           const file = e.target.files?.[0];
           if (!file) return;
@@ -240,31 +238,20 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
               csvUpload: new Date().toISOString(),
               csvFilename: file.name,
             });
+            console.log("[Directory] CSV selected:", file.name, "size:", file.size);
           } catch (err) {
             console.error("Failed to read CSV", err);
-          } finally {
-            if (fileInputRef.current) fileInputRef.current.value = "";
           }
         };
 
         return (
           <WithMargin>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5"
-                onClick={onSelectFile}
-              >
-                Select CSV…
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                className="hidden"
-                onChange={onFileChange}
-              />
-            </div>
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={onFileChange}
+              className="text-xs"
+            />
           </WithMargin>
         );
       },
