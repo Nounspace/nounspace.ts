@@ -1209,7 +1209,18 @@ const Directory: React.FC<
       // Already sorted when fetched
       return directoryData.members ?? [];
     }
-    const members = sortMembers(directoryData.members ?? [], currentSort);
+    // Optional client-side safety net: drop duplicate fids if any slip through
+    const base = directoryData.members ?? [];
+    const seenFids = new Set<number>();
+    const deduped = base.filter((m) => {
+      if (typeof m.fid === "number" && m.fid > 0) {
+        if (seenFids.has(m.fid)) return false;
+        seenFids.add(m.fid);
+        return true;
+      }
+      return true;
+    });
+    const members = sortMembers(deduped, currentSort);
     if (currentFilter === "holdersWithFarcasterAccount") {
       return members.filter((member) => Boolean(member.username));
     }

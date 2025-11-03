@@ -601,7 +601,18 @@ export async function fetchDirectoryData(
     }
   }
 
+  // Build initial per-holder entries and aggregate by Farcaster fid
   const members: DirectoryMember[] = [];
+  type Agg = {
+    sum: bigint;
+    username?: string | null;
+    displayName?: string | null;
+    fid?: number | null;
+    pfpUrl?: string | null;
+    followers?: number | null;
+  };
+  const byFid = new Map<number, Agg>();
+
   for (const holder of holders) {
     const address = extractOwnerAddress(holder);
     if (!address) {
@@ -623,39 +634,73 @@ export async function fetchDirectoryData(
       }
     }
 
+    const username = profile && "username" in profile ? profile.username ?? null : null;
+    const displayName =
+      profile && "display_name" in profile
+        ? (profile as { display_name?: string | null }).display_name ?? null
+        : null;
+    const fid = profile && "fid" in profile ? (profile as { fid?: number }).fid ?? null;
+    const followers =
+      profile && "follower_count" in profile
+        ? (profile as { follower_count?: number | null }).follower_count ?? null
+        : null;
+    const pfpUrl =
+      profile && typeof profile === "object" && profile !== null && "pfp_url" in profile
+        ? (profile as { pfp_url?: string | null }).pfp_url ?? null
+        : profile && typeof profile === "object" && profile !== null && "profile" in profile
+          ? ((profile as { profile?: { pfp_url?: string | null } }).profile?.pfp_url ?? null)
+          : null;
+
+    if (typeof fid === "number" && fid > 0) {
+      const current = byFid.get(fid) ?? { sum: 0n };
+      current.sum = current.sum + BigInt(balanceRaw ?? "0");
+      // Prefer to keep first non-null metadata
+      current.username = current.username ?? username;
+      current.displayName = current.displayName ?? displayName;
+      current.fid = fid;
+      current.pfpUrl = current.pfpUrl ?? pfpUrl;
+      current.followers = current.followers ?? followers;
+      byFid.set(fid, current);
+    } else {
+      members.push({
+        address: key,
+        balanceRaw,
+        balanceFormatted,
+        lastTransferAt: null,
+        username,
+        displayName,
+        fid,
+        followers,
+        pfpUrl,
+        ensName: ensInfo?.ensName ?? null,
+        ensAvatarUrl: ensInfo?.ensAvatarUrl ?? null,
+      });
+    }
+  }
+
+  // Convert fid aggregates to members (no ENS on aggregated entries)
+  for (const [fid, agg] of byFid.entries()) {
+    const sumRaw = agg.sum.toString();
+    let sumFormatted = sumRaw;
+    if (resolvedDecimals !== null) {
+      try {
+        sumFormatted = formatUnits(BigInt(sumRaw), resolvedDecimals);
+      } catch (e) {
+        // keep raw string if formatting fails
+      }
+    }
     members.push({
-      address: key,
-      balanceRaw,
-      balanceFormatted,
+      address: `fc_fid_${fid}`,
+      balanceRaw: sumRaw,
+      balanceFormatted: sumFormatted,
       lastTransferAt: null,
-      username: profile && "username" in profile ? profile.username ?? null : null,
-      displayName:
-        profile && "display_name" in profile
-          ? (profile as { display_name?: string | null }).display_name ?? null
-          : null,
-      fid:
-        profile && "fid" in profile ? (profile as { fid?: number }).fid ?? null : null,
-      followers:
-        profile && "follower_count" in profile
-          ? (profile as { follower_count?: number | null }).follower_count ?? null
-          : null,
-      pfpUrl:
-        profile &&
-        typeof profile === "object" &&
-        profile !== null &&
-        "pfp_url" in profile
-          ? (profile as { pfp_url?: string | null }).pfp_url ?? null
-          : profile &&
-              typeof profile === "object" &&
-              profile !== null &&
-              "profile" in profile
-            ? (
-                (profile as { profile?: { pfp_url?: string | null } }).profile?.pfp_url ??
-                null
-              )
-            : null,
-      ensName: ensInfo?.ensName ?? null,
-      ensAvatarUrl: ensInfo?.ensAvatarUrl ?? null,
+      username: agg.username ?? null,
+      displayName: agg.displayName ?? null,
+      fid: fid,
+      followers: agg.followers ?? null,
+      pfpUrl: agg.pfpUrl ?? null,
+      ensName: null,
+      ensAvatarUrl: null,
     });
   }
 
