@@ -942,12 +942,22 @@ const Directory: React.FC<
 
   const fetchCsvDirectory = useCallback(
     async (controller: AbortController) => {
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[Directory] CSV fetch starting", {
+          source: settings.source,
+          csvType: settings.csvType,
+          csvSortBy: settings.csvSortBy,
+          csvUpload: settings.csvUpload ?? settings.csvUploadedAt,
+        });
+      }
       const type = (settings.csvType ?? "username") as CsvTypeOption;
       const csvSortBy = (settings.csvSortBy ?? "followers") as CsvSortOption;
       const raw = settings.csvContent ?? "";
       const entries = parseCsv(raw, type);
       if (entries.length === 0) {
-        throw new Error("CSV appears empty or could not be parsed");
+        throw new Error(
+          "CSV appears empty or unrecognized. Expected a first column or headers named username/handle/fc, address/eth/wallet, or fid/id.",
+        );
       }
 
       const unique = Array.from(new Set(entries));
@@ -975,6 +985,9 @@ const Directory: React.FC<
           chunks.push(unique.slice(i, i + 100));
         }
         for (const chunk of chunks) {
+          if (process.env.NODE_ENV !== "production") {
+            console.info("[Directory] CSV usernames/fids batch", chunk.length);
+          }
           const query = new URLSearchParams();
           query.set(paramName, chunk.join(","));
           const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
@@ -1002,6 +1015,9 @@ const Directory: React.FC<
           try {
             const params = new URLSearchParams();
             ch.forEach((a) => params.append("addresses[]", a));
+            if (process.env.NODE_ENV !== "production") {
+              console.info("[Directory] CSV address batch (Farcaster)", ch.length);
+            }
             const resp = await fetch(`/api/farcaster/neynar/bulk-address?${params.toString()}`,
               { signal: controller.signal });
             if (resp.ok) {
@@ -1027,6 +1043,9 @@ const Directory: React.FC<
             if (ch.length === 0) continue;
             const url = new URL("https://enstate.rs/bulk/a");
             ch.forEach((a) => url.searchParams.append("addresses[]", a));
+            if (process.env.NODE_ENV !== "production") {
+              console.info("[Directory] CSV address batch (ENS)", ch.length);
+            }
             const res = await fetch(url.toString(), { signal: controller.signal });
             if (!res.ok) continue;
             const json = await res.json();
@@ -1118,10 +1137,17 @@ const Directory: React.FC<
         );
       });
 
-      const finalMembers =
-        csvSortBy === "followers" ? sortMembers(members, "followers") : members;
+      const finalMembers = csvSortBy === "followers"
+        ? sortMembers(members, "followers")
+        : members;
 
       const timestamp = new Date().toISOString();
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[Directory] CSV fetch complete", {
+          members: finalMembers.length,
+          sort: csvSortBy,
+        });
+      }
       await persistDataIfChanged({
         members: finalMembers,
         tokenSymbol: null,
@@ -1171,9 +1197,12 @@ const Directory: React.FC<
         return;
       }
       console.error(err);
-      const prefix = (settings.source ?? "tokenHolders") === "tokenHolders"
+      const src = settings.source ?? "tokenHolders";
+      const prefix = src === "tokenHolders"
         ? "Failed to load token directory"
-        : "Failed to load Farcaster channel users";
+        : src === "farcasterChannel"
+          ? "Failed to load Farcaster channel users"
+          : "Failed to import CSV";
       setError(`${prefix}: ${(err as Error).message || "Unknown error"}`);
       setSuppressAutoRefresh(true);
     } finally {
@@ -1203,6 +1232,18 @@ const Directory: React.FC<
     settings.csvType,
     settings.csvSortBy,
   ]);
+
+  // Directly trigger CSV import after upload
+  useEffect(() => {
+    if (
+      (settings.source ?? "tokenHolders") === "csv" &&
+      (settings.csvUpload ?? settings.csvUploadedAt)
+    ) {
+      if (!isRefreshing && !suppressAutoRefresh) {
+        void fetchDirectory();
+      }
+    }
+  }, [settings.source, settings.csvUpload, settings.csvUploadedAt]);
 
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") !== "tokenHolders") {

@@ -639,7 +639,7 @@ export async function fetchDirectoryData(
       profile && "display_name" in profile
         ? (profile as { display_name?: string | null }).display_name ?? null
         : null;
-    const fid = profile && "fid" in profile ? (profile as { fid?: number }).fid ?? null;
+    const fid = profile && "fid" in profile ? (profile as { fid?: number }).fid ?? null : null;
     const followers =
       profile && "follower_count" in profile
         ? (profile as { follower_count?: number | null }).follower_count ?? null
