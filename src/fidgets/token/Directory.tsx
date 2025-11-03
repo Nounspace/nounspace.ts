@@ -988,24 +988,74 @@ const Directory: React.FC<
           });
         }
       } else if (type === "address") {
-        // Resolve Farcaster users by address using the search endpoint; ENS resolution omitted
-        for (const addr of unique) {
+        // Batched Farcaster user resolution by address
+        const chunk = (arr: string[], size: number) =>
+          Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+            arr.slice(i * size, i * size + size),
+          );
+
+        const addressChunks = chunk(unique, 100);
+        for (const ch of addressChunks) {
+          if (ch.length === 0) continue;
           try {
-            const searchRes = await fetch(
-              `/api/search/users?q=${encodeURIComponent(addr)}&limit=1`,
-              { signal: controller.signal },
-            );
-            if (searchRes.ok) {
-              const data = await searchRes.json();
-              const user = (data?.value?.users || [])[0];
-              if (user) {
-                const member = mapUserToMember(user);
-                byKey.set(addr.toLowerCase(), member);
-              }
+            const params = new URLSearchParams();
+            ch.forEach((a) => params.append("addresses[]", a));
+            const resp = await fetch(`/api/farcaster/neynar/bulk-address?${params.toString()}`,
+              { signal: controller.signal });
+            if (resp.ok) {
+              const data = await resp.json();
+              // data is an object: { [address]: User[] }
+              Object.entries<any>(data || {}).forEach(([addr, users]) => {
+                const first = Array.isArray(users) && users.length > 0 ? users[0] : undefined;
+                if (first) {
+                  const member = mapUserToMember(first);
+                  byKey.set(addr.toLowerCase(), member);
+                }
+              });
             }
           } catch (e) {
-            // ignore individual failures
+            // ignore batch failure; continue
           }
+        }
+
+        // Batched ENS resolution via enstate.rs
+        try {
+          const ensChunks = chunk(unique, 100);
+          for (const ch of ensChunks) {
+            if (ch.length === 0) continue;
+            const url = new URL("https://enstate.rs/bulk/a");
+            ch.forEach((a) => url.searchParams.append("addresses[]", a));
+            const res = await fetch(url.toString(), { signal: controller.signal });
+            if (!res.ok) continue;
+            const json = await res.json();
+            const records: any[] = Array.isArray(json?.response) ? json.response : [];
+            for (const rec of records) {
+              const addr = (rec?.address || "").toLowerCase();
+              if (!addr) continue;
+              const current = byKey.get(addr);
+              const ensName = rec?.name || null;
+              const ensAvatarUrl = rec?.avatar || null;
+              if (current) {
+                byKey.set(addr, { ...current, ensName, ensAvatarUrl });
+              } else {
+                byKey.set(addr, {
+                  address: addr,
+                  balanceRaw: "0",
+                  balanceFormatted: "",
+                  username: null,
+                  displayName: null,
+                  fid: null,
+                  pfpUrl: null,
+                  followers: null,
+                  lastTransferAt: null,
+                  ensName,
+                  ensAvatarUrl,
+                });
+              }
+            }
+          }
+        } catch (e) {
+          // ignore ENS batch errors
         }
       }
 
@@ -1207,11 +1257,18 @@ const Directory: React.FC<
               holders with Farcaster profiles.
             </p>
           </>
-        ) : (
+        ) : (settings.source ?? "tokenHolders") === "farcasterChannel" ? (
           <>
             <p className="font-medium">Enter a Farcaster channel name to build the directory.</p>
             <p className="max-w-[40ch] text-xs text-muted-foreground/80">
               Example: nouns, purple. The filter selects Members, Followers, or both.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="font-medium">Upload a CSV to build the directory.</p>
+            <p className="max-w-[40ch] text-xs text-muted-foreground/80">
+              Choose Type (Address, FID, or Farcaster username), then use Upload CSV in settings.
             </p>
           </>
         )}
