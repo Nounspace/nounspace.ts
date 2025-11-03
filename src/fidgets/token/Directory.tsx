@@ -611,12 +611,13 @@ const Directory: React.FC<
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
   const csvContent = settings.csvContent ?? "";
+  const csvUploadedAt = settings.csvUploadedAt ?? "";
   const isConfigured =
     source === "tokenHolders"
       ? normalizedAddress.length === 42
       : source === "farcasterChannel"
         ? channelName.length > 0
-        : csvContent.trim().length > 0;
+        : (csvUploadedAt as string).length > 0;
 
   const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
     members: data?.members ?? [],
