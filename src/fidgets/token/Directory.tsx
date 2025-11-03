@@ -680,7 +680,7 @@ const Directory: React.FC<
         const res = await fetch(
           `/api/farcaster/neynar/channel/members?id=${encodeURIComponent(
             (settings.channelName ?? "").trim(),
-          )}&limit=1000`,
+          )}&limit=100`,
           { signal: controller.signal },
         );
         if (!res.ok) throw new Error(await res.text());
@@ -778,17 +778,34 @@ const Directory: React.FC<
         return;
       }
       console.error(err);
-      setError((err as Error).message || "Failed to load directory");
+      const prefix = (settings.source ?? "tokenHolders") === "tokenHolders"
+        ? "Failed to load token directory"
+        : "Failed to load Farcaster channel users";
+      setError(`${prefix}: ${(err as Error).message || "Unknown error"}`);
+      setSuppressAutoRefresh(true);
     } finally {
       setIsRefreshing(false);
     }
   }, [isConfigured, settings.source, fetchTokenDirectory, fetchChannelDirectory]);
 
   useEffect(() => {
-    if (shouldRefresh && !isRefreshing) {
+    if (shouldRefresh && !isRefreshing && !suppressAutoRefresh) {
       void fetchDirectory();
     }
-  }, [fetchDirectory, isRefreshing, shouldRefresh]);
+  }, [fetchDirectory, isRefreshing, shouldRefresh, suppressAutoRefresh]);
+
+  // If fetch context changes, reset error and allow auto refresh
+  useEffect(() => {
+    setSuppressAutoRefresh(false);
+    setError(null);
+  }, [
+    source,
+    network,
+    normalizedAddress,
+    assetType,
+    channelName,
+    currentChannelFilter,
+  ]);
 
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") === "farcasterChannel") {
@@ -890,7 +907,11 @@ const Directory: React.FC<
           )}
           <button
             type="button"
-            onClick={() => fetchDirectory()}
+            onClick={() => {
+              setSuppressAutoRefresh(false);
+              setError(null);
+              void fetchDirectory();
+            }}
             className="rounded-full border border-black/10 px-3 py-1 font-semibold text-foreground transition hover:bg-black/5"
             disabled={isRefreshing}
           >
