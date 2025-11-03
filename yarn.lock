@@ -2421,7 +2421,7 @@
   resolved "https://registry.npmjs.org/@noble/ciphers/-/ciphers-1.3.0.tgz"
   integrity sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==
 
-"@noble/curves@1.4.2", "@noble/curves@1.7.0", "@noble/curves@1.8.0", "@noble/curves@1.8.1", "@noble/curves@1.9.2", "@noble/curves@1.9.6", "@noble/curves@^1.0.0", "@noble/curves@^1.3.0", "@noble/curves@^1.4.2", "@noble/curves@^1.6.0", "@noble/curves@^1.8.0", "@noble/curves@^1.9.1", "@noble/curves@~1.4.0", "@noble/curves@~1.7.0", "@noble/curves@~1.8.1", "@noble/curves@~1.9.0":
+"@noble/curves@1.4.2", "@noble/curves@1.7.0", "@noble/curves@1.8.0", "@noble/curves@1.8.1", "@noble/curves@1.9.1", "@noble/curves@1.9.2", "@noble/curves@1.9.6", "@noble/curves@^1.0.0", "@noble/curves@^1.3.0", "@noble/curves@^1.4.2", "@noble/curves@^1.6.0", "@noble/curves@^1.8.0", "@noble/curves@^1.9.1", "@noble/curves@~1.4.0", "@noble/curves@~1.7.0", "@noble/curves@~1.9.0":
   version "1.9.6"
   resolved "https://registry.npmjs.org/@noble/curves/-/curves-1.9.6.tgz"
   integrity sha512-GIKz/j99FRthB8icyJQA51E8Uk5hXmdyThjgQXRKiv9h0zeRlzSCLIzFw6K1LotZ3XuB7yzlf76qk7uBmTdFqA==
@@ -2433,7 +2433,7 @@
   resolved "https://registry.npmjs.org/@noble/ed25519/-/ed25519-2.3.0.tgz"
   integrity sha512-M7dvXL2B92/M7dw9+gzuydL8qn/jiqNHaoR3Q+cb1q1GHV7uwE17WCyFMG+Y+TZb5izcaXk5TdJRrDUxHXL78A==
 
-"@noble/hashes@1.4.0", "@noble/hashes@1.6.0", "@noble/hashes@1.7.0", "@noble/hashes@1.7.1", "@noble/hashes@1.8.0", "@noble/hashes@^1.1.2", "@noble/hashes@^1.3.0", "@noble/hashes@^1.3.1", "@noble/hashes@^1.4.0", "@noble/hashes@^1.5.0", "@noble/hashes@^1.7.1", "@noble/hashes@^1.8.0", "@noble/hashes@~1.4.0", "@noble/hashes@~1.6.0", "@noble/hashes@~1.7.1", "@noble/hashes@~1.8.0":
+"@noble/hashes@1.4.0", "@noble/hashes@1.6.0", "@noble/hashes@1.7.0", "@noble/hashes@1.7.1", "@noble/hashes@1.8.0", "@noble/hashes@^1.1.2", "@noble/hashes@^1.3.0", "@noble/hashes@^1.3.1", "@noble/hashes@^1.4.0", "@noble/hashes@^1.5.0", "@noble/hashes@^1.7.1", "@noble/hashes@^1.8.0", "@noble/hashes@~1.4.0", "@noble/hashes@~1.6.0", "@noble/hashes@~1.8.0":
   version "1.8.0"
   resolved "https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz"
   integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
@@ -4852,7 +4852,7 @@
   resolved "https://registry.npmjs.org/@scure/base/-/base-1.2.1.tgz"
   integrity sha512-DGmGtC8Tt63J5GfHgfl5CuAXh96VF/LD8K9Hr/Gv0J2lAoRGlPOMpqMpMbCTOoOJMZCk2Xt+DskdDyn6dEFdzQ==
 
-"@scure/base@1.2.6", "@scure/base@^1.1.3", "@scure/base@~1.2.2", "@scure/base@~1.2.4", "@scure/base@~1.2.5":
+"@scure/base@1.2.6", "@scure/base@^1.1.3", "@scure/base@~1.2.5":
   version "1.2.6"
   resolved "https://registry.npmjs.org/@scure/base/-/base-1.2.6.tgz"
   integrity sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg==
@@ -4871,7 +4871,7 @@
     "@noble/hashes" "~1.4.0"
     "@scure/base" "~1.1.6"
 
-"@scure/bip32@1.7.0", "@scure/bip32@^1.7.0":
+"@scure/bip32@1.7.0", "@scure/bip32@^1.5.0", "@scure/bip32@^1.7.0":
   version "1.7.0"
   resolved "https://registry.npmjs.org/@scure/bip32/-/bip32-1.7.0.tgz"
   integrity sha512-E4FFX/N3f4B80AKWp5dP6ow+flD1LQZo/w8UnLGYZO674jS6YnYeepycOOksv+vLPSpgN35wgKgy+ybfTb2SMw==
@@ -4879,15 +4879,6 @@
     "@noble/curves" "~1.9.0"
     "@noble/hashes" "~1.8.0"
     "@scure/base" "~1.2.5"
-
-"@scure/bip32@^1.5.0":
-  version "1.6.2"
-  resolved "https://registry.npmjs.org/@scure/bip32/-/bip32-1.6.2.tgz"
-  integrity sha512-t96EPDMbtGgtb7onKKqxRLfE5g05k7uHnHRM2xdE6BP/ZmxaLtPek4J4KfVn/90IQNrU1IOAqMgiDtUdtbe3nw==
-  dependencies:
-    "@noble/curves" "~1.8.1"
-    "@noble/hashes" "~1.7.1"
-    "@scure/base" "~1.2.2"
 
 "@scure/bip39@1.3.0":
   version "1.3.0"
@@ -4897,21 +4888,13 @@
     "@noble/hashes" "~1.4.0"
     "@scure/base" "~1.1.6"
 
-"@scure/bip39@1.6.0", "@scure/bip39@^1.6.0":
+"@scure/bip39@1.6.0", "@scure/bip39@^1.4.0", "@scure/bip39@^1.6.0":
   version "1.6.0"
   resolved "https://registry.npmjs.org/@scure/bip39/-/bip39-1.6.0.tgz"
   integrity sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==
   dependencies:
     "@noble/hashes" "~1.8.0"
     "@scure/base" "~1.2.5"
-
-"@scure/bip39@^1.4.0":
-  version "1.5.4"
-  resolved "https://registry.npmjs.org/@scure/bip39/-/bip39-1.5.4.tgz"
-  integrity sha512-TFM4ni0vKvCfBpohoh+/lY05i9gRbSwXWngAsF4CABQxoaOHijxuaZ2R6cStDQ5CHtHO9aGJTr4ksVJASRRyMA==
-  dependencies:
-    "@noble/hashes" "~1.7.1"
-    "@scure/base" "~1.2.4"
 
 "@scure/starknet@1.1.0":
   version "1.1.0"
@@ -6633,10 +6616,15 @@ abi-wan-kanabi@^2.2.3:
     fs-extra "^10.0.0"
     yargs "^17.7.2"
 
-abitype@1.0.8, abitype@^1.0.6, abitype@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.npmjs.org/abitype/-/abitype-1.0.8.tgz"
-  integrity sha512-ZeiI6h3GnW06uYDLx0etQtX/p8E24UaHHBj57RSjK7YBFe7iuVn07EDpOeP451D06sF27VOz9JJPlIKJmXgkEg==
+abitype@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/abitype/-/abitype-1.1.0.tgz#510c5b3f92901877977af5e864841f443bf55406"
+  integrity sha512-6Vh4HcRxNMLA0puzPjM5GBgT4aAcFGKZzSgAXvuZ27shJP6NEpielTuqbBmZILR5/xd0PizkBGy5hReKz9jl5A==
+
+abitype@^1.0.6, abitype@^1.0.9:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/abitype/-/abitype-1.1.1.tgz#b50ed400f8bfca5452eb4033445c309d3e1117c8"
+  integrity sha512-Loe5/6tAgsBukY95eGaPSDmQHIjRZYQq8PB1MpsNccDIK8WiV+Uw6WzaIXipvaxTEL2yEB0OpEaQv3gs8pkS9Q==
 
 abort-controller@^3.0.0:
   version "3.0.0"
@@ -12043,18 +12031,18 @@ ox@0.6.9:
     abitype "^1.0.6"
     eventemitter3 "5.0.1"
 
-ox@0.8.7:
-  version "0.8.7"
-  resolved "https://registry.npmjs.org/ox/-/ox-0.8.7.tgz"
-  integrity sha512-W1f0FiMf9NZqtHPEDEAEkyzZDwbIKfmH2qmQx8NNiQ/9JhxrSblmtLJsSfTtQG5YKowLOnBlLVguCyxm/7ztxw==
+ox@0.9.6:
+  version "0.9.6"
+  resolved "https://registry.yarnpkg.com/ox/-/ox-0.9.6.tgz#5cf02523b6db364c10ee7f293ff1e664e0e1eab7"
+  integrity sha512-8SuCbHPvv2eZLYXrNmC0EC12rdzXQLdhnOMlHDW2wiCPLxBrOOJwX5L5E61by+UjTPOryqQiRSnjIKCI+GykKg==
   dependencies:
     "@adraffy/ens-normalize" "^1.11.0"
     "@noble/ciphers" "^1.3.0"
-    "@noble/curves" "^1.9.1"
+    "@noble/curves" "1.9.1"
     "@noble/hashes" "^1.8.0"
     "@scure/bip32" "^1.7.0"
     "@scure/bip39" "^1.6.0"
-    abitype "^1.0.8"
+    abitype "^1.0.9"
     eventemitter3 "5.0.1"
 
 ox@^0.4.4:
@@ -15238,18 +15226,18 @@ videojs-vtt.js@0.15.5:
   dependencies:
     global "^4.3.1"
 
-viem@2.23.2, viem@2.31.0, viem@2.35.1, viem@>=2.29.0, viem@^2.1.1, viem@^2.16.5, viem@^2.17.4, viem@^2.21.44, viem@^2.21.9, viem@^2.27.2, viem@^2.31.7, viem@^2.35.1, viem@^2.7.8:
-  version "2.35.1"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.35.1.tgz#8555c6cbe645048d172e162d50b8f6d91f63d64e"
-  integrity sha512-BVGrI2xzMa+cWaUhhMuq+RV6t/8aHN08QAPG07OMFb3PBWc0AYubRMyIuxMKncFe8lJdxfRWNRYv1agoM/xSlQ==
+viem@2.23.2, viem@2.31.0, viem@2.38.6, viem@>=2.29.0, viem@^2.1.1, viem@^2.16.5, viem@^2.17.4, viem@^2.21.44, viem@^2.21.9, viem@^2.27.2, viem@^2.31.7, viem@^2.38.6, viem@^2.7.8:
+  version "2.38.6"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.38.6.tgz#ab315bef8f872bce86f0f145e9b008b5e94f1904"
+  integrity sha512-aqO6P52LPXRjdnP6rl5Buab65sYa4cZ6Cpn+k4OLOzVJhGIK8onTVoKMFMT04YjDfyDICa/DZyV9HmvLDgcjkw==
   dependencies:
-    "@noble/curves" "1.9.6"
+    "@noble/curves" "1.9.1"
     "@noble/hashes" "1.8.0"
     "@scure/bip32" "1.7.0"
     "@scure/bip39" "1.6.0"
-    abitype "1.0.8"
+    abitype "1.1.0"
     isows "1.0.7"
-    ox "0.8.7"
+    ox "0.9.6"
     ws "8.18.3"
 
 vite-node@1.6.1:
@@ -15685,12 +15673,12 @@ write-file-atomic@^6.0.0:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-ws@8.18.0, ws@^8.5.0:
+ws@8.18.0:
   version "8.18.0"
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.0.tgz"
   integrity sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==
 
-ws@8.18.3, ws@^8.18.2:
+ws@8.18.3, ws@^8.18.2, ws@^8.5.0:
   version "8.18.3"
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.3.tgz"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
