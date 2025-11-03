@@ -98,6 +98,7 @@ export type DirectoryFidgetSettings = FidgetSettings &
     csvContent?: string; // raw csv text
     csvUploadedAt?: string; // iso timestamp (legacy)
     csvUpload?: string; // iso timestamp to trigger refresh
+    csvFilename?: string; // last uploaded filename
   };
 
 const NETWORK_OPTIONS = [
@@ -237,6 +238,7 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
             updateSettings?.({
               csvContent: text,
               csvUpload: new Date().toISOString(),
+              csvFilename: file.name,
             });
           } catch (err) {
             console.error("Failed to read CSV", err);
@@ -266,6 +268,21 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
           </WithMargin>
         );
       },
+      group: "settings",
+    },
+    {
+      fieldName: "csvFilename",
+      displayName: "CSV File",
+      default: "",
+      required: false,
+      disabledIf: (settings) => settings?.source !== "csv",
+      inputSelector: (props) => (
+        <WithMargin>
+          <div className="text-xs text-muted-foreground">
+            <span className="font-semibold">{String(props.value || "—")}</span>
+          </div>
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
@@ -1233,17 +1250,15 @@ const Directory: React.FC<
     settings.csvSortBy,
   ]);
 
-  // Directly trigger CSV import after upload
+  // Directly trigger CSV import after upload (force fetch)
   useEffect(() => {
     if (
       (settings.source ?? "tokenHolders") === "csv" &&
       (settings.csvUpload ?? settings.csvUploadedAt)
     ) {
-      if (!isRefreshing && !suppressAutoRefresh) {
-        void fetchDirectory();
-      }
+      void fetchDirectory();
     }
-  }, [settings.source, settings.csvUpload, settings.csvUploadedAt]);
+  }, [settings.source, settings.csvUpload, settings.csvUploadedAt, fetchDirectory]);
 
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") !== "tokenHolders") {
