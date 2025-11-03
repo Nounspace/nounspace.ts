@@ -58,6 +58,7 @@ export const metadata: Metadata = {
         sizes: "16x16",
       },
     ],
+    // Apple touch icon should be a PNG; configs provide a valid PNG path now
     apple: config.assets.logos.appleTouch,
   },
   other: {
