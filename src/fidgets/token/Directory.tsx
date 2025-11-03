@@ -611,7 +611,6 @@ const Directory: React.FC<
   }, [settings.include, settings.layoutStyle, settings.sortBy, settings.channelFilter]);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
-  const csvContent = settings.csvContent ?? "";
   const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
   const isConfigured =
     source === "tokenHolders"
@@ -1136,7 +1135,14 @@ const Directory: React.FC<
         },
       });
     },
-    [persistDataIfChanged, settings.csvContent, settings.csvUpload, settings.csvUploadedAt, settings.csvType, settings.csvSortBy],
+    [
+      persistDataIfChanged,
+      settings.csvContent,
+      settings.csvUpload,
+      settings.csvUploadedAt,
+      settings.csvType,
+      settings.csvSortBy,
+    ],
   );
 
   const fetchDirectory = useCallback(async () => {

@@ -46,7 +46,7 @@ type AlchemyNftOwner = {
 };
 
 // Keep for reference in case we need to parse Alchemy responses again
-type AlchemyNftOwnersResponse = {
+type _AlchemyNftOwnersResponse = {
   owners?: AlchemyNftOwner[] | null;
   ownerAddresses?: AlchemyNftOwner[] | null;
   pageKey?: string | null;
