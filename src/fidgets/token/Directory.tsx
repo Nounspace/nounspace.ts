@@ -96,7 +96,8 @@ export type DirectoryFidgetSettings = FidgetSettings &
     csvType?: CsvTypeOption;
     csvSortBy?: CsvSortOption;
     csvContent?: string; // raw csv text
-    csvUploadedAt?: string; // iso timestamp
+    csvUploadedAt?: string; // iso timestamp (legacy)
+    csvUpload?: string; // iso timestamp to trigger refresh
   };
 
 const NETWORK_OPTIONS = [
@@ -235,7 +236,7 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
             const text = await file.text();
             updateSettings?.({
               csvContent: text,
-              csvUploadedAt: new Date().toISOString(),
+              csvUpload: new Date().toISOString(),
             });
           } catch (err) {
             console.error("Failed to read CSV", err);
@@ -611,7 +612,7 @@ const Directory: React.FC<
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
   const csvContent = settings.csvContent ?? "";
-  const csvUploadedAt = settings.csvUploadedAt ?? "";
+  const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
   const isConfigured =
     source === "tokenHolders"
       ? normalizedAddress.length === 42
@@ -694,7 +695,7 @@ const Directory: React.FC<
       }
     } else if (source === "csv") {
       if (
-        directoryData.fetchContext.csvUploadedAt !== (settings.csvUploadedAt ?? "") ||
+        directoryData.fetchContext.csvUploadedAt !== (settings.csvUpload ?? settings.csvUploadedAt ?? "") ||
         directoryData.fetchContext.csvType !== (settings.csvType ?? "username") ||
         directoryData.fetchContext.csvSortBy !== (settings.csvSortBy ?? "followers")
       ) {
@@ -718,6 +719,7 @@ const Directory: React.FC<
     settings.channelFilter,
     assetType,
     settings.csvUploadedAt,
+    settings.csvUpload,
     settings.csvType,
     settings.csvSortBy,
   ]);
@@ -1128,13 +1130,13 @@ const Directory: React.FC<
         lastUpdatedTimestamp: timestamp,
         fetchContext: {
           source: "csv",
-          csvUploadedAt: settings.csvUploadedAt ?? "",
+          csvUploadedAt: settings.csvUpload ?? settings.csvUploadedAt ?? "",
           csvType: type,
           csvSortBy,
         },
       });
     },
-    [persistDataIfChanged, settings.csvContent, settings.csvUploadedAt, settings.csvType, settings.csvSortBy],
+    [persistDataIfChanged, settings.csvContent, settings.csvUpload, settings.csvUploadedAt, settings.csvType, settings.csvSortBy],
   );
 
   const fetchDirectory = useCallback(async () => {
@@ -1191,6 +1193,7 @@ const Directory: React.FC<
     channelName,
     currentChannelFilter,
     settings.csvUploadedAt,
+    settings.csvUpload,
     settings.csvType,
     settings.csvSortBy,
   ]);
