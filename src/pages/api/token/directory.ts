@@ -579,14 +579,12 @@ export async function fetchDirectoryData(
     }
   }
 
+  // Always fetch ENS metadata for all unique addresses, even if
+  // Farcaster data is present. This ensures the response contains
+  // both Farcaster and ENS details so the client can render both badges.
   let ensMetadata: Record<string, EnsMetadata> = {};
-  const addressesMissingProfiles = uniqueAddresses.filter((address) => {
-    const profile = neynarProfiles[address];
-    return !profile || !("username" in profile) || !profile.username;
-  });
-
-  if (addressesMissingProfiles.length > 0) {
-    ensMetadata = await fetchEnsMetadata(addressesMissingProfiles, deps);
+  if (uniqueAddresses.length > 0) {
+    ensMetadata = await fetchEnsMetadata(uniqueAddresses, deps);
   }
 
   let resolvedDecimals = tokenDecimals ?? null;
