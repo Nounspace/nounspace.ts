@@ -606,11 +606,11 @@ async function fetchEnsMetadata(
       const existing = enstateMetadata[address] ?? {};
       let ensName: string | null = existing.ensName ?? null;
       let ensAvatarUrl: string | null = existing.ensAvatarUrl ?? null;
-      let twitterHandle: string | null = existing.twitterHandle ?? null;
-      let twitterUrl: string | null = existing.twitterUrl ?? null;
-      let githubHandle: string | null = existing.githubHandle ?? null;
-      let githubUrl: string | null = existing.githubUrl ?? null;
-      let primaryAddress: string | null = existing.primaryAddress
+      const twitterHandle: string | null = existing.twitterHandle ?? null;
+      const twitterUrl: string | null = existing.twitterUrl ?? null;
+      const githubHandle: string | null = existing.githubHandle ?? null;
+      const githubUrl: string | null = existing.githubUrl ?? null;
+      const primaryAddress: string | null = existing.primaryAddress
         ? normalizeAddress(existing.primaryAddress)
         : null;
 
