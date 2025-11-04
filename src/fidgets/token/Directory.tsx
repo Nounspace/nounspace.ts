@@ -547,6 +547,7 @@ const getEnsProfileUrl = (ensName?: string | null) =>
 type BadgeIconsProps = {
   username?: string | null;
   ensName?: string | null;
+  ensAvatarUrl?: string | null;
   fid?: number | null;
   size?: number; // px
   gapClassName?: string;
@@ -555,17 +556,25 @@ type BadgeIconsProps = {
 const BadgeIcons: React.FC<BadgeIconsProps> = ({
   username,
   ensName,
+  ensAvatarUrl,
   fid,
   size = 16,
   gapClassName,
 }) => {
-  const farcasterUrl = getFarcasterProfileUrl(username, fid);
+  const normalizedUsername = username?.replace(/^@/, "").trim();
   const hasFarcasterIdentity =
-    Boolean(username && username.trim().length > 0) || typeof fid === "number";
-  const ensUrl = getEnsProfileUrl(ensName);
-  const hasEnsIdentity = Boolean(ensName && ensName.trim().length > 0);
+    Boolean(normalizedUsername && normalizedUsername.length > 0) ||
+    typeof fid === "number";
+  const hasEnsIdentity =
+    Boolean(ensName && ensName.trim().length > 0) ||
+    Boolean(ensAvatarUrl && ensAvatarUrl.trim().length > 0);
 
   if (!hasFarcasterIdentity && !hasEnsIdentity) return null;
+
+  const farcasterUrl = hasFarcasterIdentity
+    ? getFarcasterProfileUrl(normalizedUsername, fid)
+    : null;
+  const ensUrl = hasEnsIdentity ? getEnsProfileUrl(ensName?.trim()) : null;
 
   const dim = `${size}px`;
   const imgClass = "rounded-full object-cover ring-1 ring-black/10";
@@ -1689,6 +1698,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                       <BadgeIcons
                         username={member.username}
                         ensName={member.ensName}
+                        ensAvatarUrl={member.ensAvatarUrl}
                         fid={member.fid}
                         size={16}
                       />
@@ -1791,6 +1801,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                     <BadgeIcons
                       username={member.username}
                       ensName={member.ensName}
+                      ensAvatarUrl={member.ensAvatarUrl}
                       fid={member.fid}
                       size={18}
                     />
