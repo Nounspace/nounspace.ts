@@ -610,6 +610,8 @@ export async function fetchDirectoryData(
     fid?: number | null;
     pfpUrl?: string | null;
     followers?: number | null;
+    ensName?: string | null;
+    ensAvatarUrl?: string | null;
   };
   const byFid = new Map<number, Agg>();
 
@@ -660,6 +662,8 @@ export async function fetchDirectoryData(
       current.fid = fid;
       current.pfpUrl = current.pfpUrl ?? pfpUrl;
       current.followers = current.followers ?? followers;
+      current.ensName = current.ensName ?? ensInfo?.ensName ?? null;
+      current.ensAvatarUrl = current.ensAvatarUrl ?? ensInfo?.ensAvatarUrl ?? null;
       byFid.set(fid, current);
     } else {
       members.push({
@@ -699,8 +703,8 @@ export async function fetchDirectoryData(
       fid: fid,
       followers: agg.followers ?? null,
       pfpUrl: agg.pfpUrl ?? null,
-      ensName: null,
-      ensAvatarUrl: null,
+      ensName: agg.ensName ?? null,
+      ensAvatarUrl: agg.ensAvatarUrl ?? null,
     });
   }
 
