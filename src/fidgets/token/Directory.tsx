@@ -31,6 +31,7 @@ import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 
 const STALE_AFTER_MS = 60 * 60 * 1000;
 const PAGE_SIZE = 100;
+const CHANNEL_FETCH_DEBOUNCE_MS = 400;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
 export type DirectoryAssetType = "token" | "nft";
@@ -710,6 +711,7 @@ const Directory: React.FC<
   }, []);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
+  const [debouncedChannelName, setDebouncedChannelName] = useState(channelName);
   const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
   const isConfigured =
     source === "tokenHolders"
@@ -754,6 +756,15 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
     };
   }, []);
 
+  useEffect(() => {
+    if (source !== "farcasterChannel") {
+      setDebouncedChannelName(channelName);
+      return;
+    }
+    const timer = setTimeout(() => setDebouncedChannelName(channelName), CHANNEL_FETCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [channelName, source]);
+
   const customSubheader = (settings.subheader ?? "").trim();
   const computedSubheader = useMemo(() => {
     if (customSubheader.length > 0) {
@@ -797,7 +808,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
 
     if (source === "farcasterChannel") {
       if (
-        context.channelName !== (settings.channelName ?? "").trim() ||
+        context.channelName !== debouncedChannelName ||
         context.channelFilter !== (settings.channelFilter ?? "members")
       ) {
         return true;
@@ -824,7 +835,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
     network,
     normalizedAddress,
     source,
-    settings.channelName,
+    debouncedChannelName,
     settings.channelFilter,
     assetType,
   ]);
