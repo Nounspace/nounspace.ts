@@ -212,7 +212,11 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput {...props} className="text-xs" placeholder="Optional subheader" />
+          <TextInput
+            {...props}
+            className="[&_label]:!normal-case"
+            placeholder="Optional subheader"
+          />
         </WithMargin>
       ),
       group: "settings",
@@ -307,55 +311,6 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
           </div>
         </WithMargin>
       ),
-      group: "settings",
-    },
-    {
-      fieldName: "refreshToken",
-      displayName: "Refresh Data",
-      default: "",
-      required: false,
-      disabledIf: (settings) => {
-        const source = settings?.source ?? "tokenHolders";
-        if (source === "tokenHolders") {
-          return !settings?.contractAddress;
-        }
-        if (source === "farcasterChannel") {
-          return !(settings?.channelName && settings.channelName.trim().length > 0);
-        }
-        if (source === "csv") {
-          return !(settings?.csvUpload ?? settings?.csvUploadedAt);
-        }
-        return true;
-      },
-      inputSelector: ({ updateSettings, settings }) => {
-        const source = settings?.source ?? "tokenHolders";
-        const label =
-          source === "csv"
-            ? "Refresh CSV Data"
-            : source === "farcasterChannel"
-              ? "Refresh Channel Data"
-              : "Refresh Token Holders";
-        const disabled =
-          source === "tokenHolders"
-            ? !(settings?.contractAddress && settings.contractAddress.trim().length === 42)
-            : source === "farcasterChannel"
-              ? !(settings?.channelName && settings.channelName.trim().length > 0)
-              : source === "csv"
-                ? !(settings?.csvUpload ?? settings?.csvUploadedAt)
-                : true;
-        return (
-          <WithMargin>
-            <button
-              type="button"
-              onClick={() => updateSettings?.({ refreshToken: new Date().toISOString() })}
-              className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5 disabled:opacity-50"
-              disabled={disabled}
-            >
-              {label}
-            </button>
-          </WithMargin>
-        );
-      },
       group: "settings",
     },
     {
@@ -503,6 +458,55 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
           />
         </WithMargin>
       ),
+      group: "settings",
+    },
+    {
+      fieldName: "refreshToken",
+      displayName: "Refresh Data",
+      default: "",
+      required: false,
+      disabledIf: (settings) => {
+        const source = settings?.source ?? "tokenHolders";
+        if (source === "tokenHolders") {
+          return !settings?.contractAddress;
+        }
+        if (source === "farcasterChannel") {
+          return !(settings?.channelName && settings.channelName.trim().length > 0);
+        }
+        if (source === "csv") {
+          return !(settings?.csvUpload ?? settings?.csvUploadedAt);
+        }
+        return true;
+      },
+      inputSelector: ({ updateSettings, settings }) => {
+        const source = settings?.source ?? "tokenHolders";
+        const label =
+          source === "csv"
+            ? "Refresh CSV Data"
+            : source === "farcasterChannel"
+              ? "Refresh Channel Data"
+              : "Refresh Token Holders";
+        const disabled =
+          source === "tokenHolders"
+            ? !(settings?.contractAddress && settings.contractAddress.trim().length === 42)
+            : source === "farcasterChannel"
+              ? !(settings?.channelName && settings.channelName.trim().length > 0)
+              : source === "csv"
+                ? !(settings?.csvUpload ?? settings?.csvUploadedAt)
+                : true;
+        return (
+          <WithMargin>
+            <button
+              type="button"
+              onClick={() => updateSettings?.({ refreshToken: new Date().toISOString() })}
+              className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5 disabled:opacity-50"
+              disabled={disabled}
+            >
+              {label}
+            </button>
+          </WithMargin>
+        );
+      },
       group: "settings",
     },
     ...styleFields,
@@ -678,21 +682,18 @@ const Directory: React.FC<
   const [currentLayout, setCurrentLayout] = useState<DirectoryLayoutStyle>(
     settings.layoutStyle,
   );
-  const [currentFilter, setCurrentFilter] = useState<DirectoryIncludeOption>(
-    settings.include,
-  );
   const [currentChannelFilter, setCurrentChannelFilter] = useState<DirectoryChannelFilterOption>(
     (settings.channelFilter ?? "members") as DirectoryChannelFilterOption,
   );
+  const includeFilter = (settings.include ?? "holdersWithFarcasterAccount") as DirectoryIncludeOption;
   const [currentPage, setCurrentPage] = useState<number>(1);
   // Keep defaults in sync if the fidget settings change
   useEffect(() => {
     setCurrentSort(sanitizeSortOption(settings.sortBy));
     setCurrentLayout(settings.layoutStyle);
-    setCurrentFilter(settings.include);
     setCurrentChannelFilter((settings.channelFilter ?? "members") as DirectoryChannelFilterOption);
     setCurrentPage(1);
-  }, [settings.include, settings.layoutStyle, settings.sortBy, settings.channelFilter]);
+  }, [settings.layoutStyle, settings.sortBy, settings.channelFilter]);
 
   useEffect(() => {
     return () => {
@@ -772,7 +773,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
   // Reset or clamp page when filter/sort/data changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [currentFilter, currentSort]);
+  }, [includeFilter, currentSort]);
 
   const shouldRefresh = useMemo(() => {
     if (!isConfigured) {
@@ -1458,11 +1459,11 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
       return true;
     });
     const members = sortMembers(deduped, currentSort);
-    if (currentFilter === "holdersWithFarcasterAccount") {
+    if (includeFilter === "holdersWithFarcasterAccount") {
       return members.filter((member) => Boolean(member.username));
     }
     return members;
-  }, [directoryData.members, currentFilter, currentSort, settings.source]);
+  }, [directoryData.members, includeFilter, currentSort, settings.source]);
 
   const pageCount = useMemo(() => {
     const total = filteredSortedMembers.length;
@@ -1487,7 +1488,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
           : currentChannelFilter === "followers"
             ? "No channel followers found."
             : "No users found for this channel.")
-      : currentFilter === "allHolders"
+      : includeFilter === "allHolders"
         ? "No holders found for this asset yet."
         : "No Farcaster profiles found for this asset yet.";
 
@@ -1572,14 +1573,6 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                 settings={SORT_OPTIONS as unknown as { name: string; value: string }[]}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="uppercase tracking-wide text-muted-foreground">Filter</span>
-              <SettingsSelector
-                onChange={(value) => setCurrentFilter(value as DirectoryIncludeOption)}
-                value={currentFilter}
-                settings={INCLUDE_OPTIONS as unknown as { name: string; value: string }[]}
-              />
-            </div>
           </>
         )}
         <div className="ml-auto flex items-center gap-2">
@@ -1614,7 +1607,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
               const fallbackHref =
                 (settings.source ?? "tokenHolders") === "tokenHolders" &&
-                currentFilter === "allHolders" &&
+                includeFilter === "allHolders" &&
                 !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
@@ -1684,7 +1677,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
               const fallbackHref =
                 (settings.source ?? "tokenHolders") === "tokenHolders" &&
-                currentFilter === "allHolders" &&
+                includeFilter === "allHolders" &&
                 !member.username
                   ? getBlockExplorerLink(network, member.address)
                   : undefined;
