@@ -731,6 +731,18 @@ const resolveFontFamily = (value: string | undefined, fallback: string): string 
   return value;
 };
 
+const formatTokenBalance = (value: string | null | undefined): string => {
+  if (value == null || value === "") return "0";
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return value;
+  }
+  return parsed.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
 const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
 const ENS_BADGE_SRC = "/images/ens.svg"; // ENS badge SVG placed in public/images
 const X_BADGE_SRC = "/images/twitter.avif";
@@ -2151,7 +2163,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
                     {(settings.source ?? "tokenHolders") === "tokenHolders" && (
                       <span className="font-semibold" style={headingTextStyle}>
-                        {member.balanceFormatted}
+                        {formatTokenBalance(member.balanceFormatted)}
                         {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                       </span>
                     )}
@@ -2222,7 +2234,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                         <div>
                           <dt className="uppercase tracking-wide" style={headingFontFamilyStyle}>Holdings</dt>
                           <dd className="font-semibold" style={headingTextStyle}>
-                            {member.balanceFormatted}
+                            {formatTokenBalance(member.balanceFormatted)}
                             {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                           </dd>
                         </div>
