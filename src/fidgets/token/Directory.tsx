@@ -35,10 +35,7 @@ const CHANNEL_FETCH_DEBOUNCE_MS = 400;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
 export type DirectoryAssetType = "token" | "nft";
-export type DirectorySortOption =
-  | "tokenHoldings"
-  | "followers"
-  | "recentlyUpdated";
+export type DirectorySortOption = "tokenHoldings" | "followers";
 export type DirectoryLayoutStyle = "cards" | "list";
 export type DirectoryIncludeOption =
   | "holdersWithFarcasterAccount"
@@ -113,7 +110,6 @@ const NETWORK_OPTIONS = [
 const SORT_OPTIONS = [
   { name: "Token holdings", value: "tokenHoldings" },
   { name: "Followers", value: "followers" },
-  { name: "Recently Updated", value: "recentlyUpdated" },
 ] as const satisfies ReadonlyArray<{
   name: string;
   value: DirectorySortOption;
@@ -640,6 +636,9 @@ const getLastActivityLabel = (timestamp?: string | null) => {
   return formatDistanceToNow(date, { addSuffix: true });
 };
 
+const sanitizeSortOption = (value: unknown): DirectorySortOption =>
+  value === "followers" ? "followers" : "tokenHoldings";
+
 const sortMembers = (
   members: DirectoryMemberData[],
   sortBy: DirectorySortOption,
@@ -648,15 +647,6 @@ const sortMembers = (
 
   if (sortBy === "followers") {
     entries.sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1));
-    return entries;
-  }
-
-  if (sortBy === "recentlyUpdated") {
-    entries.sort((a, b) => {
-      const aTime = a.lastTransferAt ? Date.parse(a.lastTransferAt) : 0;
-      const bTime = b.lastTransferAt ? Date.parse(b.lastTransferAt) : 0;
-      return bTime - aTime;
-    });
     return entries;
   }
 
@@ -683,7 +673,7 @@ const Directory: React.FC<
   const assetType: DirectoryAssetType = (settings.assetType ?? "token") as DirectoryAssetType;
   // Local view state (defaults from settings)
   const [currentSort, setCurrentSort] = useState<DirectorySortOption>(
-    settings.sortBy,
+    sanitizeSortOption(settings.sortBy),
   );
   const [currentLayout, setCurrentLayout] = useState<DirectoryLayoutStyle>(
     settings.layoutStyle,
@@ -697,7 +687,7 @@ const Directory: React.FC<
   const [currentPage, setCurrentPage] = useState<number>(1);
   // Keep defaults in sync if the fidget settings change
   useEffect(() => {
-    setCurrentSort(settings.sortBy);
+    setCurrentSort(sanitizeSortOption(settings.sortBy));
     setCurrentLayout(settings.layoutStyle);
     setCurrentFilter(settings.include);
     setCurrentChannelFilter((settings.channelFilter ?? "members") as DirectoryChannelFilterOption);
@@ -882,7 +872,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
 
       const sortedMembers = sortMembers(
         json.value.members ?? [],
-        settings.sortBy,
+        sanitizeSortOption(settings.sortBy),
       );
       const timestamp = new Date().toISOString();
 
