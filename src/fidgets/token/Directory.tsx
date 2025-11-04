@@ -1035,6 +1035,11 @@ const Directory: React.FC<
 
       const byKey = new Map<string, DirectoryMemberData>();
 
+      const chunkArray = <T,>(array: T[], size: number) =>
+        Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
+          array.slice(i * size, i * size + size),
+        );
+
       const mapUserToMember = (u: any): DirectoryMemberData => ({
         address: `fc_fid_${u?.fid ?? Math.random().toString(36).slice(2)}`,
         balanceRaw: "0",
@@ -1049,16 +1054,63 @@ const Directory: React.FC<
         ensAvatarUrl: null,
       });
 
-      if (type === "username" || type === "fid") {
-        const paramName = type === "username" ? "usernames" : "fids";
-        const chunks: string[][] = [];
-        for (let i = 0; i < unique.length; i += 100) {
-          chunks.push(unique.slice(i, i + 100));
-        }
-        for (const chunk of chunks) {
-          console.log("[Directory] CSV usernames/fids batch", chunk.length);
+      if (type === "username") {
+        const usernameChunks = chunkArray(unique, 50);
+        for (const usernames of usernameChunks) {
+          console.log("[Directory] CSV usernames batch", usernames.length);
+          const lookupParams = new URLSearchParams();
+          lookupParams.set("usernames", usernames.join(","));
+          const lookupRes = await fetch(
+            `/api/farcaster/neynar/getFids?${lookupParams.toString()}`,
+            { signal: controller.signal },
+          );
+          if (!lookupRes.ok) throw new Error(await lookupRes.text());
+          const lookupData = (await lookupRes.json()) as { username: string; fid: string }[];
+          const usernameOfFid = new Map<number, string>();
+          const fids = lookupData
+            .map((entry) => {
+              const fidNumber = Number(entry.fid);
+              if (Number.isFinite(fidNumber)) {
+                const uname = entry.username.toLowerCase();
+                usernameOfFid.set(fidNumber, uname);
+                return fidNumber;
+              }
+              return null;
+            })
+            .filter((fid): fid is number => fid !== null);
+
+          if (fids.length === 0) {
+            continue;
+          }
+
           const query = new URLSearchParams();
-          query.set(paramName, chunk.join(","));
+          query.set("fids", fids.join(","));
+          const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          const users: any[] = Array.isArray(data?.users) ? data.users : [];
+          users.forEach((u) => {
+            const member = mapUserToMember(u);
+            if (member.fid != null) {
+              byKey.set(String(member.fid), member);
+              const lookedUpUsername = usernameOfFid.get(member.fid);
+              const keyUsername = (member.username ?? lookedUpUsername)?.toLowerCase();
+              if (keyUsername) {
+                byKey.set(keyUsername, member);
+              }
+            } else if (member.username) {
+              byKey.set(member.username.toLowerCase(), member);
+            }
+          });
+        }
+      } else if (type === "fid") {
+        const fidChunks = chunkArray(unique, 100);
+        for (const chunk of fidChunks) {
+          console.log("[Directory] CSV fids batch", chunk.length);
+          const query = new URLSearchParams();
+          query.set("fids", chunk.join(","));
           const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
             signal: controller.signal,
           });
@@ -1073,12 +1125,7 @@ const Directory: React.FC<
         }
       } else if (type === "address") {
         // Batched Farcaster user resolution by address
-        const chunk = (arr: string[], size: number) =>
-          Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-            arr.slice(i * size, i * size + size),
-          );
-
-        const addressChunks = chunk(unique, 100);
+        const addressChunks = chunkArray(unique, 100);
         for (const ch of addressChunks) {
           if (ch.length === 0) continue;
           try {
@@ -1105,7 +1152,7 @@ const Directory: React.FC<
 
         // Batched ENS resolution via enstate.rs
         try {
-          const ensChunks = chunk(unique, 100);
+          const ensChunks = chunkArray(unique, 100);
           for (const ch of ensChunks) {
             if (ch.length === 0) continue;
             const url = new URL("https://enstate.rs/bulk/a");
