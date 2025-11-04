@@ -705,40 +705,50 @@ const Directory: React.FC<
       return false;
     }
 
+    const context = directoryData.fetchContext;
     const lastUpdated = directoryData.lastUpdatedTimestamp
       ? Date.parse(directoryData.lastUpdatedTimestamp)
       : 0;
 
-    if (!directoryData.fetchContext) {
+    // No prior context saved – trigger an initial fetch.
+    if (!context) {
       return true;
     }
 
-    // Source changed
-    if (directoryData.fetchContext.source !== source) {
+    // Source changed – force a fresh fetch to realign context.
+    if (context.source !== source) {
       return true;
     }
 
-    if (source === "tokenHolders") {
+    if (source === "csv") {
+      const currentCsvUpload = (settings.csvUpload ?? settings.csvUploadedAt) ?? "";
+      if (!currentCsvUpload) {
+        return false;
+      }
+
+      if (context.csvUploadedAt !== currentCsvUpload) {
+        return true;
+      }
+
+      if (!lastUpdated) {
+        return true;
+      }
+
+      return Date.now() - lastUpdated > CSV_STALE_AFTER_MS;
+    }
+
+    if (source === "farcasterChannel") {
       if (
-        directoryData.fetchContext.network !== network ||
-        normalizeAddress(directoryData.fetchContext.contractAddress || "") !==
-          normalizedAddress ||
-        directoryData.fetchContext.assetType !== assetType
+        context.channelName !== (settings.channelName ?? "").trim() ||
+        context.channelFilter !== (settings.channelFilter ?? "members")
       ) {
         return true;
       }
-    } else if (source === "farcasterChannel") {
+    } else if (source === "tokenHolders") {
       if (
-        directoryData.fetchContext.channelName !== (settings.channelName ?? "").trim() ||
-        directoryData.fetchContext.channelFilter !== (settings.channelFilter ?? "members")
-      ) {
-        return true;
-      }
-    } else if (source === "csv") {
-      if (
-        directoryData.fetchContext.csvUploadedAt !== (settings.csvUpload ?? settings.csvUploadedAt ?? "") ||
-        directoryData.fetchContext.csvType !== (settings.csvType ?? "username") ||
-        directoryData.fetchContext.csvSortBy !== (settings.csvSortBy ?? "followers")
+        context.network !== network ||
+        normalizeAddress(context.contractAddress || "") !== normalizedAddress ||
+        context.assetType !== assetType
       ) {
         return true;
       }
@@ -748,8 +758,7 @@ const Directory: React.FC<
       return true;
     }
 
-    const staleWindow = source === "csv" ? CSV_STALE_AFTER_MS : STALE_AFTER_MS;
-    return Date.now() - lastUpdated > staleWindow;
+    return Date.now() - lastUpdated > STALE_AFTER_MS;
   }, [
     directoryData.fetchContext,
     directoryData.lastUpdatedTimestamp,
@@ -762,8 +771,6 @@ const Directory: React.FC<
     assetType,
     settings.csvUploadedAt,
     settings.csvUpload,
-    settings.csvType,
-    settings.csvSortBy,
   ]);
 
   useEffect(() => {
@@ -1289,6 +1296,14 @@ const Directory: React.FC<
 
   useEffect(() => {
     if (shouldRefresh && !isRefreshing && !suppressAutoRefresh) {
+      console.log("[Directory] auto refresh", {
+        source,
+        shouldRefresh,
+        isRefreshing,
+        suppressAutoRefresh,
+        fetchContext: directoryData.fetchContext,
+        lastUpdated: directoryData.lastUpdatedTimestamp,
+      });
       void fetchDirectory();
     }
   }, [fetchDirectory, isRefreshing, shouldRefresh, suppressAutoRefresh]);
