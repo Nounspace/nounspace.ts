@@ -19,9 +19,11 @@ import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
-import FontSelector, {
+import FontSelector from "@/common/components/molecules/FontSelector";
+import {
+  FONT_FAMILY_OPTIONS,
   FONT_FAMILY_OPTIONS_BY_NAME,
-} from "@/common/components/molecules/FontSelector";
+} from "@/common/lib/theme/fonts";
 import {
   type FidgetArgs,
   type FidgetData,
@@ -719,10 +721,10 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
 
 const resolveFontFamily = (value: string | undefined, fallback: string): string => {
   if (!value) return fallback;
-  const fontOption =
-    FONT_FAMILY_OPTIONS_BY_NAME[
-      value as keyof typeof FONT_FAMILY_OPTIONS_BY_NAME
-    ];
+  const fontOption = FONT_FAMILY_OPTIONS.find(
+    (option) =>
+      option.name === value || option.config.style.fontFamily === value,
+  );
   if (fontOption?.config?.style?.fontFamily) {
     return fontOption.config.style.fontFamily as string;
   }
