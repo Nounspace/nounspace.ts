@@ -669,6 +669,7 @@ const Directory: React.FC<
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
+  const fetchDirectoryRef = useRef<() => void>();
 
   useEffect(() => {
     setDirectoryData({
@@ -1268,6 +1269,12 @@ const Directory: React.FC<
     }
   }, [fetchDirectory, isRefreshing, shouldRefresh, suppressAutoRefresh]);
 
+  useEffect(() => {
+    fetchDirectoryRef.current = () => {
+      void fetchDirectory();
+    };
+  }, [fetchDirectory]);
+
   // If fetch context changes, reset error and allow auto refresh
   useEffect(() => {
     setSuppressAutoRefresh(false);
@@ -1291,9 +1298,9 @@ const Directory: React.FC<
       (settings.source ?? "tokenHolders") === "csv" &&
       (settings.csvUpload ?? settings.csvUploadedAt)
     ) {
-      void fetchDirectory();
+      fetchDirectoryRef.current?.();
     }
-  }, [settings.source, settings.csvUpload, settings.csvUploadedAt, fetchDirectory]);
+  }, [settings.source, settings.csvUpload, settings.csvUploadedAt]);
 
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") !== "tokenHolders") {
