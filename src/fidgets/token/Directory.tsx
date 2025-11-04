@@ -530,15 +530,24 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
 const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
 const ENS_BADGE_SRC = "/images/ens.svg"; // ENS badge SVG placed in public/images
 
-const FarcasterProfileURL = (username?: string | null) =>
-  username ? `http://farcaster.xyz/${username}` : null;
+const getFarcasterProfileUrl = (username?: string | null, fid?: number | null) => {
+  const normalizedUsername = username?.replace(/^@/, "").trim();
+  if (normalizedUsername) {
+    return `https://warpcast.com/${normalizedUsername}`;
+  }
+  if (typeof fid === "number" && Number.isFinite(fid)) {
+    return `https://warpcast.com/~/identity?fid=${fid}`;
+  }
+  return null;
+};
 
-const EnsProfileURL = (ensName?: string | null) =>
+const getEnsProfileUrl = (ensName?: string | null) =>
   ensName ? `https://app.ens.domains/${ensName}` : null;
 
 type BadgeIconsProps = {
   username?: string | null;
   ensName?: string | null;
+  fid?: number | null;
   size?: number; // px
   gapClassName?: string;
 };
@@ -546,57 +555,91 @@ type BadgeIconsProps = {
 const BadgeIcons: React.FC<BadgeIconsProps> = ({
   username,
   ensName,
+  fid,
   size = 16,
   gapClassName,
 }) => {
-  const farcasterUrl = FarcasterProfileURL(username);
-  const ensUrl = EnsProfileURL(ensName);
+  const farcasterUrl = getFarcasterProfileUrl(username, fid);
+  const hasFarcasterIdentity =
+    Boolean(username && username.trim().length > 0) || typeof fid === "number";
+  const ensUrl = getEnsProfileUrl(ensName);
+  const hasEnsIdentity = Boolean(ensName && ensName.trim().length > 0);
 
-  if (!farcasterUrl && !ensUrl) return null;
+  if (!hasFarcasterIdentity && !hasEnsIdentity) return null;
 
   const dim = `${size}px`;
   const imgClass = "rounded-full object-cover ring-1 ring-black/10";
 
   return (
     <div className={mergeClasses("flex items-center gap-1", gapClassName)}>
-      {farcasterUrl && (
-        <a
-          href={farcasterUrl}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="View Farcaster profile"
-          title="Farcaster"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={FARCASTER_BADGE_SRC}
-            alt="Farcaster"
-            width={size}
-            height={size}
-            style={{ width: dim, height: dim }}
-            className={imgClass}
-          />
-        </a>
-      )}
-      {ensUrl && (
-        <a
-          href={ensUrl}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="View ENS profile"
-          title="ENS"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={ENS_BADGE_SRC}
-            alt="ENS"
-            width={size}
-            height={size}
-            style={{ width: dim, height: dim }}
-            className={imgClass}
-          />
-        </a>
-      )}
+      {hasFarcasterIdentity &&
+        (farcasterUrl ? (
+          <a
+            href={farcasterUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="View Farcaster profile"
+            title="Farcaster"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={FARCASTER_BADGE_SRC}
+              alt="Farcaster"
+              width={size}
+              height={size}
+              style={{ width: dim, height: dim }}
+              className={imgClass}
+            />
+          </a>
+        ) : (
+          <span
+            className="inline-flex"
+            aria-label="Farcaster profile"
+            title="Farcaster"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={FARCASTER_BADGE_SRC}
+              alt="Farcaster"
+              width={size}
+              height={size}
+              style={{ width: dim, height: dim }}
+              className={imgClass}
+            />
+          </span>
+        ))}
+      {hasEnsIdentity &&
+        (ensUrl ? (
+          <a
+            href={ensUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="View ENS profile"
+            title="ENS"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ENS_BADGE_SRC}
+              alt="ENS"
+              width={size}
+              height={size}
+              style={{ width: dim, height: dim }}
+              className={imgClass}
+            />
+          </a>
+        ) : (
+          <span className="inline-flex" aria-label="ENS profile" title="ENS">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ENS_BADGE_SRC}
+              alt="ENS"
+              width={size}
+              height={size}
+              style={{ width: dim, height: dim }}
+              className={imgClass}
+            />
+          </span>
+        ))}
     </div>
   );
 };
@@ -1646,6 +1689,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                       <BadgeIcons
                         username={member.username}
                         ensName={member.ensName}
+                        fid={member.fid}
                         size={16}
                       />
                     </div>
@@ -1744,7 +1788,12 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                   </ProfileLink>
                   {/* Badges overlay top-right */}
                   <div className="pointer-events-auto absolute right-2 top-2 z-10 flex items-center gap-1">
-                    <BadgeIcons username={member.username} ensName={member.ensName} size={18} />
+                    <BadgeIcons
+                      username={member.username}
+                      ensName={member.ensName}
+                      fid={member.fid}
+                      size={18}
+                    />
                   </div>
                 </div>
               );
