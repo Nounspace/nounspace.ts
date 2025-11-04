@@ -30,7 +30,6 @@ import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 
 const STALE_AFTER_MS = 60 * 60 * 1000;
-const CSV_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 100;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
@@ -100,6 +99,7 @@ export type DirectoryFidgetSettings = FidgetSettings &
     csvUploadedAt?: string; // iso timestamp (legacy)
     csvUpload?: string; // iso timestamp to trigger refresh
     csvFilename?: string; // last uploaded filename
+    csvRefreshToken?: string;
   };
 
 const NETWORK_OPTIONS = [
@@ -295,6 +295,26 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
           <div className="text-xs text-muted-foreground">
             <span className="font-semibold">{String(props.value || "—")}</span>
           </div>
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "csvRefreshToken",
+      displayName: "Refresh CSV Data",
+      default: "",
+      required: false,
+      disabledIf: (settings) => settings?.source !== "csv" || !(settings?.csvUpload ?? settings?.csvUploadedAt),
+      inputSelector: ({ updateSettings, settings }) => (
+        <WithMargin>
+          <button
+            type="button"
+            onClick={() => updateSettings?.({ csvRefreshToken: new Date().toISOString() })}
+            className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5 disabled:opacity-50"
+            disabled={!(settings?.csvUpload ?? settings?.csvUploadedAt)}
+          >
+            Refresh CSV Data
+          </button>
         </WithMargin>
       ),
       group: "settings",
@@ -670,11 +690,7 @@ const Directory: React.FC<
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
-  const fetchDirectoryRef = useRef<() => void>();
-  const lastProcessedCsvUploadRef = useRef<string | null>(null);
-  const [lastCsvFetchAt, setLastCsvFetchAt] = useState<string | null>(
-    data?.fetchContext?.source === "csv" ? data.fetchContext.csvUploadedAt ?? null : null,
-  );
+  const lastCsvTriggerRef = useRef<string | null>(null);
 
   useEffect(() => {
     setDirectoryData((prev) => ({
@@ -693,15 +709,6 @@ const Directory: React.FC<
   ]);
 
   useEffect(() => {
-    if (directoryData.fetchContext?.source === "csv") {
-      const csvAt = directoryData.fetchContext.csvUploadedAt ?? null;
-      if (csvAt && csvAt !== lastCsvFetchAt) {
-        setLastCsvFetchAt(csvAt);
-      }
-    }
-  }, [directoryData.fetchContext, lastCsvFetchAt]);
-
-  useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
     };
@@ -717,40 +724,21 @@ const Directory: React.FC<
       return false;
     }
 
+    if (source === "csv") {
+      return false;
+    }
+
     const context = directoryData.fetchContext;
     const lastUpdated = directoryData.lastUpdatedTimestamp
       ? Date.parse(directoryData.lastUpdatedTimestamp)
       : 0;
 
-    // No prior context saved – trigger an initial fetch.
     if (!context) {
       return true;
     }
 
-    // Source changed – force a fresh fetch to realign context.
     if (context.source !== source) {
       return true;
-    }
-
-    if (source === "csv") {
-      const currentCsvUpload = (settings.csvUpload ?? settings.csvUploadedAt) ?? "";
-      if (!currentCsvUpload) {
-        return false;
-      }
-
-      if (context.csvUploadedAt !== currentCsvUpload) {
-        return true;
-      }
-
-      if (!lastCsvFetchAt || lastCsvFetchAt !== currentCsvUpload) {
-        return true;
-      }
-
-      if (!lastUpdated) {
-        return true;
-      }
-
-      return Date.now() - lastUpdated > CSV_STALE_AFTER_MS;
     }
 
     if (source === "farcasterChannel") {
@@ -785,32 +773,6 @@ const Directory: React.FC<
     settings.channelName,
     settings.channelFilter,
     assetType,
-    settings.csvUploadedAt,
-    settings.csvUpload,
-    lastCsvFetchAt,
-  ]);
-
-  useEffect(() => {
-    if ((settings.source ?? "tokenHolders") === "csv") {
-      console.log("[Directory] shouldRefresh state", {
-        shouldRefresh,
-        isConfigured,
-        suppressAutoRefresh,
-        lastUpdated: directoryData.lastUpdatedTimestamp,
-        fetchContext: directoryData.fetchContext,
-        settingsCsvUpload: settings.csvUpload ?? settings.csvUploadedAt,
-        lastCsvFetchAt,
-      });
-    }
-  }, [
-    shouldRefresh,
-    suppressAutoRefresh,
-    directoryData.fetchContext,
-    directoryData.lastUpdatedTimestamp,
-    settings.source,
-    settings.csvUpload,
-    settings.csvUploadedAt,
-    lastCsvFetchAt,
   ]);
 
   const persistDataIfChanged = useCallback(
@@ -1245,12 +1207,10 @@ const Directory: React.FC<
         : members;
 
       const timestamp = new Date().toISOString();
-      if (process.env.NODE_ENV !== "production") {
       console.log("[Directory] CSV fetch complete", {
         members: finalMembers.length,
         sort: csvSortBy,
       });
-      }
       await persistDataIfChanged({
         members: finalMembers,
         tokenSymbol: null,
@@ -1263,7 +1223,6 @@ const Directory: React.FC<
           csvSortBy,
         },
       });
-      setLastCsvFetchAt(settings.csvUpload ?? settings.csvUploadedAt ?? null);
     },
     [
       persistDataIfChanged,
@@ -1315,24 +1274,13 @@ const Directory: React.FC<
   }, [isConfigured, settings.source, fetchTokenDirectory, fetchChannelDirectory, fetchCsvDirectory]);
 
   useEffect(() => {
+    if (source === "csv") {
+      return;
+    }
     if (shouldRefresh && !isRefreshing && !suppressAutoRefresh) {
-      console.log("[Directory] auto refresh", {
-        source,
-        shouldRefresh,
-        isRefreshing,
-        suppressAutoRefresh,
-        fetchContext: directoryData.fetchContext,
-        lastUpdated: directoryData.lastUpdatedTimestamp,
-      });
       void fetchDirectory();
     }
-  }, [fetchDirectory, isRefreshing, shouldRefresh, suppressAutoRefresh]);
-
-  useEffect(() => {
-    fetchDirectoryRef.current = () => {
-      void fetchDirectory();
-    };
-  }, [fetchDirectory]);
+  }, [source, fetchDirectory, isRefreshing, shouldRefresh, suppressAutoRefresh]);
 
   // If fetch context changes, reset error and allow auto refresh
   useEffect(() => {
@@ -1349,24 +1297,27 @@ const Directory: React.FC<
     settings.csvUpload,
     settings.csvType,
     settings.csvSortBy,
+    settings.csvRefreshToken,
   ]);
 
-  // Directly trigger CSV import after upload (force fetch)
+  // Trigger fetch when CSV upload or manual refresh changes
   useEffect(() => {
     if ((settings.source ?? "tokenHolders") !== "csv") {
+      lastCsvTriggerRef.current = null;
       return;
     }
-    const currentUpload = (settings.csvUpload ?? settings.csvUploadedAt) ?? "";
-    if (!currentUpload) {
+    const uploadToken = settings.csvUpload ?? settings.csvUploadedAt ?? "";
+    const refreshToken = settings.csvRefreshToken ?? "";
+    if (!uploadToken && !refreshToken) {
       return;
     }
-    if (lastProcessedCsvUploadRef.current === currentUpload) {
+    const combined = `${uploadToken}__${refreshToken}`;
+    if (lastCsvTriggerRef.current === combined) {
       return;
     }
-    setLastCsvFetchAt(null);
-    lastProcessedCsvUploadRef.current = currentUpload;
-    fetchDirectoryRef.current?.();
-  }, [settings.source, settings.csvUpload, settings.csvUploadedAt]);
+    lastCsvTriggerRef.current = combined;
+    void fetchDirectory();
+  }, [settings.source, settings.csvUpload, settings.csvUploadedAt, settings.csvRefreshToken, fetchDirectory]);
 
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") !== "tokenHolders") {
