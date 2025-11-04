@@ -18,6 +18,10 @@ import BoringAvatar from "boring-avatars";
 import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
+import FontSelector, {
+  FONT_FAMILY_OPTIONS_BY_NAME,
+} from "@/common/components/molecules/FontSelector";
 import {
   type FidgetArgs,
   type FidgetData,
@@ -105,6 +109,10 @@ export type DirectoryFidgetSettings = FidgetSettings &
     csvFilename?: string; // last uploaded filename
     refreshToken?: string;
     subheader?: string;
+    primaryFontFamily?: string;
+    primaryFontColor?: string;
+    secondaryFontFamily?: string;
+    secondaryFontColor?: string;
   };
 
 const NETWORK_OPTIONS = [
@@ -515,6 +523,68 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       },
       group: "settings",
     },
+    {
+      fieldName: "primaryFontFamily",
+      displayName: "Primary Font",
+      displayNameHint: "Applied to titles, member names, and other prominent text.",
+      default: "var(--user-theme-headings-font)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "primaryFontColor",
+      displayName: "Primary Font Color",
+      displayNameHint: "Color used for headings and primary text accents.",
+      default: "var(--user-theme-headings-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "secondaryFontFamily",
+      displayName: "Secondary Font",
+      displayNameHint: "Used for body copy and supporting text.",
+      default: "var(--user-theme-font)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "secondaryFontColor",
+      displayName: "Secondary Font Color",
+      displayNameHint: "Color applied to body text within the directory.",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#1f2933"
+            colorType="font color"
+          />
+        </WithMargin>
+      ),
+      group: "style",
+    },
     ...styleFields,
   ],
   size: {
@@ -645,6 +715,18 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
   mainnet: "https://etherscan.io/address/",
   base: "https://basescan.org/address/",
   polygon: "https://polygonscan.com/address/",
+};
+
+const resolveFontFamily = (value: string | undefined, fallback: string): string => {
+  if (!value) return fallback;
+  const fontOption =
+    FONT_FAMILY_OPTIONS_BY_NAME[
+      value as keyof typeof FONT_FAMILY_OPTIONS_BY_NAME
+    ];
+  if (fontOption?.config?.style?.fontFamily) {
+    return fontOption.config.style.fontFamily as string;
+  }
+  return value;
 };
 
 const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
@@ -967,6 +1049,40 @@ const Directory: React.FC<
       : source === "farcasterChannel"
         ? channelName.length > 0
         : (csvUploadedAt as string).length > 0;
+  const primaryFontFamily = useMemo(
+    () => resolveFontFamily(settings.primaryFontFamily, "var(--user-theme-headings-font)"),
+    [settings.primaryFontFamily],
+  );
+  const secondaryFontFamily = useMemo(
+    () => resolveFontFamily(settings.secondaryFontFamily, "var(--user-theme-font)"),
+    [settings.secondaryFontFamily],
+  );
+  const primaryFontColor =
+    settings.primaryFontColor || "var(--user-theme-headings-font-color)";
+  const secondaryFontColor = settings.secondaryFontColor || "var(--user-theme-font-color)";
+  const headingTextStyle = useMemo(
+    () =>
+      ({
+        fontFamily: primaryFontFamily,
+        color: primaryFontColor,
+      }) as React.CSSProperties,
+    [primaryFontFamily, primaryFontColor],
+  );
+  const secondaryTextStyle = useMemo(
+    () =>
+      ({
+        fontFamily: secondaryFontFamily,
+        color: secondaryFontColor,
+      }) as React.CSSProperties,
+    [secondaryFontFamily, secondaryFontColor],
+  );
+  const headingFontFamilyStyle = useMemo(
+    () =>
+      ({
+        fontFamily: primaryFontFamily,
+      }) as React.CSSProperties,
+    [primaryFontFamily],
+  );
 
 const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
   members: data?.members ?? [],
@@ -1844,10 +1960,15 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
 
   if (!isConfigured) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground">
+      <div
+        className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground"
+        style={secondaryTextStyle}
+      >
         {(settings.source ?? "tokenHolders") === "tokenHolders" ? (
           <>
-            <p className="font-medium">Connect a contract address to build the directory.</p>
+            <p className="font-medium" style={headingTextStyle}>
+              Connect a contract address to build the directory.
+            </p>
             <p className="max-w-[40ch] text-xs text-muted-foreground/80">
               Provide an ERC-20 token or NFT contract address and network to surface the
               holders with Farcaster profiles.
@@ -1855,14 +1976,18 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
           </>
         ) : (settings.source ?? "tokenHolders") === "farcasterChannel" ? (
           <>
-            <p className="font-medium">Enter a Farcaster channel name to build the directory.</p>
+            <p className="font-medium" style={headingTextStyle}>
+              Enter a Farcaster channel name to build the directory.
+            </p>
             <p className="max-w-[40ch] text-xs text-muted-foreground/80">
               Example: nouns, purple. The filter selects Members, Followers, or both.
             </p>
           </>
         ) : (
           <>
-            <p className="font-medium">Upload a CSV to build the directory.</p>
+            <p className="font-medium" style={headingTextStyle}>
+              Upload a CSV to build the directory.
+            </p>
             <p className="max-w-[40ch] text-xs text-muted-foreground/80">
               Choose Type (Address, FID, or Farcaster username), then use Upload CSV in settings.
             </p>
@@ -1873,12 +1998,23 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" style={secondaryTextStyle}>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
-          <span className="font-semibold text-foreground">Community Directory</span>
+          <span className="font-semibold" style={headingTextStyle}>
+            Community Directory
+          </span>
           {computedSubheader && (
-            <span className="text-muted-foreground/80">{computedSubheader}</span>
+            <span
+              className="text-xs font-medium"
+              style={{
+                ...headingFontFamilyStyle,
+                color: primaryFontColor,
+                opacity: 0.75,
+              }}
+            >
+              {computedSubheader}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-3 text-[11px]">
@@ -1980,9 +2116,9 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                       <ProfileLink
                         username={member.username}
                         fallbackHref={fallbackHref}
-                        className="block truncate font-semibold text-foreground hover:underline"
+                        className="block truncate font-semibold hover:underline"
                       >
-                        {primaryLabel}
+                        <span style={headingTextStyle}>{primaryLabel}</span>
                       </ProfileLink>
                       <BadgeIcons
                         username={member.username}
@@ -2012,7 +2148,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                   </div>
                   <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
                     {(settings.source ?? "tokenHolders") === "tokenHolders" && (
-                      <span className="font-semibold text-foreground">
+                      <span className="font-semibold" style={headingTextStyle}>
                         {member.balanceFormatted}
                         {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                       </span>
@@ -2071,7 +2207,9 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex flex-col text-sm">
-                        <span className="block truncate font-semibold text-foreground">{primaryLabel}</span>
+                        <span className="block truncate font-semibold" style={headingTextStyle}>
+                          {primaryLabel}
+                        </span>
                         {secondaryLabel && (
                           <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
                         )}
@@ -2080,8 +2218,8 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
                       {(settings.source ?? "tokenHolders") === "tokenHolders" && (
                         <div>
-                          <dt className="uppercase tracking-wide">Holdings</dt>
-                          <dd className="font-semibold text-foreground">
+                          <dt className="uppercase tracking-wide" style={headingFontFamilyStyle}>Holdings</dt>
+                          <dd className="font-semibold" style={headingTextStyle}>
                             {member.balanceFormatted}
                             {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
                           </dd>
@@ -2089,8 +2227,8 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                       )}
                       {typeof member.followers === "number" && (
                         <div>
-                          <dt className="uppercase tracking-wide">Followers</dt>
-                          <dd className="font-semibold text-foreground">
+                          <dt className="uppercase tracking-wide" style={headingFontFamilyStyle}>Followers</dt>
+                          <dd className="font-semibold" style={headingTextStyle}>
                             {member.followers.toLocaleString()}
                           </dd>
                         </div>
