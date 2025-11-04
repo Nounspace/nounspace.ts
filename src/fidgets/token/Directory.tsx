@@ -674,13 +674,13 @@ const Directory: React.FC<
   const lastProcessedCsvUploadRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setDirectoryData({
-      members: data?.members ?? [],
-      lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
-      tokenSymbol: data?.tokenSymbol ?? null,
-      tokenDecimals: data?.tokenDecimals ?? null,
-      fetchContext: data?.fetchContext,
-    });
+    setDirectoryData((prev) => ({
+      members: data?.members ?? prev.members,
+      lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
+      tokenSymbol: data?.tokenSymbol ?? prev.tokenSymbol ?? null,
+      tokenDecimals: data?.tokenDecimals ?? prev.tokenDecimals ?? null,
+      fetchContext: data?.fetchContext ?? prev.fetchContext,
+    }));
   }, [
     data?.members,
     data?.lastUpdatedTimestamp,
@@ -1122,7 +1122,7 @@ const Directory: React.FC<
             if (ch.length === 0) continue;
             const url = new URL("https://enstate.rs/bulk/a");
             ch.forEach((a) => url.searchParams.append("addresses[]", a));
-            console.log("[Directory] CSV address batch (ENS)", ch.length);
+      console.log("[Directory] CSV address batch (ENS)", ch.length);
             const res = await fetch(url.toString(), { signal: controller.signal });
             if (!res.ok) continue;
             const json = await res.json();
