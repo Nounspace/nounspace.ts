@@ -99,7 +99,8 @@ export type DirectoryFidgetSettings = FidgetSettings &
     csvUploadedAt?: string; // iso timestamp (legacy)
     csvUpload?: string; // iso timestamp to trigger refresh
     csvFilename?: string; // last uploaded filename
-    csvRefreshToken?: string;
+    refreshToken?: string;
+    subheader?: string;
   };
 
 const NETWORK_OPTIONS = [
@@ -207,6 +208,18 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       ),
       group: "settings",
     },
+    {
+      fieldName: "subheader",
+      displayName: "Subheader",
+      default: "",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} className="text-xs" placeholder="Optional subheader" />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
     // CSV-specific settings
     {
       fieldName: "csvType",
@@ -300,23 +313,52 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
       group: "settings",
     },
     {
-      fieldName: "csvRefreshToken",
-      displayName: "Refresh CSV Data",
+      fieldName: "refreshToken",
+      displayName: "Refresh Data",
       default: "",
       required: false,
-      disabledIf: (settings) => settings?.source !== "csv" || !(settings?.csvUpload ?? settings?.csvUploadedAt),
-      inputSelector: ({ updateSettings, settings }) => (
-        <WithMargin>
-          <button
-            type="button"
-            onClick={() => updateSettings?.({ csvRefreshToken: new Date().toISOString() })}
-            className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5 disabled:opacity-50"
-            disabled={!(settings?.csvUpload ?? settings?.csvUploadedAt)}
-          >
-            Refresh CSV Data
-          </button>
-        </WithMargin>
-      ),
+      disabledIf: (settings) => {
+        const source = settings?.source ?? "tokenHolders";
+        if (source === "tokenHolders") {
+          return !settings?.contractAddress;
+        }
+        if (source === "farcasterChannel") {
+          return !(settings?.channelName && settings.channelName.trim().length > 0);
+        }
+        if (source === "csv") {
+          return !(settings?.csvUpload ?? settings?.csvUploadedAt);
+        }
+        return true;
+      },
+      inputSelector: ({ updateSettings, settings }) => {
+        const source = settings?.source ?? "tokenHolders";
+        const label =
+          source === "csv"
+            ? "Refresh CSV Data"
+            : source === "farcasterChannel"
+              ? "Refresh Channel Data"
+              : "Refresh Token Holders";
+        const disabled =
+          source === "tokenHolders"
+            ? !(settings?.contractAddress && settings.contractAddress.trim().length === 42)
+            : source === "farcasterChannel"
+              ? !(settings?.channelName && settings.channelName.trim().length > 0)
+              : source === "csv"
+                ? !(settings?.csvUpload ?? settings?.csvUploadedAt)
+                : true;
+        return (
+          <WithMargin>
+            <button
+              type="button"
+              onClick={() => updateSettings?.({ refreshToken: new Date().toISOString() })}
+              className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5 disabled:opacity-50"
+              disabled={disabled}
+            >
+              {label}
+            </button>
+          </WithMargin>
+        );
+      },
       group: "settings",
     },
     {
@@ -662,13 +704,10 @@ const Directory: React.FC<
   }, [settings.include, settings.layoutStyle, settings.sortBy, settings.channelFilter]);
 
   useEffect(() => {
-    if ((settings.source ?? "tokenHolders") === "csv") {
-      console.log("[Directory] csvContent length", settings.csvContent?.length ?? 0);
-      if (settings.csvContent) {
-        console.log("[Directory] csvContent preview", settings.csvContent.slice(0, 120));
-      }
-    }
-  }, [settings.csvContent, settings.source]);
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
   const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
@@ -679,18 +718,19 @@ const Directory: React.FC<
         ? channelName.length > 0
         : (csvUploadedAt as string).length > 0;
 
-  const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
-    members: data?.members ?? [],
-    lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
-    tokenSymbol: data?.tokenSymbol ?? null,
-    tokenDecimals: data?.tokenDecimals ?? null,
-    fetchContext: data?.fetchContext,
-  });
+const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
+  members: data?.members ?? [],
+  lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
+  tokenSymbol: data?.tokenSymbol ?? null,
+  tokenDecimals: data?.tokenDecimals ?? null,
+  fetchContext: data?.fetchContext,
+});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
   const lastCsvTriggerRef = useRef<string | null>(null);
+  const lastManualRefreshRef = useRef<string | null>(null);
 
   useEffect(() => {
     setDirectoryData((prev) => ({
@@ -713,6 +753,20 @@ const Directory: React.FC<
       abortControllerRef.current?.abort();
     };
   }, []);
+
+  const customSubheader = (settings.subheader ?? "").trim();
+  const computedSubheader = useMemo(() => {
+    if (customSubheader.length > 0) {
+      return customSubheader;
+    }
+    if (source === "tokenHolders") {
+      return directoryData.tokenSymbol ? `${directoryData.tokenSymbol} • ${network}` : null;
+    }
+    if (source === "farcasterChannel") {
+      return channelName ? `/${channelName}` : null;
+    }
+    return null;
+  }, [customSubheader, source, directoryData.tokenSymbol, network, channelName]);
 
   // Reset or clamp page when filter/sort/data changes
   useEffect(() => {
@@ -1344,7 +1398,7 @@ const Directory: React.FC<
     settings.csvUpload,
     settings.csvType,
     settings.csvSortBy,
-    settings.csvRefreshToken,
+    settings.refreshToken,
   ]);
 
   // Trigger fetch when CSV upload or manual refresh changes
@@ -1354,7 +1408,7 @@ const Directory: React.FC<
       return;
     }
     const uploadToken = settings.csvUpload ?? settings.csvUploadedAt ?? "";
-    const refreshToken = settings.csvRefreshToken ?? "";
+    const refreshToken = settings.refreshToken ?? "";
     if (!uploadToken && !refreshToken) {
       return;
     }
@@ -1363,8 +1417,28 @@ const Directory: React.FC<
       return;
     }
     lastCsvTriggerRef.current = combined;
+    setSuppressAutoRefresh(false);
+    setError(null);
     void fetchDirectory();
-  }, [settings.source, settings.csvUpload, settings.csvUploadedAt, settings.csvRefreshToken, fetchDirectory]);
+  }, [settings.source, settings.csvUpload, settings.csvUploadedAt, settings.refreshToken, fetchDirectory]);
+
+  useEffect(() => {
+    if ((settings.source ?? "tokenHolders") === "csv") {
+      return;
+    }
+    const token = settings.refreshToken ?? "";
+    if (!token) {
+      return;
+    }
+    const key = `${settings.source ?? "tokenHolders"}__${token}`;
+    if (lastManualRefreshRef.current === key) {
+      return;
+    }
+    lastManualRefreshRef.current = key;
+    setSuppressAutoRefresh(false);
+    setError(null);
+    void fetchDirectory();
+  }, [settings.refreshToken, settings.source, fetchDirectory]);
 
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") !== "tokenHolders") {
@@ -1464,16 +1538,8 @@ const Directory: React.FC<
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-foreground">Community Directory</span>
-          {(settings.source ?? "tokenHolders") === "tokenHolders" ? (
-            directoryData.tokenSymbol && (
-              <span className="text-muted-foreground/80">
-                {directoryData.tokenSymbol} • {network}
-              </span>
-            )
-          ) : (settings.source ?? "tokenHolders") === "farcasterChannel" ? (
-            <span className="text-muted-foreground/80">/{(settings.channelName ?? "").trim()}</span>
-          ) : (
-            <span className="text-muted-foreground/80">CSV • {(settings.csvType ?? "username")}</span>
+          {computedSubheader && (
+            <span className="text-muted-foreground/80">{computedSubheader}</span>
           )}
         </div>
         <div className="flex items-center gap-3 text-[11px]">
@@ -1482,18 +1548,6 @@ const Directory: React.FC<
               Updated {lastUpdatedLabel}
             </span>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              setSuppressAutoRefresh(false);
-              setError(null);
-              void fetchDirectory();
-            }}
-            className="rounded-full border border-black/10 px-3 py-1 font-semibold text-foreground transition hover:bg-black/5"
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? "Refreshing…" : "Refresh"}
-          </button>
         </div>
       </div>
 
