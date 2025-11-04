@@ -30,6 +30,7 @@ import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 
 const STALE_AFTER_MS = 60 * 60 * 1000;
+const CSV_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 const PAGE_SIZE = 100;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
@@ -670,6 +671,7 @@ const Directory: React.FC<
   const abortControllerRef = useRef<AbortController | null>(null);
   const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
   const fetchDirectoryRef = useRef<() => void>();
+  const lastProcessedCsvUploadRef = useRef<string | null>(null);
 
   useEffect(() => {
     setDirectoryData({
@@ -746,7 +748,8 @@ const Directory: React.FC<
       return true;
     }
 
-    return Date.now() - lastUpdated > STALE_AFTER_MS;
+    const staleWindow = source === "csv" ? CSV_STALE_AFTER_MS : STALE_AFTER_MS;
+    return Date.now() - lastUpdated > staleWindow;
   }, [
     directoryData.fetchContext,
     directoryData.lastUpdatedTimestamp,
@@ -761,6 +764,27 @@ const Directory: React.FC<
     settings.csvUpload,
     settings.csvType,
     settings.csvSortBy,
+  ]);
+
+  useEffect(() => {
+    if ((settings.source ?? "tokenHolders") === "csv") {
+      console.log("[Directory] shouldRefresh state", {
+        shouldRefresh,
+        isConfigured,
+        suppressAutoRefresh,
+        lastUpdated: directoryData.lastUpdatedTimestamp,
+        fetchContext: directoryData.fetchContext,
+        settingsCsvUpload: settings.csvUpload ?? settings.csvUploadedAt,
+      });
+    }
+  }, [
+    shouldRefresh,
+    suppressAutoRefresh,
+    directoryData.fetchContext,
+    directoryData.lastUpdatedTimestamp,
+    settings.source,
+    settings.csvUpload,
+    settings.csvUploadedAt,
   ]);
 
   const persistDataIfChanged = useCallback(
@@ -1294,12 +1318,18 @@ const Directory: React.FC<
 
   // Directly trigger CSV import after upload (force fetch)
   useEffect(() => {
-    if (
-      (settings.source ?? "tokenHolders") === "csv" &&
-      (settings.csvUpload ?? settings.csvUploadedAt)
-    ) {
-      fetchDirectoryRef.current?.();
+    if ((settings.source ?? "tokenHolders") !== "csv") {
+      return;
     }
+    const currentUpload = (settings.csvUpload ?? settings.csvUploadedAt) ?? "";
+    if (!currentUpload) {
+      return;
+    }
+    if (lastProcessedCsvUploadRef.current === currentUpload) {
+      return;
+    }
+    lastProcessedCsvUploadRef.current = currentUpload;
+    fetchDirectoryRef.current?.();
   }, [settings.source, settings.csvUpload, settings.csvUploadedAt]);
 
   const filteredSortedMembers = useMemo(() => {
