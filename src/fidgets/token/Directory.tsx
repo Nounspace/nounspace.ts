@@ -58,6 +58,12 @@ export interface DirectoryMemberData {
   lastTransferAt?: string | null;
   ensName?: string | null;
   ensAvatarUrl?: string | null;
+  primaryAddress?: string | null;
+  etherscanUrl?: string | null;
+  xHandle?: string | null;
+  xUrl?: string | null;
+  githubHandle?: string | null;
+  githubUrl?: string | null;
 }
 
 export interface DirectoryFetchContext {
@@ -519,6 +525,120 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
   },
 };
 
+const parseSocialRecordValue = (
+  value: unknown,
+  platform: "twitter" | "github",
+): { handle: string; url: string } | null => {
+  if (typeof value !== "string") {
+    return null;
+  }
+  let handle = value.trim();
+  if (!handle) return null;
+
+  const patterns =
+    platform === "twitter"
+      ? [
+          /^https?:\/\/(www\.)?twitter\.com\//i,
+          /^https?:\/\/(www\.)?x\.com\//i,
+        ]
+      : [/^https?:\/\/(www\.)?github\.com\//i];
+
+  for (const pattern of patterns) {
+    handle = handle.replace(pattern, "");
+  }
+
+  handle = handle.replace(/^@/, "");
+  handle = handle.replace(/\/+$/, "");
+  if (!handle) return null;
+
+  const url =
+    platform === "twitter"
+      ? `https://twitter.com/${handle}`
+      : `https://github.com/${handle}`;
+  return { handle, url };
+};
+
+const extractNeynarPrimaryAddress = (user: any): string | null => {
+  if (!user || typeof user !== "object") return null;
+  const verified = (user as { verified_addresses?: any }).verified_addresses;
+  if (verified && typeof verified === "object") {
+    const primary = verified.primary;
+    if (primary && typeof primary.eth_address === "string" && primary.eth_address) {
+      return primary.eth_address.toLowerCase();
+    }
+    if (Array.isArray(verified.eth_addresses)) {
+      const candidate = verified.eth_addresses.find(
+        (value: unknown): value is string =>
+          typeof value === "string" && value.length > 0,
+      );
+      if (candidate) {
+        return candidate.toLowerCase();
+      }
+    }
+  }
+  const custody = (user as { custody_address?: string | null }).custody_address;
+  if (typeof custody === "string" && custody) {
+    return custody.toLowerCase();
+  }
+  const verifications = (user as { verifications?: string[] }).verifications;
+  if (Array.isArray(verifications)) {
+    const candidate = verifications.find(
+      (value): value is string => typeof value === "string" && value.length > 0,
+    );
+    if (candidate) {
+      return candidate.toLowerCase();
+    }
+  }
+  const authAddresses = (user as { auth_addresses?: Array<{ address?: string }> }).auth_addresses;
+  if (Array.isArray(authAddresses)) {
+    const entry = authAddresses.find(
+      (item) => item && typeof item.address === "string" && item.address.length > 0,
+    );
+    if (entry?.address) {
+      return entry.address.toLowerCase();
+    }
+  }
+  return null;
+};
+
+const extractNeynarSocialAccounts = (
+  user: any,
+): {
+  xHandle: string | null;
+  xUrl: string | null;
+  githubHandle: string | null;
+  githubUrl: string | null;
+} => {
+  if (!user || typeof user !== "object") {
+    return { xHandle: null, xUrl: null, githubHandle: null, githubUrl: null };
+  }
+  const verifiedAccounts = (user as { verified_accounts?: Array<any> }).verified_accounts;
+  let xHandle: string | null = null;
+  let xUrl: string | null = null;
+  let githubHandle: string | null = null;
+  let githubUrl: string | null = null;
+  if (Array.isArray(verifiedAccounts)) {
+    for (const account of verifiedAccounts) {
+      const platform =
+        typeof account?.platform === "string" ? account.platform.toLowerCase() : "";
+      const username =
+        typeof account?.username === "string" ? account.username.replace(/^@/, "").trim() : "";
+      if (!username) continue;
+      if (!xHandle && (platform === "x" || platform === "twitter")) {
+        xHandle = username;
+        xUrl = `https://twitter.com/${username}`;
+      } else if (!githubHandle && platform === "github") {
+        githubHandle = username;
+        githubUrl = `https://github.com/${username}`;
+      }
+    }
+  }
+  return { xHandle, xUrl, githubHandle, githubUrl };
+};
+
+const buildEtherscanUrl = (address?: string | null) =>
+  address ? `https://etherscan.io/address/${address.toLowerCase()}` : null;
+
 const normalizeAddress = (address: string) => address.trim().toLowerCase();
 
 const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
@@ -529,6 +649,9 @@ const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
 
 const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
 const ENS_BADGE_SRC = "/images/ens.svg"; // ENS badge SVG placed in public/images
+const X_BADGE_SRC = "/images/twitter.avif";
+const GITHUB_BADGE_SRC = "/images/github.svg";
+const ETHERSCAN_BADGE_SRC = "/images/etherscan.svg";
 
 const getFarcasterProfileUrl = (username?: string | null, fid?: number | null) => {
   const normalizedUsername = username?.replace(/^@/, "").trim();
@@ -549,6 +672,12 @@ type BadgeIconsProps = {
   ensName?: string | null;
   ensAvatarUrl?: string | null;
   fid?: number | null;
+  primaryAddress?: string | null;
+  etherscanUrl?: string | null;
+  xHandle?: string | null;
+  xUrl?: string | null;
+  githubHandle?: string | null;
+  githubUrl?: string | null;
   size?: number; // px
   gapClassName?: string;
 };
@@ -558,6 +687,12 @@ const BadgeIcons: React.FC<BadgeIconsProps> = ({
   ensName,
   ensAvatarUrl,
   fid,
+  primaryAddress,
+  etherscanUrl,
+  xHandle,
+  xUrl,
+  githubHandle,
+  githubUrl,
   size = 16,
   gapClassName,
 }) => {
@@ -565,35 +700,140 @@ const BadgeIcons: React.FC<BadgeIconsProps> = ({
   const hasFarcasterIdentity =
     Boolean(normalizedUsername && normalizedUsername.length > 0) ||
     typeof fid === "number";
-  const hasEnsIdentity =
-    Boolean(ensName && ensName.trim().length > 0) ||
-    Boolean(ensAvatarUrl && ensAvatarUrl.trim().length > 0);
-
-  if (!hasFarcasterIdentity && !hasEnsIdentity) return null;
-
   const farcasterUrl = hasFarcasterIdentity
     ? getFarcasterProfileUrl(normalizedUsername, fid)
     : null;
+
+  const hasEnsIdentity =
+    Boolean(ensName && ensName.trim().length > 0) ||
+    Boolean(ensAvatarUrl && ensAvatarUrl.trim().length > 0);
   const ensUrl = hasEnsIdentity ? getEnsProfileUrl(ensName?.trim()) : null;
+
+  const normalizedPrimaryAddress = primaryAddress
+    ? primaryAddress.trim().toLowerCase()
+    : null;
+  const resolvedEtherscanUrl =
+    etherscanUrl ??
+    (normalizedPrimaryAddress
+      ? `https://etherscan.io/address/${normalizedPrimaryAddress}`
+      : null);
+
+  const normalizedXHandle = xHandle?.replace(/^@/, "").trim() || "";
+  const fallbackXHandleFromUrl =
+    !normalizedXHandle && xUrl
+      ? xUrl.replace(/^https?:\/\/(www\.)?(twitter|x)\.com\//i, "").replace(/\/+$/, "")
+      : "";
+  const finalXHandle = normalizedXHandle || fallbackXHandleFromUrl || null;
+  const finalXUrl =
+    xUrl ?? (finalXHandle ? `https://twitter.com/${finalXHandle}` : null);
+  const hasXIdentity = Boolean(finalXHandle || finalXUrl);
+
+  const normalizedGithubHandle = githubHandle?.replace(/^@/, "").trim() || "";
+  const fallbackGithubHandleFromUrl =
+    !normalizedGithubHandle && githubUrl
+      ? githubUrl.replace(/^https?:\/\/(www\.)?github\.com\//i, "").replace(/\/+$/, "")
+      : "";
+  const finalGithubHandle =
+    normalizedGithubHandle || fallbackGithubHandleFromUrl || null;
+  const finalGithubUrl =
+    githubUrl ?? (finalGithubHandle ? `https://github.com/${finalGithubHandle}` : null);
+  const hasGithubIdentity = Boolean(finalGithubHandle || finalGithubUrl);
+
+  const hasEtherscan = Boolean(resolvedEtherscanUrl);
+
+  if (
+    !hasFarcasterIdentity &&
+    !hasEnsIdentity &&
+    !hasXIdentity &&
+    !hasGithubIdentity &&
+    !hasEtherscan
+  ) {
+    return null;
+  }
 
   const dim = `${size}px`;
   const imgClass = "rounded-full object-cover ring-1 ring-black/10";
 
+  type BadgeEntry = {
+    key: string;
+    src: string;
+    alt: string;
+    title: string;
+    href?: string | null;
+  };
+
+  const badges: BadgeEntry[] = [];
+
+  if (hasFarcasterIdentity) {
+    badges.push({
+      key: "farcaster",
+      src: FARCASTER_BADGE_SRC,
+      alt: "Farcaster",
+      title: normalizedUsername
+        ? `Farcaster (@${normalizedUsername})`
+        : "Farcaster profile",
+      href: farcasterUrl,
+    });
+  }
+
+  if (hasEnsIdentity) {
+    badges.push({
+      key: "ens",
+      src: ENS_BADGE_SRC,
+      alt: "ENS",
+      title: ensName ? `ENS (${ensName})` : "ENS profile",
+      href: ensUrl,
+    });
+  }
+
+  if (hasXIdentity) {
+    badges.push({
+      key: "x",
+      src: X_BADGE_SRC,
+      alt: "X",
+      title: finalXHandle ? `X (@${finalXHandle})` : "X profile",
+      href: finalXUrl,
+    });
+  }
+
+  if (hasGithubIdentity) {
+    badges.push({
+      key: "github",
+      src: GITHUB_BADGE_SRC,
+      alt: "GitHub",
+      title: finalGithubHandle ? `GitHub (${finalGithubHandle})` : "GitHub profile",
+      href: finalGithubUrl,
+    });
+  }
+
+  if (hasEtherscan) {
+    badges.push({
+      key: "etherscan",
+      src: ETHERSCAN_BADGE_SRC,
+      alt: "Etherscan",
+      title: normalizedPrimaryAddress
+        ? `View ${normalizedPrimaryAddress} on Etherscan`
+        : "View on Etherscan",
+      href: resolvedEtherscanUrl,
+    });
+  }
+
   return (
     <div className={mergeClasses("flex items-center gap-1", gapClassName)}>
-      {hasFarcasterIdentity &&
-        (farcasterUrl ? (
+      {badges.map((badge) =>
+        badge.href ? (
           <a
-            href={farcasterUrl}
+            key={badge.key}
+            href={badge.href}
             target="_blank"
             rel="noreferrer"
-            aria-label="View Farcaster profile"
-            title="Farcaster"
+            aria-label={badge.title}
+            title={badge.title}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={FARCASTER_BADGE_SRC}
-              alt="Farcaster"
+              src={badge.src}
+              alt={badge.alt}
               width={size}
               height={size}
               style={{ width: dim, height: dim }}
@@ -601,54 +841,19 @@ const BadgeIcons: React.FC<BadgeIconsProps> = ({
             />
           </a>
         ) : (
-          <span
-            className="inline-flex"
-            aria-label="Farcaster profile"
-            title="Farcaster"
-          >
+          <span key={badge.key} className="inline-flex" aria-label={badge.title} title={badge.title}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={FARCASTER_BADGE_SRC}
-              alt="Farcaster"
+              src={badge.src}
+              alt={badge.alt}
               width={size}
               height={size}
               style={{ width: dim, height: dim }}
               className={imgClass}
             />
           </span>
-        ))}
-      {hasEnsIdentity &&
-        (ensUrl ? (
-          <a
-            href={ensUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="View ENS profile"
-            title="ENS"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={ENS_BADGE_SRC}
-              alt="ENS"
-              width={size}
-              height={size}
-              style={{ width: dim, height: dim }}
-              className={imgClass}
-            />
-          </a>
-        ) : (
-          <span className="inline-flex" aria-label="ENS profile" title="ENS">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={ENS_BADGE_SRC}
-              alt="ENS"
-              width={size}
-              height={size}
-              style={{ width: dim, height: dim }}
-              className={imgClass}
-            />
-          </span>
-        ))}
+        ),
+      )}
     </div>
   );
 };
@@ -1009,19 +1214,30 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
         users = Array.from(byFid.values());
       }
 
-      const members: DirectoryMemberData[] = users.map((u) => ({
-        address: `fc_fid_${u.fid ?? Math.random().toString(36).slice(2)}`,
-        balanceRaw: "0",
-        balanceFormatted: "",
-        username: u.username ?? undefined,
-        displayName: u.display_name ?? undefined,
-        fid: typeof u.fid === "number" ? u.fid : undefined,
-        pfpUrl: u.pfp_url ?? undefined,
-        followers: typeof u.follower_count === "number" ? u.follower_count : undefined,
-        lastTransferAt: null,
-        ensName: null,
-        ensAvatarUrl: null,
-      }));
+      const members: DirectoryMemberData[] = users.map((u) => {
+        const primaryAddress = extractNeynarPrimaryAddress(u);
+        const { xHandle: userXHandle, xUrl: userXUrl, githubHandle: userGithubHandle, githubUrl: userGithubUrl } =
+          extractNeynarSocialAccounts(u);
+        return {
+          address: `fc_fid_${u.fid ?? Math.random().toString(36).slice(2)}`,
+          balanceRaw: "0",
+          balanceFormatted: "",
+          username: u.username ?? undefined,
+          displayName: u.display_name ?? undefined,
+          fid: typeof u.fid === "number" ? u.fid : undefined,
+          pfpUrl: u.pfp_url ?? undefined,
+          followers: typeof u.follower_count === "number" ? u.follower_count : undefined,
+          lastTransferAt: null,
+          ensName: null,
+          ensAvatarUrl: null,
+          primaryAddress,
+          etherscanUrl: buildEtherscanUrl(primaryAddress),
+          xHandle: userXHandle,
+          xUrl: userXUrl,
+          githubHandle: userGithubHandle,
+          githubUrl: userGithubUrl,
+        };
+      });
 
       // For channel lists, default to sorting by followers
       const sortedMembers = sortMembers(members, "followers");
@@ -1148,19 +1364,30 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
           array.slice(i * size, i * size + size),
         );
 
-      const mapUserToMember = (u: any): DirectoryMemberData => ({
-        address: `fc_fid_${u?.fid ?? Math.random().toString(36).slice(2)}`,
-        balanceRaw: "0",
-        balanceFormatted: "",
-        username: u?.username ?? null,
-        displayName: u?.display_name ?? null,
-        fid: typeof u?.fid === "number" ? u.fid : null,
-        pfpUrl: u?.pfp_url ?? null,
-        followers: typeof u?.follower_count === "number" ? u.follower_count : null,
-        lastTransferAt: null,
-        ensName: null,
-        ensAvatarUrl: null,
-      });
+      const mapUserToMember = (u: any): DirectoryMemberData => {
+        const primaryAddress = extractNeynarPrimaryAddress(u);
+        const { xHandle: userXHandle, xUrl: userXUrl, githubHandle: userGithubHandle, githubUrl: userGithubUrl } =
+          extractNeynarSocialAccounts(u);
+        return {
+          address: `fc_fid_${u?.fid ?? Math.random().toString(36).slice(2)}`,
+          balanceRaw: "0",
+          balanceFormatted: "",
+          username: u?.username ?? null,
+          displayName: u?.display_name ?? null,
+          fid: typeof u?.fid === "number" ? u.fid : null,
+          pfpUrl: u?.pfp_url ?? null,
+          followers: typeof u?.follower_count === "number" ? u.follower_count : null,
+          lastTransferAt: null,
+          ensName: null,
+          ensAvatarUrl: null,
+          primaryAddress: primaryAddress,
+          etherscanUrl: buildEtherscanUrl(primaryAddress),
+          xHandle: userXHandle,
+          xUrl: userXUrl,
+          githubHandle: userGithubHandle,
+          githubUrl: userGithubUrl,
+        };
+      };
 
       if (type === "username") {
         const usernameChunks = chunkArray(unique, 50);
@@ -1276,10 +1503,26 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
               const current = byKey.get(addr);
               const ensName = rec?.name || null;
               const ensAvatarUrl = rec?.avatar || null;
-              if (current) {
-                byKey.set(addr, { ...current, ensName, ensAvatarUrl });
-              } else {
-                byKey.set(addr, {
+              const recordsObj = rec?.records;
+              const parsedTwitter = parseSocialRecordValue(
+                recordsObj?.["com.twitter"] ??
+                  recordsObj?.twitter ??
+                  recordsObj?.["com.x"] ??
+                  recordsObj?.x,
+                "twitter",
+              );
+              const parsedGithub = parseSocialRecordValue(
+                recordsObj?.["com.github"] ?? recordsObj?.github,
+                "github",
+              );
+              const ensPrimaryAddress =
+                typeof rec?.chains?.eth === "string"
+                  ? rec.chains.eth.toLowerCase()
+                  : null;
+              const fallbackPrimaryAddress = ensPrimaryAddress ?? addr;
+              const merged =
+                current ??
+                ({
                   address: addr,
                   balanceRaw: "0",
                   balanceFormatted: "",
@@ -1289,10 +1532,34 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                   pfpUrl: null,
                   followers: null,
                   lastTransferAt: null,
-                  ensName,
-                  ensAvatarUrl,
-                });
-              }
+                  ensName: null,
+                  ensAvatarUrl: null,
+                  primaryAddress: fallbackPrimaryAddress,
+                  etherscanUrl: buildEtherscanUrl(fallbackPrimaryAddress),
+                  xHandle: null,
+                  xUrl: null,
+                  githubHandle: null,
+                  githubUrl: null,
+                } as DirectoryMemberData);
+
+              const resolvedPrimaryAddress =
+                merged.primaryAddress ?? fallbackPrimaryAddress ?? null;
+
+              const next: DirectoryMemberData = {
+                ...merged,
+                ensName: merged.ensName ?? ensName ?? null,
+                ensAvatarUrl: merged.ensAvatarUrl ?? ensAvatarUrl ?? null,
+                primaryAddress: resolvedPrimaryAddress,
+                etherscanUrl:
+                  merged.etherscanUrl ??
+                  buildEtherscanUrl(resolvedPrimaryAddress ?? addr),
+                xHandle: merged.xHandle ?? parsedTwitter?.handle ?? null,
+                xUrl: merged.xUrl ?? parsedTwitter?.url ?? null,
+                githubHandle: merged.githubHandle ?? parsedGithub?.handle ?? null,
+                githubUrl: merged.githubUrl ?? parsedGithub?.url ?? null,
+              };
+
+              byKey.set(addr, next);
             }
           }
         } catch (e) {
@@ -1317,6 +1584,12 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
               lastTransferAt: null,
               ensName: null,
               ensAvatarUrl: null,
+              primaryAddress: null,
+              etherscanUrl: null,
+              xHandle: null,
+              xUrl: null,
+              githubHandle: null,
+              githubUrl: null,
             }
           );
         }
@@ -1335,6 +1608,12 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
               lastTransferAt: null,
               ensName: null,
               ensAvatarUrl: null,
+              primaryAddress: null,
+              etherscanUrl: null,
+              xHandle: null,
+              xUrl: null,
+              githubHandle: null,
+              githubUrl: null,
             }
           );
         }
@@ -1353,6 +1632,12 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
             lastTransferAt: null,
             ensName: null,
             ensAvatarUrl: null,
+            primaryAddress: key,
+            etherscanUrl: buildEtherscanUrl(key),
+            xHandle: null,
+            xUrl: null,
+            githubHandle: null,
+            githubUrl: null,
           }
         );
       });
@@ -1657,11 +1942,15 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
           <ul className="divide-y divide-black/5">
             {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
+              const fallbackAddress =
+                member.primaryAddress ??
+                (member.address?.startsWith("0x") ? member.address : null);
               const fallbackHref =
                 (settings.source ?? "tokenHolders") === "tokenHolders" &&
                 includeFilter === "allHolders" &&
-                !member.username
-                  ? getBlockExplorerLink(network, member.address)
+                !member.username &&
+                fallbackAddress
+                  ? getBlockExplorerLink(network, fallbackAddress)
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
@@ -1700,6 +1989,20 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                         ensName={member.ensName}
                         ensAvatarUrl={member.ensAvatarUrl}
                         fid={member.fid}
+                        primaryAddress={
+                          member.primaryAddress ??
+                          (member.address?.startsWith("0x") ? member.address : null)
+                        }
+                        etherscanUrl={
+                          member.etherscanUrl ??
+                          (member.address?.startsWith("0x")
+                            ? buildEtherscanUrl(member.address)
+                            : null)
+                        }
+                        xHandle={member.xHandle}
+                        xUrl={member.xUrl}
+                        githubHandle={member.githubHandle}
+                        githubUrl={member.githubUrl}
                         size={16}
                       />
                     </div>
@@ -1729,11 +2032,15 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
           <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
             {displayedMembers.map((member) => {
               const lastActivity = getLastActivityLabel(member.lastTransferAt);
+              const fallbackAddress =
+                member.primaryAddress ??
+                (member.address?.startsWith("0x") ? member.address : null);
               const fallbackHref =
                 (settings.source ?? "tokenHolders") === "tokenHolders" &&
                 includeFilter === "allHolders" &&
-                !member.username
-                  ? getBlockExplorerLink(network, member.address)
+                !member.username &&
+                fallbackAddress
+                  ? getBlockExplorerLink(network, fallbackAddress)
                   : undefined;
               const primaryLabel = getMemberPrimaryLabel(member);
               const secondaryLabel = getMemberSecondaryLabel(member);
@@ -1803,6 +2110,20 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
                       ensName={member.ensName}
                       ensAvatarUrl={member.ensAvatarUrl}
                       fid={member.fid}
+                      primaryAddress={
+                        member.primaryAddress ??
+                        (member.address?.startsWith("0x") ? member.address : null)
+                      }
+                      etherscanUrl={
+                        member.etherscanUrl ??
+                        (member.address?.startsWith("0x")
+                          ? buildEtherscanUrl(member.address)
+                          : null)
+                      }
+                      xHandle={member.xHandle}
+                      xUrl={member.xUrl}
+                      githubHandle={member.githubHandle}
+                      githubUrl={member.githubUrl}
                       size={18}
                     />
                   </div>

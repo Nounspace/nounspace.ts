@@ -80,6 +80,12 @@ type DirectoryMember = {
   lastTransferAt?: string | null;
   ensName?: string | null;
   ensAvatarUrl?: string | null;
+  primaryAddress?: string | null;
+  etherscanUrl?: string | null;
+  xHandle?: string | null;
+  xUrl?: string | null;
+  githubHandle?: string | null;
+  githubUrl?: string | null;
 };
 
 type DirectoryFetchContext = {
@@ -137,6 +143,11 @@ const defaultDependencies: DirectoryDependencies = {
 type EnsMetadata = {
   ensName: string | null;
   ensAvatarUrl: string | null;
+  twitterHandle: string | null;
+  twitterUrl: string | null;
+  githubHandle: string | null;
+  githubUrl: string | null;
+  primaryAddress: string | null;
 };
 
 function normalizeAddress(address: string): string {
@@ -180,6 +191,46 @@ function extractOwnerBalanceRaw(owner: AlchemyNftOwner): string {
   }, 0n);
 
   return total.toString();
+}
+
+function parseSocialRecord(
+  value: unknown,
+  platform: "twitter" | "github",
+): { handle: string; url: string } | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  let handle = value.trim();
+  if (!handle) {
+    return null;
+  }
+
+  const patterns =
+    platform === "twitter"
+      ? [
+          /^https?:\/\/(www\.)?twitter\.com\//i,
+          /^https?:\/\/(www\.)?x\.com\//i,
+        ]
+      : [/^https?:\/\/(www\.)?github\.com\//i];
+
+  for (const pattern of patterns) {
+    handle = handle.replace(pattern, "");
+  }
+
+  handle = handle.replace(/^@/, "");
+  handle = handle.replace(/\/+$/, "");
+
+  if (!handle) {
+    return null;
+  }
+
+  const url =
+    platform === "twitter"
+      ? `https://twitter.com/${handle}`
+      : `https://github.com/${handle}`;
+
+  return { handle, url };
 }
 
 // Moralis helpers and types
@@ -487,14 +538,88 @@ async function fetchEnsMetadata(
     return {};
   }
 
+  const enstateMetadata: Record<string, Partial<EnsMetadata>> = {};
+  const ENSTATE_BATCH_SIZE = 50;
+
+  try {
+    for (const batch of chunk(uniqueAddresses, ENSTATE_BATCH_SIZE)) {
+      if (batch.length === 0) continue;
+      const url = new URL("https://enstate.rs/bulk/a");
+      for (const addr of batch) {
+        url.searchParams.append("addresses[]", addr);
+      }
+      const response = await deps.fetchFn(url.toString());
+      if (!response.ok) {
+        continue;
+      }
+      const json = await response.json();
+      const records: any[] = Array.isArray(json?.response) ? json.response : [];
+      for (const record of records) {
+        const addr = normalizeAddress(record?.address || "");
+        if (!addr) continue;
+        const partial = enstateMetadata[addr] ?? {};
+        if (!partial.ensName && typeof record?.name === "string") {
+          partial.ensName = record.name;
+        }
+        if (!partial.ensAvatarUrl && typeof record?.avatar === "string") {
+          partial.ensAvatarUrl = record.avatar;
+        }
+        if (!partial.primaryAddress && typeof record?.chains?.eth === "string") {
+          partial.primaryAddress = normalizeAddress(record.chains.eth);
+        }
+        const ensRecords = record?.records;
+        if (ensRecords && typeof ensRecords === "object") {
+          if (!partial.twitterHandle) {
+            const parsedTwitter = parseSocialRecord(
+              ensRecords["com.twitter"] ??
+                ensRecords["twitter"] ??
+                ensRecords["com.x"] ??
+                ensRecords["x"],
+              "twitter",
+            );
+            if (parsedTwitter) {
+              partial.twitterHandle = parsedTwitter.handle;
+              partial.twitterUrl = parsedTwitter.url;
+            }
+          }
+          if (!partial.githubHandle) {
+            const parsedGithub = parseSocialRecord(
+              ensRecords["com.github"] ?? ensRecords["github"],
+              "github",
+            );
+            if (parsedGithub) {
+              partial.githubHandle = parsedGithub.handle;
+              partial.githubUrl = parsedGithub.url;
+            }
+          }
+        }
+        enstateMetadata[addr] = partial;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch ENS social metadata", error);
+  }
+
   const entries = await Promise.all(
     uniqueAddresses.map(async (address) => {
       const viemAddress = address as Address;
-      try {
-        const ensName = await deps.getEnsNameFn(viemAddress);
-        let ensAvatarUrl: string | null = null;
+      const existing = enstateMetadata[address] ?? {};
+      let ensName: string | null = existing.ensName ?? null;
+      let ensAvatarUrl: string | null = existing.ensAvatarUrl ?? null;
+      let twitterHandle: string | null = existing.twitterHandle ?? null;
+      let twitterUrl: string | null = existing.twitterUrl ?? null;
+      let githubHandle: string | null = existing.githubHandle ?? null;
+      let githubUrl: string | null = existing.githubUrl ?? null;
+      let primaryAddress: string | null = existing.primaryAddress
+        ? normalizeAddress(existing.primaryAddress)
+        : null;
 
-        if (ensName) {
+      try {
+        const resolvedName = await deps.getEnsNameFn(viemAddress);
+        if (resolvedName) {
+          ensName = ensName ?? resolvedName;
+        }
+        if (!ensAvatarUrl && ensName) {
           try {
             ensAvatarUrl = await deps.getEnsAvatarFn(ensName);
           } catch (avatarError) {
@@ -504,27 +629,29 @@ async function fetchEnsMetadata(
             );
           }
         }
-
-        return [
-          address,
-          {
-            ensName: ensName ?? null,
-            ensAvatarUrl: ensAvatarUrl ?? null,
-          },
-        ] as const;
       } catch (error) {
         console.error(
           `Failed to resolve ENS metadata for address ${address}`,
           error,
         );
-        return [
-          address,
-          {
-            ensName: null,
-            ensAvatarUrl: null,
-          },
-        ] as const;
       }
+
+      return [
+        address,
+        {
+          ensName: ensName ?? null,
+          ensAvatarUrl: ensAvatarUrl ?? null,
+          twitterHandle: twitterHandle ?? null,
+          twitterUrl:
+            twitterUrl ??
+            (twitterHandle ? `https://twitter.com/${twitterHandle}` : null),
+          githubHandle: githubHandle ?? null,
+          githubUrl:
+            githubUrl ??
+            (githubHandle ? `https://github.com/${githubHandle}` : null),
+          primaryAddress,
+        },
+      ] as const;
     }),
   );
 
@@ -612,6 +739,12 @@ export async function fetchDirectoryData(
     followers?: number | null;
     ensName?: string | null;
     ensAvatarUrl?: string | null;
+    primaryAddress?: string | null;
+    etherscanUrl?: string | null;
+    xHandle?: string | null;
+    xUrl?: string | null;
+    githubHandle?: string | null;
+    githubUrl?: string | null;
   };
   const byFid = new Map<number, Agg>();
 
@@ -653,8 +786,131 @@ export async function fetchDirectoryData(
           ? ((profile as { profile?: { pfp_url?: string | null } }).profile?.pfp_url ?? null)
           : null;
 
+    let xHandleFromProfile: string | null = null;
+    let xUrlFromProfile: string | null = null;
+    let githubHandleFromProfile: string | null = null;
+    let githubUrlFromProfile: string | null = null;
+    const verifiedAccounts =
+      profile && typeof profile === "object" && profile !== null && "verified_accounts" in profile
+        ? (profile as { verified_accounts?: Array<any> }).verified_accounts
+        : undefined;
+    if (Array.isArray(verifiedAccounts)) {
+      for (const account of verifiedAccounts) {
+        const platform =
+          typeof account?.platform === "string" ? account.platform.toLowerCase() : "";
+        const usernameValue =
+          typeof account?.username === "string" ? account.username.trim() : "";
+        const normalizedUsername = usernameValue.replace(/^@/, "");
+        if (!normalizedUsername) continue;
+        if (!xHandleFromProfile && (platform === "x" || platform === "twitter")) {
+          xHandleFromProfile = normalizedUsername;
+          xUrlFromProfile = `https://twitter.com/${normalizedUsername}`;
+        } else if (!githubHandleFromProfile && platform === "github") {
+          githubHandleFromProfile = normalizedUsername;
+          githubUrlFromProfile = `https://github.com/${normalizedUsername}`;
+        }
+      }
+    }
+
+    const verifiedAddresses =
+      profile && typeof profile === "object" && profile !== null && "verified_addresses" in profile
+        ? (profile as {
+            verified_addresses?: {
+              primary?: { eth_address?: string | null } | null;
+              eth_addresses?: Array<string | null> | null;
+            };
+          }).verified_addresses
+        : undefined;
+
+    let primaryAddress: string | null = null;
+    if (verifiedAddresses && typeof verifiedAddresses === "object") {
+      const primary = verifiedAddresses.primary;
+      if (
+        primary &&
+        typeof primary === "object" &&
+        typeof primary.eth_address === "string" &&
+        primary.eth_address
+      ) {
+        primaryAddress = primary.eth_address;
+      }
+      if (!primaryAddress && Array.isArray(verifiedAddresses.eth_addresses)) {
+        const candidate = verifiedAddresses.eth_addresses.find(
+          (value): value is string => typeof value === "string" && value.length > 0,
+        );
+        if (candidate) {
+          primaryAddress = candidate;
+        }
+      }
+    }
+    if (!primaryAddress && profile && typeof profile === "object" && profile !== null) {
+      const custody = (profile as { custody_address?: string | null }).custody_address;
+      if (typeof custody === "string" && custody) {
+        primaryAddress = custody;
+      }
+    }
+    if (
+      !primaryAddress &&
+      profile &&
+      typeof profile === "object" &&
+      profile !== null &&
+      Array.isArray((profile as { verifications?: string[] }).verifications)
+    ) {
+      const verification = (profile as { verifications?: string[] }).verifications?.find(
+        (value): value is string => typeof value === "string" && value.length > 0,
+      );
+      if (verification) {
+        primaryAddress = verification;
+      }
+    }
+    if (
+      !primaryAddress &&
+      profile &&
+      typeof profile === "object" &&
+      profile !== null &&
+      Array.isArray((profile as { auth_addresses?: Array<{ address?: string }> }).auth_addresses)
+    ) {
+      const authAddress = (profile as { auth_addresses?: Array<{ address?: string }> })
+        .auth_addresses?.find(
+          (entry) => entry && typeof entry.address === "string" && entry.address.length > 0,
+        );
+      if (authAddress?.address) {
+        primaryAddress = authAddress.address;
+      }
+    }
+    if (!primaryAddress && ensInfo?.primaryAddress) {
+      primaryAddress = ensInfo.primaryAddress;
+    }
+    const normalizedPrimaryAddress = primaryAddress
+      ? normalizeAddress(primaryAddress)
+      : null;
+    const etherscanUrl = normalizedPrimaryAddress
+      ? `https://etherscan.io/address/${normalizedPrimaryAddress}`
+      : null;
+
+    const ensTwitterHandle = ensInfo?.twitterHandle ?? null;
+    const ensTwitterUrl =
+      ensInfo?.twitterUrl ??
+      (ensTwitterHandle ? `https://twitter.com/${ensTwitterHandle}` : null);
+    const ensGithubHandle = ensInfo?.githubHandle ?? null;
+    const ensGithubUrl =
+      ensInfo?.githubUrl ??
+      (ensGithubHandle ? `https://github.com/${ensGithubHandle}` : null);
+
+    const combinedXHandle = xHandleFromProfile ?? ensTwitterHandle ?? null;
+    const combinedXUrl =
+      xUrlFromProfile ??
+      ensTwitterUrl ??
+      (combinedXHandle ? `https://twitter.com/${combinedXHandle}` : null);
+    const combinedGithubHandle = githubHandleFromProfile ?? ensGithubHandle ?? null;
+    const combinedGithubUrl =
+      githubUrlFromProfile ??
+      ensGithubUrl ??
+      (combinedGithubHandle ? `https://github.com/${combinedGithubHandle}` : null);
+
+
     if (typeof fid === "number" && fid > 0) {
       const current = byFid.get(fid) ?? { sum: 0n };
+      const fallbackAddressForAgg = normalizedPrimaryAddress ?? key;
       current.sum = current.sum + BigInt(balanceRaw ?? "0");
       // Prefer to keep first non-null metadata
       current.username = current.username ?? username;
@@ -664,8 +920,18 @@ export async function fetchDirectoryData(
       current.followers = current.followers ?? followers;
       current.ensName = current.ensName ?? ensInfo?.ensName ?? null;
       current.ensAvatarUrl = current.ensAvatarUrl ?? ensInfo?.ensAvatarUrl ?? null;
+      current.primaryAddress = current.primaryAddress ?? fallbackAddressForAgg ?? null;
+      current.etherscanUrl =
+        current.etherscanUrl ??
+        etherscanUrl ??
+        (fallbackAddressForAgg ? `https://etherscan.io/address/${fallbackAddressForAgg}` : null);
+      current.xHandle = current.xHandle ?? combinedXHandle ?? null;
+      current.xUrl = current.xUrl ?? combinedXUrl ?? null;
+      current.githubHandle = current.githubHandle ?? combinedGithubHandle ?? null;
+      current.githubUrl = current.githubUrl ?? combinedGithubUrl ?? null;
       byFid.set(fid, current);
     } else {
+      const fallbackAddress = normalizedPrimaryAddress ?? key;
       members.push({
         address: key,
         balanceRaw,
@@ -678,11 +944,19 @@ export async function fetchDirectoryData(
         pfpUrl,
         ensName: ensInfo?.ensName ?? null,
         ensAvatarUrl: ensInfo?.ensAvatarUrl ?? null,
+        primaryAddress: fallbackAddress ?? null,
+        etherscanUrl:
+          etherscanUrl ??
+          (fallbackAddress ? `https://etherscan.io/address/${fallbackAddress}` : null),
+        xHandle: combinedXHandle ?? null,
+        xUrl: combinedXUrl ?? null,
+        githubHandle: combinedGithubHandle ?? null,
+        githubUrl: combinedGithubUrl ?? null,
       });
     }
   }
 
-  // Convert fid aggregates to members (no ENS on aggregated entries)
+  // Convert fid aggregates to members
   for (const [fid, agg] of byFid.entries()) {
     const sumRaw = agg.sum.toString();
     let sumFormatted = sumRaw;
@@ -705,6 +979,16 @@ export async function fetchDirectoryData(
       pfpUrl: agg.pfpUrl ?? null,
       ensName: agg.ensName ?? null,
       ensAvatarUrl: agg.ensAvatarUrl ?? null,
+      primaryAddress: agg.primaryAddress ?? null,
+      etherscanUrl:
+        agg.etherscanUrl ??
+        (agg.primaryAddress
+          ? `https://etherscan.io/address/${agg.primaryAddress}`
+          : null),
+      xHandle: agg.xHandle ?? null,
+      xUrl: agg.xUrl ?? null,
+      githubHandle: agg.githubHandle ?? null,
+      githubUrl: agg.githubUrl ?? null,
     });
   }
 
