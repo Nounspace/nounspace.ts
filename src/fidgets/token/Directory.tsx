@@ -914,20 +914,26 @@ const Directory: React.FC<
       return result.map((v) => v.replace(/^"|"$/g, ""));
     };
 
-    const headerCols = split(rows[0]).map((c) => c.toLowerCase());
+    const headerColsRaw = split(rows[0]);
+    const headerCols = headerColsRaw.map((c) => c.toLowerCase());
     let colIndex = 0;
     let hasHeader = false;
+    const candidates: Record<CsvTypeOption, string[]> = {
+      address: ["address", "eth", "wallet"],
+      fid: ["fid", "id"],
+      username: ["username", "handle", "fc"],
+    };
+    const headerMatch = (value: string) =>
+      candidates[type].includes(value.trim().toLowerCase());
+
     if (headerCols.length > 1) {
-      const candidates: Record<CsvTypeOption, string[]> = {
-        address: ["address", "eth", "wallet"],
-        fid: ["fid", "id"],
-        username: ["username", "handle", "fc"],
-      };
-      const idx = headerCols.findIndex((c) => candidates[type].includes(c));
+      const idx = headerCols.findIndex((c) => headerMatch(c));
       if (idx >= 0) {
         colIndex = idx;
         hasHeader = true;
       }
+    } else if (headerCols.length === 1 && headerMatch(headerCols[0])) {
+      hasHeader = true;
     }
 
     const items: string[] = [];
