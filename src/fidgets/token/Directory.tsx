@@ -613,6 +613,15 @@ const Directory: React.FC<
     setCurrentChannelFilter((settings.channelFilter ?? "members") as DirectoryChannelFilterOption);
     setCurrentPage(1);
   }, [settings.include, settings.layoutStyle, settings.sortBy, settings.channelFilter]);
+
+  useEffect(() => {
+    if ((settings.source ?? "tokenHolders") === "csv") {
+      console.log("[Directory] csvContent length", settings.csvContent?.length ?? 0);
+      if (settings.csvContent) {
+        console.log("[Directory] csvContent preview", settings.csvContent.slice(0, 120));
+      }
+    }
+  }, [settings.csvContent, settings.source]);
   const normalizedAddress = normalizeAddress(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
   const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
@@ -947,19 +956,30 @@ const Directory: React.FC<
         items.push(rawVal);
       }
     }
+    if (items.length === 0) {
+      const fallbackRows = rows.slice(hasHeader ? 1 : 0);
+      fallbackRows.forEach((row) => {
+        const value = row.trim();
+        if (!value) return;
+        if (type === "username") {
+          items.push(value.replace(/^@/, ""));
+        } else {
+          items.push(value);
+        }
+      });
+    }
     return items;
   };
 
   const fetchCsvDirectory = useCallback(
     async (controller: AbortController) => {
-      if (process.env.NODE_ENV !== "production") {
-        console.info("[Directory] CSV fetch starting", {
-          source: settings.source,
-          csvType: settings.csvType,
-          csvSortBy: settings.csvSortBy,
-          csvUpload: settings.csvUpload ?? settings.csvUploadedAt,
-        });
-      }
+      console.log("[Directory] CSV fetch starting", {
+        source: settings.source,
+        csvType: settings.csvType,
+        csvSortBy: settings.csvSortBy,
+        csvUpload: settings.csvUpload ?? settings.csvUploadedAt,
+        contentLength: (settings.csvContent ?? "").length,
+      });
       const type = (settings.csvType ?? "username") as CsvTypeOption;
       const csvSortBy = (settings.csvSortBy ?? "followers") as CsvSortOption;
       const raw = settings.csvContent ?? "";
@@ -969,6 +989,8 @@ const Directory: React.FC<
           "CSV appears empty or unrecognized. Expected a first column or headers named username/handle/fc, address/eth/wallet, or fid/id.",
         );
       }
+
+      console.log("[Directory] CSV parsed entries", entries.length);
 
       const unique = Array.from(new Set(entries));
 
@@ -995,9 +1017,7 @@ const Directory: React.FC<
           chunks.push(unique.slice(i, i + 100));
         }
         for (const chunk of chunks) {
-          if (process.env.NODE_ENV !== "production") {
-            console.info("[Directory] CSV usernames/fids batch", chunk.length);
-          }
+          console.log("[Directory] CSV usernames/fids batch", chunk.length);
           const query = new URLSearchParams();
           query.set(paramName, chunk.join(","));
           const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
@@ -1025,9 +1045,7 @@ const Directory: React.FC<
           try {
             const params = new URLSearchParams();
             ch.forEach((a) => params.append("addresses[]", a));
-            if (process.env.NODE_ENV !== "production") {
-              console.info("[Directory] CSV address batch (Farcaster)", ch.length);
-            }
+            console.log("[Directory] CSV address batch (Farcaster)", ch.length);
             const resp = await fetch(`/api/farcaster/neynar/bulk-address?${params.toString()}`,
               { signal: controller.signal });
             if (resp.ok) {
@@ -1053,9 +1071,7 @@ const Directory: React.FC<
             if (ch.length === 0) continue;
             const url = new URL("https://enstate.rs/bulk/a");
             ch.forEach((a) => url.searchParams.append("addresses[]", a));
-            if (process.env.NODE_ENV !== "production") {
-              console.info("[Directory] CSV address batch (ENS)", ch.length);
-            }
+            console.log("[Directory] CSV address batch (ENS)", ch.length);
             const res = await fetch(url.toString(), { signal: controller.signal });
             if (!res.ok) continue;
             const json = await res.json();
