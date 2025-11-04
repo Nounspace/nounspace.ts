@@ -672,6 +672,9 @@ const Directory: React.FC<
   const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
   const fetchDirectoryRef = useRef<() => void>();
   const lastProcessedCsvUploadRef = useRef<string | null>(null);
+  const [lastCsvFetchAt, setLastCsvFetchAt] = useState<string | null>(
+    data?.fetchContext?.source === "csv" ? data.fetchContext.csvUploadedAt ?? null : null,
+  );
 
   useEffect(() => {
     setDirectoryData((prev) => ({
@@ -688,6 +691,15 @@ const Directory: React.FC<
     data?.tokenDecimals,
     data?.fetchContext,
   ]);
+
+  useEffect(() => {
+    if (directoryData.fetchContext?.source === "csv") {
+      const csvAt = directoryData.fetchContext.csvUploadedAt ?? null;
+      if (csvAt && csvAt !== lastCsvFetchAt) {
+        setLastCsvFetchAt(csvAt);
+      }
+    }
+  }, [directoryData.fetchContext, lastCsvFetchAt]);
 
   useEffect(() => {
     return () => {
@@ -727,6 +739,10 @@ const Directory: React.FC<
       }
 
       if (context.csvUploadedAt !== currentCsvUpload) {
+        return true;
+      }
+
+      if (!lastCsvFetchAt || lastCsvFetchAt !== currentCsvUpload) {
         return true;
       }
 
@@ -771,6 +787,7 @@ const Directory: React.FC<
     assetType,
     settings.csvUploadedAt,
     settings.csvUpload,
+    lastCsvFetchAt,
   ]);
 
   useEffect(() => {
@@ -782,6 +799,7 @@ const Directory: React.FC<
         lastUpdated: directoryData.lastUpdatedTimestamp,
         fetchContext: directoryData.fetchContext,
         settingsCsvUpload: settings.csvUpload ?? settings.csvUploadedAt,
+        lastCsvFetchAt,
       });
     }
   }, [
@@ -792,6 +810,7 @@ const Directory: React.FC<
     settings.source,
     settings.csvUpload,
     settings.csvUploadedAt,
+    lastCsvFetchAt,
   ]);
 
   const persistDataIfChanged = useCallback(
@@ -1244,6 +1263,7 @@ const Directory: React.FC<
           csvSortBy,
         },
       });
+      setLastCsvFetchAt(settings.csvUpload ?? settings.csvUploadedAt ?? null);
     },
     [
       persistDataIfChanged,
@@ -1343,6 +1363,7 @@ const Directory: React.FC<
     if (lastProcessedCsvUploadRef.current === currentUpload) {
       return;
     }
+    setLastCsvFetchAt(null);
     lastProcessedCsvUploadRef.current = currentUpload;
     fetchDirectoryRef.current?.();
   }, [settings.source, settings.csvUpload, settings.csvUploadedAt]);
