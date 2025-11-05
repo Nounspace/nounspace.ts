@@ -25,6 +25,26 @@ const LUMA_EMBED_LABELS: Record<LumaEmbedType, string> = {
   [LumaEmbedType.EVENT_PAGE]: "Event Page",
 };
 
+enum LumaCalendarDarkModeOption {
+  OFF = "off",
+  ON = "on",
+}
+
+const LUMA_CALENDAR_DARK_MODE_LABELS: Record<LumaCalendarDarkModeOption, string> = {
+  [LumaCalendarDarkModeOption.OFF]: "Off",
+  [LumaCalendarDarkModeOption.ON]: "On",
+};
+
+enum LumaCalendarStyleOption {
+  COMPACT = "compact",
+  CARDS = "cards",
+}
+
+const LUMA_CALENDAR_STYLE_LABELS: Record<LumaCalendarStyleOption, string> = {
+  [LumaCalendarStyleOption.COMPACT]: "Compact",
+  [LumaCalendarStyleOption.CARDS]: "Cards",
+};
+
 type LumaEmbedTypeSelectorProps = {
   value?: string;
   onChange?: (value: string) => void;
@@ -65,10 +85,96 @@ const LumaEmbedTypeSelector: React.FC<LumaEmbedTypeSelectorProps> = ({
   );
 };
 
+type LumaCalendarDarkModeSelectorProps = {
+  value?: string;
+  onChange?: (value: string) => void;
+  className?: string;
+  id?: string;
+};
+
+const LumaCalendarDarkModeSelector: React.FC<LumaCalendarDarkModeSelectorProps> = ({
+  value = LumaCalendarDarkModeOption.OFF,
+  onChange,
+  className,
+  id,
+}) => {
+  return (
+    <div className={className} id={id}>
+      <Select
+        value={value}
+        onValueChange={(selected) => {
+          onChange?.(selected);
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select dark mode preference">
+            <div className="flex items-center">
+              {LUMA_CALENDAR_DARK_MODE_LABELS[
+                value as LumaCalendarDarkModeOption
+              ] || "Select dark mode preference"}
+            </div>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(LUMA_CALENDAR_DARK_MODE_LABELS).map(([key, label]) => (
+            <SelectItem key={key} value={key}>
+              <div className="flex items-center">{label}</div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
+type LumaCalendarStyleSelectorProps = {
+  value?: string;
+  onChange?: (value: string) => void;
+  className?: string;
+  id?: string;
+};
+
+const LumaCalendarStyleSelector: React.FC<LumaCalendarStyleSelectorProps> = ({
+  value = LumaCalendarStyleOption.COMPACT,
+  onChange,
+  className,
+  id,
+}) => {
+  return (
+    <div className={className} id={id}>
+      <Select
+        value={value}
+        onValueChange={(selected) => {
+          onChange?.(selected);
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select calendar style">
+            <div className="flex items-center">
+              {LUMA_CALENDAR_STYLE_LABELS[
+                value as LumaCalendarStyleOption
+              ] || "Select calendar style"}
+            </div>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(LUMA_CALENDAR_STYLE_LABELS).map(([key, label]) => (
+            <SelectItem key={key} value={key}>
+              <div className="flex items-center">{label}</div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
 export type LumaFidgetSettings = {
   embedType: LumaEmbedType;
   calendarId?: string;
   eventId?: string;
+  darkMode?: LumaCalendarDarkModeOption;
+  calendarStyle?: LumaCalendarStyleOption;
 } & FidgetSettingsStyle;
 
 const lumaConfig: FidgetProperties<LumaFidgetSettings> = {
@@ -97,6 +203,36 @@ const lumaConfig: FidgetProperties<LumaFidgetSettings> = {
       inputSelector: (props) => (
         <WithMargin>
           <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+      disabledIf: (settings) => settings.embedType !== LumaEmbedType.CALENDAR,
+    },
+    {
+      fieldName: "darkMode",
+      displayName: "Dark Mode",
+      displayNameHint:
+        "Choose whether to render the calendar in light or dark mode.",
+      default: LumaCalendarDarkModeOption.OFF,
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <LumaCalendarDarkModeSelector {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+      disabledIf: (settings) => settings.embedType !== LumaEmbedType.CALENDAR,
+    },
+    {
+      fieldName: "calendarStyle",
+      displayName: "Style",
+      displayNameHint:
+        "Switch between the compact list or card layout for events.",
+      default: LumaCalendarStyleOption.COMPACT,
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <LumaCalendarStyleSelector {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -143,9 +279,26 @@ const LumaFidget: React.FC<FidgetArgs<LumaFidgetSettings>> = ({
       );
     }
 
+    const darkModeSetting =
+      settings.darkMode || LumaCalendarDarkModeOption.OFF;
+    const calendarStyleSetting =
+      settings.calendarStyle || LumaCalendarStyleOption.COMPACT;
+
+    const calendarParams = new URLSearchParams();
+    calendarParams.set(
+      "lt",
+      darkModeSetting === LumaCalendarDarkModeOption.ON ? "dark" : "light",
+    );
+
+    if (calendarStyleSetting === LumaCalendarStyleOption.COMPACT) {
+      calendarParams.set("compact", "true");
+    }
+
+    const calendarParamsString = calendarParams.toString();
+
     const calendarSrc = `https://luma.com/embed/calendar/${encodeURIComponent(
       calendarId,
-    )}/events`;
+    )}/events${calendarParamsString ? `?${calendarParamsString}` : ""}`;
 
     return (
       <div className="size-full">
