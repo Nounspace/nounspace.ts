@@ -100,26 +100,16 @@ export function FidgetWrapper({
     const nextSettings: FidgetSettings = { ...baseSettings };
     let changed = false;
 
-    const setString = (
-      key: string,
-      value: unknown,
-      options?: { lowerCaseCompare?: boolean },
-    ) => {
+    const setString = (key: string, value: unknown) => {
       if (typeof value !== "string") return;
       const trimmed = value.trim();
       if (!trimmed) return;
 
-      const compareLower = options?.lowerCaseCompare ?? false;
-      const normalize = (val: unknown) => {
-        if (typeof val === "string") {
-          const normalized = val.trim();
-          return compareLower ? normalized.toLowerCase() : normalized;
-        }
-        return val;
-      };
-
       const current = nextSettings[key];
-      if (normalize(current) === normalize(trimmed)) {
+      if (typeof current === "string" && current.trim().length > 0) {
+        return;
+      }
+      if (current !== undefined && current !== null && typeof current !== "string") {
         return;
       }
 
@@ -129,12 +119,13 @@ export function FidgetWrapper({
 
     const source =
       typeof context.source === "string" ? context.source.trim() : undefined;
-    if (source) {
-      setString("source", source);
+    if (source && !(typeof nextSettings.source === "string" && nextSettings.source.trim())) {
+      nextSettings.source = source;
+      changed = true;
     }
 
     if (source === "tokenHolders") {
-      setString("contractAddress", context.contractAddress, { lowerCaseCompare: true });
+      setString("contractAddress", context.contractAddress);
       setString("network", context.network);
       setString("assetType", context.assetType);
     } else if (source === "farcasterChannel") {

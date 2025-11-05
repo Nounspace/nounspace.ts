@@ -37,7 +37,7 @@ import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 
 const STALE_AFTER_MS = 60 * 60 * 1000;
 const PAGE_SIZE = 100;
-const CHANNEL_FETCH_DEBOUNCE_MS = 400;
+const CHANNEL_FETCH_DEBOUNCE_MS = 800;
 
 export type DirectoryNetwork = "base" | "polygon" | "mainnet";
 export type DirectoryAssetType = "token" | "nft";
