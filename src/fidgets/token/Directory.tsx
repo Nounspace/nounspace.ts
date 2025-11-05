@@ -494,31 +494,15 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
         }
         return true;
       },
-      inputSelector: ({ updateSettings, settings }) => {
-        const source = settings?.source ?? "tokenHolders";
-        const label =
-          source === "csv"
-            ? "Refresh CSV Data"
-            : source === "farcasterChannel"
-              ? "Refresh Channel Data"
-              : "Refresh Token Holders";
-        const disabled =
-          source === "tokenHolders"
-            ? !(settings?.contractAddress && settings.contractAddress.trim().length === 42)
-            : source === "farcasterChannel"
-              ? !(settings?.channelName && settings.channelName.trim().length > 0)
-              : source === "csv"
-                ? !(settings?.csvUpload ?? settings?.csvUploadedAt)
-                : true;
+      inputSelector: ({ updateSettings }) => {
         return (
           <WithMargin>
             <button
               type="button"
               onClick={() => updateSettings?.({ refreshToken: new Date().toISOString() })}
-              className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5 disabled:opacity-50"
-              disabled={disabled}
+              className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5"
             >
-              {label}
+              Refresh Members
             </button>
           </WithMargin>
         );
