@@ -26,11 +26,12 @@ export const toFarcasterCdnUrl = (
       const imageId = segments[1];
       const variant = segments[2];
       if (account && imageId) {
-        const sourceUrl =
-          variant !== undefined
-            ? `${u.origin}/${account}/${imageId}/${variant}`
-            : `${u.origin}/${account}/${imageId}`;
-        return `https://wrpcd.net/cdn-cgi/image/${params}/${encodeURIComponent(sourceUrl)}`;
+        const pathParts = [account, imageId];
+        if (variant) {
+          pathParts.push(variant);
+        }
+        const wrpcdBase = `https://wrpcd.net/cdn-cgi/imagedelivery/${pathParts.join('/')}`;
+        return params ? `${wrpcdBase}/${params}` : wrpcdBase;
       }
       // Fallback to the generic proxy so we still serve the asset through Warpcast CDN
       return `https://wrpcd.net/cdn-cgi/image/${params}/${encodeURIComponent(url)}`;
