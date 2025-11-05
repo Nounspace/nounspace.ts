@@ -18,14 +18,15 @@ export async function generateMetadata({
   params: Promise<{ handle: string; tabName?: string }> 
 }): Promise<Metadata> {
   const { handle, tabName: tabNameParam } = await params;
-  
+
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle
   }
 
+  const normalizedHandle = handle.toLowerCase();
   const userMetadata = await getUserMetadata(handle);
   if (!userMetadata) {
-    const baseMetadata = getUserMetadataStructure({ username: handle });
+    const baseMetadata = getUserMetadataStructure({ username: normalizedHandle });
     return {
       ...baseMetadata,
       other: { "fc:frame": JSON.stringify(defaultFrame) },
@@ -36,9 +37,10 @@ export async function generateMetadata({
   const tabName = tabNameParam ? decodeURIComponent(tabNameParam) : undefined;
   
   // Create Frame metadata for Farcaster with the correct path
-  const frameUrl = tabName 
-    ? `${WEBSITE_URL}/s/${handle}/${encodeURIComponent(tabName)}`
-    : `${WEBSITE_URL}/s/${handle}`;
+  const canonicalHandle = userMetadata?.username || normalizedHandle;
+  const frameUrl = tabName
+    ? `${WEBSITE_URL}/s/${canonicalHandle}/${encodeURIComponent(tabName)}`
+    : `${WEBSITE_URL}/s/${canonicalHandle}`;
     
   const displayName =
     userMetadata?.displayName || userMetadata?.username || handle;
@@ -47,7 +49,7 @@ export async function generateMetadata({
   const encodedDisplayName = encodeURIComponent(displayName || "");
   const encodedPfpUrl = encodeURIComponent(userMetadata?.pfpUrl || "");
   const encodedBio = encodeURIComponent(userMetadata?.bio || "");
-  const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${handle}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
+  const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${canonicalHandle}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
 
   const spaceFrame = {
     version: "next",

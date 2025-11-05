@@ -13,9 +13,15 @@ export type Tab = {
 export const getUserMetadata = async (
   handle: string,
 ): Promise<UserMetadata | null> => {
+  const normalizedHandle = handle?.trim().toLowerCase();
+
+  if (!normalizedHandle) {
+    return null;
+  }
+
   try {
     // Check if response is valid before destructuring
-    const response = await neynar.lookupUserByUsername({ username: handle });
+    const response = await neynar.lookupUserByUsername({ username: normalizedHandle });
     
     // Validate response has expected structure
     if (!response || typeof response !== 'object' || !('user' in response)) {
