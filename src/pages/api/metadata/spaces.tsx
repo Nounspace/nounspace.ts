@@ -53,7 +53,7 @@ const ProfileCard = ({ userMetadata }: { userMetadata: UserMetadata }) => {
       }}
     >
       <img
-        src={toFarcasterCdnUrl(userMetadata.pfpUrl)}
+        src={toFarcasterCdnUrl(userMetadata.pfpUrl || "")}
         width={"180px"}
         height={"180px"}
         style={{ borderRadius: "300px" }}

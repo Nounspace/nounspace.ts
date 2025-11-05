@@ -12,28 +12,40 @@ const mockedFetchTokenData = vi.mocked(fetchTokenData);
 describe("token directory API", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_ALCHEMY_API_KEY = "test-key";
+    process.env.MORALIS_API_KEY = "test-moralis-key";
+    process.env.NEYNAR_API_KEY = "test-neynar-key";
     vi.resetAllMocks();
   });
 
   it("aggregates NFT owners with neynar profiles", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        owners: [
-          {
-            ownerAddress: "0x000000000000000000000000000000000000abcd",
-            tokenBalances: [
+    const fetchMock = vi.fn(async (input: any, init?: any) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("deep-index.moralis.io")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            result: [
               {
-                tokenId: "0x1",
-                balance: "0x2d3",
+                address: "0x000000000000000000000000000000000000abcd",
+                balance: "723",
+                decimals: 0,
+                symbol: "NFTEST",
               },
             ],
-          },
-        ],
-        contractMetadata: {
-          symbol: "NFTEST",
-        },
-      }),
+            decimals: 0,
+            symbol: "NFTEST",
+          }),
+        } as any;
+      }
+      if (url.startsWith("https://enstate.rs")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ response: [] }),
+        } as any;
+      }
+      throw new Error(`Unexpected fetch call: ${url}`);
     });
 
     const neynarMock = {
@@ -58,6 +70,7 @@ describe("token directory API", () => {
         network: "base",
         contractAddress: "0x000000000000000000000000000000000000ABCD",
         pageSize: 10,
+        assetType: "token",
       },
       {
         fetchFn: fetchMock,
@@ -67,16 +80,21 @@ describe("token directory API", () => {
       },
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("/nft/v3/test-key/getOwnersForContract"),
-      expect.objectContaining({
-        method: "GET",
-        headers: expect.objectContaining({
-          Authorization: "Bearer test-key",
-          "X-Alchemy-Token": "test-key",
-        }),
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [moralisCall, enstateCall] = fetchMock.mock.calls;
+    expect(moralisCall[0]).toContain(
+      "https://deep-index.moralis.io/api/v2.2/erc20/0x000000000000000000000000000000000000ABCD/owners",
+    );
+    expect(moralisCall[1]).toMatchObject({
+      method: "GET",
+      headers: expect.objectContaining({
+        Accept: "application/json",
+        "X-API-Key": "test-moralis-key",
       }),
+      cache: "no-store",
+    });
+    expect(enstateCall[0]).toMatch(
+      /https:\/\/enstate\.rs\/bulk\/a\?addresses%5B%5D=0x000000000000000000000000000000000000abcd/,
     );
     expect(neynarMock.fetchBulkUsersByEthOrSolAddress).toHaveBeenCalledWith({
       addresses: ["0x000000000000000000000000000000000000abcd"],
@@ -85,8 +103,11 @@ describe("token directory API", () => {
     expect(result.tokenDecimals).toBe(0);
     expect(result.members).toHaveLength(1);
     expect(result.members[0]).toMatchObject({
-      address: "0x000000000000000000000000000000000000abcd",
+      address: "fc_fid_123",
+      primaryAddress: "0x000000000000000000000000000000000000abcd",
+      etherscanUrl: "https://etherscan.io/address/0x000000000000000000000000000000000000abcd",
       balanceFormatted: "723",
+      balanceRaw: "723",
       followers: 321,
       username: "alice",
       displayName: "Alice",
@@ -98,45 +119,74 @@ describe("token directory API", () => {
     expect(result.fetchContext).toEqual({
       network: "base",
       contractAddress: "0x000000000000000000000000000000000000abcd",
+      assetType: "token",
     });
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
-    expect(getEnsNameMock).not.toHaveBeenCalled();
+    expect(getEnsNameMock).toHaveBeenCalledWith(
+      "0x000000000000000000000000000000000000abcd",
+    );
     expect(getEnsAvatarMock).not.toHaveBeenCalled();
   });
 
   it("paginates through NFT owners until page size reached", async () => {
-    const firstResponse = {
-      ok: true,
-      json: async () => ({
-        owners: [
-          {
-            ownerAddress: "0x000000000000000000000000000000000000aaaa",
-            tokenBalances: [
-              { tokenId: "0x1", balance: "0x1" },
-              { tokenId: "0x2", balance: "0x1" },
+    const moralisResponses = [
+      {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          result: [
+            {
+              owner_of: "0x000000000000000000000000000000000000aaaa",
+              amount: "2",
+              symbol: "NFTEST",
+            },
+          ],
+          cursor: "next-page",
+          symbol: "NFTEST",
+        }),
+      },
+      {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          result: [
+            {
+              owner_of: "0x000000000000000000000000000000000000bbbb",
+              amount: null,
+            },
+          ],
+        }),
+      },
+    ];
+
+    const fetchMock = vi.fn(async (input: any, init?: any) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("deep-index.moralis.io")) {
+        const response = moralisResponses.shift();
+        if (!response) {
+          throw new Error("Unexpected extra Moralis request");
+        }
+        return response as any;
+      }
+      if (url.startsWith("https://enstate.rs")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            response: [
+              {
+                address: "0x000000000000000000000000000000000000aaaa",
+                name: "example.eth",
+              },
+              {
+                address: "0x000000000000000000000000000000000000bbbb",
+              },
             ],
-          },
-        ],
-        pageKey: "next-page",
-      }),
-    };
-
-    const secondResponse = {
-      ok: true,
-      json: async () => ({
-        owners: [
-          {
-            ownerAddress: "0x000000000000000000000000000000000000bbbb",
-            tokenBalances: null,
-          },
-        ],
-      }),
-    };
-
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(firstResponse as any)
-      .mockResolvedValueOnce(secondResponse as any);
+          }),
+        } as any;
+      }
+      throw new Error(`Unexpected fetch call: ${url}`);
+    });
 
     const neynarMock = {
       fetchBulkUsersByEthOrSolAddress: vi.fn().mockResolvedValue({}),
@@ -155,6 +205,7 @@ describe("token directory API", () => {
         network: "mainnet",
         contractAddress: "0x000000000000000000000000000000000000aaaa",
         pageSize: 2,
+        assetType: "nft",
       },
       {
         fetchFn: fetchMock,
@@ -164,11 +215,25 @@ describe("token directory API", () => {
       },
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[0][0]).toContain(
-      "/nft/v3/test-key/getOwnersForContract",
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const moralisCalls = fetchMock.mock.calls.filter(([url]) =>
+      (typeof url === "string" ? url : url.toString()).includes(
+        "deep-index.moralis.io",
+      ),
     );
-    expect(fetchMock.mock.calls[1][0]).toContain("pageKey=next-page");
+    expect(moralisCalls).toHaveLength(2);
+    expect((moralisCalls[0][0] as string)).toContain(
+      "https://deep-index.moralis.io/api/v2.2/nft/0x000000000000000000000000000000000000aaaa/owners",
+    );
+    expect((moralisCalls[0][1] as any)).toMatchObject({
+      method: "GET",
+      headers: expect.objectContaining({
+        Accept: "application/json",
+        "X-API-Key": "test-moralis-key",
+      }),
+      cache: "no-store",
+    });
+    expect((moralisCalls[1][0] as string)).toContain("cursor=next-page");
 
     expect(result.members).toHaveLength(2);
     expect(result.members[0]).toMatchObject({
@@ -180,8 +245,8 @@ describe("token directory API", () => {
     });
     expect(result.members[1]).toMatchObject({
       address: "0x000000000000000000000000000000000000bbbb",
-      balanceRaw: "0",
-      balanceFormatted: "0",
+      balanceRaw: "1",
+      balanceFormatted: "1",
       ensName: null,
       ensAvatarUrl: null,
     });
@@ -196,5 +261,10 @@ describe("token directory API", () => {
     );
     expect(getEnsAvatarMock).toHaveBeenCalledTimes(1);
     expect(getEnsAvatarMock).toHaveBeenCalledWith("example.eth");
+    expect(result.fetchContext).toEqual({
+      network: "mainnet",
+      contractAddress: "0x000000000000000000000000000000000000aaaa",
+      assetType: "nft",
+    });
   });
 });

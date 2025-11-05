@@ -323,10 +323,10 @@ export default function PublicSpace({
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums
           ? mapValues(spaceConfig.fidgetInstanceDatums, (datum) => ({
             ...datum,
-            config: {
+              config: {
               settings: datum.config.settings,
               editable: datum.config.editable,
-              data: datum.config.data,
+              data: datum.config.data ?? {},
             },
           }))
           : undefined,

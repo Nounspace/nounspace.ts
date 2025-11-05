@@ -51,7 +51,7 @@ const CastCard = ({ data }: { data: CastCardData }) => (
     <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
       {data.pfpUrl && (
         <img
-          src={toFarcasterCdnUrl(data.pfpUrl)}
+          src={toFarcasterCdnUrl(data.pfpUrl || "")}
           width="120"
           height="120"
           style={{ borderRadius: "60px" }}
