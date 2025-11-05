@@ -1,10 +1,4 @@
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/common/components/atoms/tooltip";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -18,23 +12,17 @@ import {
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import React, { useEffect } from "react";
-import { FaCircleInfo } from "react-icons/fa6";
+import React from "react";
 import { defaultStyleFields, ErrorWrapper, WithMargin } from "@/fidgets/helpers";
-
-const LUMA_CHECKOUT_SCRIPT_ID = "luma-checkout";
-const LUMA_CHECKOUT_SCRIPT_SRC = "https://embed.lu.ma/checkout-button.js";
 
 enum LumaEmbedType {
   CALENDAR = "calendar",
   EVENT_PAGE = "eventPage",
-  REGISTRATION_BUTTON = "registrationButton",
 }
 
 const LUMA_EMBED_LABELS: Record<LumaEmbedType, string> = {
   [LumaEmbedType.CALENDAR]: "Calendar",
   [LumaEmbedType.EVENT_PAGE]: "Event Page",
-  [LumaEmbedType.REGISTRATION_BUTTON]: "Registration Button",
 };
 
 type LumaEmbedTypeSelectorProps = {
@@ -76,14 +64,6 @@ const LumaEmbedTypeSelector: React.FC<LumaEmbedTypeSelectorProps> = ({
     </div>
   );
 };
-
-declare global {
-  interface Window {
-    luma?: {
-      initCheckout?: () => void;
-    };
-  }
-}
 
 export type LumaFidgetSettings = {
   embedType: LumaEmbedType;
@@ -134,8 +114,7 @@ const lumaConfig: FidgetProperties<LumaFidgetSettings> = {
         </WithMargin>
       ),
       group: "settings",
-      disabledIf: (settings) =>
-        settings.embedType === LumaEmbedType.CALENDAR,
+      disabledIf: (settings) => settings.embedType !== LumaEmbedType.EVENT_PAGE,
     },
     ...defaultStyleFields,
   ],
@@ -147,80 +126,12 @@ const lumaConfig: FidgetProperties<LumaFidgetSettings> = {
   },
 };
 
-const ensureLumaCheckoutScript = () => {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  const existingScript = document.getElementById(
-    LUMA_CHECKOUT_SCRIPT_ID,
-  ) as HTMLScriptElement | null;
-
-  if (existingScript) {
-    return;
-  }
-
-  const script = document.createElement("script");
-  script.id = LUMA_CHECKOUT_SCRIPT_ID;
-  script.src = LUMA_CHECKOUT_SCRIPT_SRC;
-  script.async = true;
-  document.head.appendChild(script);
-};
-
-const useLumaCheckout = (shouldInitialize: boolean) => {
-  useEffect(() => {
-    if (!shouldInitialize || typeof window === "undefined") {
-      return;
-    }
-
-    ensureLumaCheckoutScript();
-
-    const initializeCheckout = () => {
-      try {
-        window.luma?.initCheckout?.();
-      } catch (error) {
-        console.error("Failed to initialize Luma checkout", error);
-      }
-    };
-
-    const script = document.getElementById(
-      LUMA_CHECKOUT_SCRIPT_ID,
-    ) as HTMLScriptElement | null;
-
-    const handleLoad = () => {
-      initializeCheckout();
-      if (script) {
-        script.dataset.initialized = "true";
-      }
-    };
-
-    if (script) {
-      if (script.dataset.initialized === "true") {
-        initializeCheckout();
-      } else {
-        script.addEventListener("load", handleLoad, { once: true });
-      }
-    }
-
-    const timeout = window.setTimeout(initializeCheckout, 500);
-
-    return () => {
-      if (script) {
-        script.removeEventListener("load", handleLoad);
-      }
-      window.clearTimeout(timeout);
-    };
-  }, [shouldInitialize]);
-};
-
 const LumaFidget: React.FC<FidgetArgs<LumaFidgetSettings>> = ({
   settings,
 }) => {
   const embedType = settings.embedType || LumaEmbedType.CALENDAR;
   const calendarId = settings.calendarId?.trim() || "";
   const eventId = settings.eventId?.trim() || "";
-
-  useLumaCheckout(embedType === LumaEmbedType.REGISTRATION_BUTTON && !!eventId);
 
   if (embedType === LumaEmbedType.CALENDAR) {
     if (!calendarId) {
@@ -280,44 +191,6 @@ const LumaFidget: React.FC<FidgetArgs<LumaFidgetSettings>> = ({
           tabIndex={0}
           title="Luma Event"
         />
-      </div>
-    );
-  }
-
-  if (embedType === LumaEmbedType.REGISTRATION_BUTTON) {
-    if (!eventId) {
-      return (
-        <ErrorWrapper
-          icon="📝"
-          message="Add an Event ID to show the Luma registration button."
-        />
-      );
-    }
-
-    const eventUrl = `https://luma.com/event/${encodeURIComponent(eventId)}`;
-
-    return (
-      <div className="size-full flex items-center justify-center p-4">
-        <a
-          href={eventUrl}
-          className="luma-checkout--button"
-          data-luma-action="checkout"
-          data-luma-event-id={eventId}
-        >
-          Register for Event
-        </a>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="ml-2 text-gray-400">
-                <FaCircleInfo />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              Luma will open a modal checkout when visitors click this button.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
     );
   }
