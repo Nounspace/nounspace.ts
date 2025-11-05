@@ -20,15 +20,17 @@ export const toFarcasterCdnUrl = (
 
     // Special handling for Cloudflare Images (imagedelivery.net)
     if (u.hostname.endsWith('imagedelivery.net')) {
-      // Expected path: /<account_hash>/<image_id>/<variant>
+      // Expected path: /<account_hash>/<image_id>/<variant?>
       const segments = u.pathname.split('/').filter(Boolean);
       const account = segments[0];
       const imageId = segments[1];
       const variant = segments[2];
-      if (account && imageId && variant) {
-        // Warpcast uses a different path format for CF Images; preserve the original variant
-        const wrpcdBase = `https://wrpcd.net/cdn-cgi/imagedelivery/${account}/${imageId}/${variant}`;
-        return params ? `${wrpcdBase}/${params}` : wrpcdBase;
+      if (account && imageId) {
+        const sourceUrl =
+          variant !== undefined
+            ? `${u.origin}/${account}/${imageId}/${variant}`
+            : `${u.origin}/${account}/${imageId}`;
+        return `https://wrpcd.net/cdn-cgi/image/${params}/${encodeURIComponent(sourceUrl)}`;
       }
       // Fallback to the generic proxy so we still serve the asset through Warpcast CDN
       return `https://wrpcd.net/cdn-cgi/image/${params}/${encodeURIComponent(url)}`;
