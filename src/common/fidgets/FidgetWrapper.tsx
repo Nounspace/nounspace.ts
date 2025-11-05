@@ -2,8 +2,8 @@ import { Card, CardContent } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
-import { reduce } from "lodash";
-import React from "react";
+import { reduce, isEqual } from "lodash";
+import React, { useEffect, useMemo, useRef } from "react";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
@@ -86,17 +86,113 @@ export function FidgetWrapper({
 
   const Fidget = fidget;
 
+  const isDirectoryFidget = bundle.fidgetType === "Directory";
+  const fetchContext = (bundle.config?.data as { fetchContext?: Record<string, unknown> } | undefined)
+    ?.fetchContext;
+
+  const derivedSettings = useMemo<FidgetSettings>(() => {
+    const baseSettings = (bundle.config.settings ?? {}) as FidgetSettings;
+    if (!isDirectoryFidget || !fetchContext || typeof fetchContext !== "object") {
+      return baseSettings;
+    }
+
+    const context = fetchContext as Record<string, unknown>;
+    const nextSettings: FidgetSettings = { ...baseSettings };
+    let changed = false;
+
+    const setString = (
+      key: string,
+      value: unknown,
+      options?: { lowerCaseCompare?: boolean },
+    ) => {
+      if (typeof value !== "string") return;
+      const trimmed = value.trim();
+      if (!trimmed) return;
+
+      const compareLower = options?.lowerCaseCompare ?? false;
+      const normalize = (val: unknown) => {
+        if (typeof val === "string") {
+          const normalized = val.trim();
+          return compareLower ? normalized.toLowerCase() : normalized;
+        }
+        return val;
+      };
+
+      const current = nextSettings[key];
+      if (normalize(current) === normalize(trimmed)) {
+        return;
+      }
+
+      nextSettings[key] = trimmed;
+      changed = true;
+    };
+
+    const source =
+      typeof context.source === "string" ? context.source.trim() : undefined;
+    if (source) {
+      setString("source", source);
+    }
+
+    if (source === "tokenHolders") {
+      setString("contractAddress", context.contractAddress, { lowerCaseCompare: true });
+      setString("network", context.network);
+      setString("assetType", context.assetType);
+    } else if (source === "farcasterChannel") {
+      setString("channelName", context.channelName);
+      setString("channelFilter", context.channelFilter);
+    } else if (source === "csv") {
+      setString("csvType", context.csvType);
+      setString("csvSortBy", context.csvSortBy);
+      setString("csvUpload", context.csvUploadedAt);
+      setString("csvUploadedAt", context.csvUploadedAt);
+    }
+
+    return changed ? nextSettings : baseSettings;
+  }, [bundle.config.settings, fetchContext, isDirectoryFidget]);
+
+  const settingsWithDefaults = useMemo(
+    () => getSettingsWithDefaults(derivedSettings, bundle.properties),
+    [derivedSettings, bundle.properties],
+  );
+
+  const shouldAttemptBackfill =
+    isDirectoryFidget &&
+    !!fetchContext &&
+    !isEqual(derivedSettings, bundle.config.settings ?? {});
+
+  const lastBackfillAttemptRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!shouldAttemptBackfill) {
+      lastBackfillAttemptRef.current = null;
+      return;
+    }
+
+    const serialized = JSON.stringify(derivedSettings);
+    if (lastBackfillAttemptRef.current === serialized) {
+      return;
+    }
+    lastBackfillAttemptRef.current = serialized;
+
+    (async () => {
+      try {
+        await saveConfig({
+          ...bundle.config,
+          settings: derivedSettings,
+        });
+      } catch (error) {
+        console.error("Failed to backfill Directory settings from fetch context", error);
+        lastBackfillAttemptRef.current = null;
+      }
+    })();
+  }, [shouldAttemptBackfill, derivedSettings, bundle.config, saveConfig]);
+
   const saveData = (data: FidgetData) => {
     return saveConfig({
       ...bundle.config,
       data,
     });
   };
-
-  const settingsWithDefaults = getSettingsWithDefaults(
-    bundle.config.settings,
-    bundle.properties,
-  );
 
   const onSave = async (
     newSettings: FidgetSettings,
