@@ -98,7 +98,7 @@
     "framer-motion": "^11.3.30",
     "frames.js": "^0.18.2",
     "gray-matter": "^4.0.3",
-    "isomorphic-dompurify": "^2.28.0",
+    "isomorphic-dompurify": "^2.31.0",
     "linkify-react": "^4.1.1",
     "linkifyjs": "^4.3.2",
     "lodash": "^4.17.21",
