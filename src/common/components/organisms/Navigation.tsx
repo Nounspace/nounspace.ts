@@ -28,6 +28,7 @@ import { RiQuillPenLine } from "react-icons/ri";
 import HomeIcon from "../atoms/icons/HomeIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
+import RobotIcon from "../atoms/icons/RobotIcon";
 import SearchIcon from "../atoms/icons/SearchIcon";
 import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
@@ -136,6 +137,7 @@ const Navigation = React.memo(
       case 'explore': return ExploreIcon;
       case 'notifications': return NotificationsIcon;
       case 'space': return RocketIcon;
+      case 'robot': return RobotIcon;
       default: return HomeIcon;
     }
   }, []);
