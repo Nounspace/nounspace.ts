@@ -56,9 +56,9 @@ import {
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
-// But a space that is saved in the DB doesn't store
-// Fidget data or editability
-// So we rebuild the details, but without those fields
+// Spaces saved in the DB store the full FidgetConfig (including data and editable),
+// but we omit isEditable at the SpaceConfig level.
+// Note: Fidget data (config.data) IS persisted to the database.
 export type DatabaseWritableSpaceConfig = Omit<
   SpaceConfig,
   "fidgetInstanceDatums" | "isEditable"

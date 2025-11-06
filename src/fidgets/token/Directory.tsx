@@ -72,24 +72,12 @@ export interface DirectoryMemberData {
   githubUrl?: string | null;
 }
 
-export interface DirectoryFetchContext {
-  source: DirectorySource;
-  network?: DirectoryNetwork;
-  contractAddress?: string;
-  assetType?: DirectoryAssetType;
-  channelName?: string;
-  channelFilter?: DirectoryChannelFilterOption;
-  csvUploadedAt?: string;
-  csvType?: CsvTypeOption;
-  csvSortBy?: CsvSortOption;
-}
-
 export interface DirectoryFidgetData extends FidgetData {
   members: DirectoryMemberData[];
   lastUpdatedTimestamp?: string | null;
   tokenSymbol?: string | null;
   tokenDecimals?: number | null;
-  fetchContext?: DirectoryFetchContext;
+  lastFetchSettings?: Partial<DirectoryFidgetSettings>; // Snapshot of settings used for last fetch
 }
 
 export type DirectoryFidgetSettings = FidgetSettings &
@@ -1082,13 +1070,13 @@ const Directory: React.FC<
     [primaryFontFamily],
   );
 
-const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
-  members: data?.members ?? [],
-  lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
-  tokenSymbol: data?.tokenSymbol ?? null,
-  tokenDecimals: data?.tokenDecimals ?? null,
-  fetchContext: data?.fetchContext,
-});
+  const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>(() => ({
+    members: data?.members ?? [],
+    lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
+    tokenSymbol: data?.tokenSymbol ?? null,
+    tokenDecimals: data?.tokenDecimals ?? null,
+    lastFetchSettings: data?.lastFetchSettings,
+  }));
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -1102,14 +1090,14 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
       lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
       tokenSymbol: data?.tokenSymbol ?? prev.tokenSymbol ?? null,
       tokenDecimals: data?.tokenDecimals ?? prev.tokenDecimals ?? null,
-      fetchContext: data?.fetchContext ?? prev.fetchContext,
+      lastFetchSettings: data?.lastFetchSettings ?? prev.lastFetchSettings,
     }));
   }, [
     data?.members,
     data?.lastUpdatedTimestamp,
     data?.tokenSymbol,
     data?.tokenDecimals,
-    data?.fetchContext,
+    data?.lastFetchSettings,
   ]);
 
   useEffect(() => {
@@ -1155,51 +1143,56 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
       return false;
     }
 
-    const context = directoryData.fetchContext;
+    const lastFetch = directoryData.lastFetchSettings;
     const lastUpdated = directoryData.lastUpdatedTimestamp
       ? Date.parse(directoryData.lastUpdatedTimestamp)
       : 0;
 
-    if (!context) {
+    // If no previous fetch, need to fetch
+    if (!lastFetch || !lastUpdated) {
       return true;
     }
 
-    if (context.source !== source) {
+    // Extract relevant settings for comparison (only the ones that affect data fetching)
+    const currentFetchSettings: Partial<DirectoryFidgetSettings> = {
+      source,
+      ...(source === "tokenHolders" && {
+        network,
+        contractAddress: normalizedAddress,
+        assetType,
+      }),
+      ...(source === "farcasterChannel" && {
+        channelName: debouncedChannelName,
+        channelFilter: settings.channelFilter ?? "members",
+      }),
+      ...(source === "csv" && {
+        csvUpload: settings.csvUpload ?? settings.csvUploadedAt ?? "",
+        csvType: settings.csvType,
+        csvSortBy: settings.csvSortBy,
+      }),
+    };
+
+    // If settings changed, need refresh
+    if (!isEqual(currentFetchSettings, lastFetch)) {
       return true;
     }
 
-    if (source === "farcasterChannel") {
-      if (
-        context.channelName !== debouncedChannelName ||
-        context.channelFilter !== (settings.channelFilter ?? "members")
-      ) {
-        return true;
-      }
-    } else if (source === "tokenHolders") {
-      if (
-        context.network !== network ||
-        normalizeAddress(context.contractAddress || "") !== normalizedAddress ||
-        context.assetType !== assetType
-      ) {
-        return true;
-      }
-    }
-
-    if (!lastUpdated) {
-      return true;
-    }
-
+    // Otherwise check if data is stale
     return Date.now() - lastUpdated > STALE_AFTER_MS;
   }, [
-    directoryData.fetchContext,
+    directoryData.lastFetchSettings,
     directoryData.lastUpdatedTimestamp,
     isConfigured,
+    source,
     network,
     normalizedAddress,
-    source,
+    assetType,
     debouncedChannelName,
     settings.channelFilter,
-    assetType,
+    settings.csvUpload,
+    settings.csvUploadedAt,
+    settings.csvType,
+    settings.csvSortBy,
   ]);
 
   const persistDataIfChanged = useCallback(
@@ -1209,7 +1202,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
         directoryData.lastUpdatedTimestamp !== payload.lastUpdatedTimestamp ||
         directoryData.tokenSymbol !== payload.tokenSymbol ||
         directoryData.tokenDecimals !== payload.tokenDecimals ||
-        !isEqual(directoryData.fetchContext, payload.fetchContext);
+        !isEqual(directoryData.lastFetchSettings, payload.lastFetchSettings);
 
       setDirectoryData(payload);
 
@@ -1234,7 +1227,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
 
       const json = (await response.json()) as {
         result: "success" | "error";
-        value?: DirectoryFidgetData & { fetchContext: DirectoryFetchContext };
+        value?: DirectoryFidgetData;
         error?: { message?: string };
       };
 
@@ -1253,7 +1246,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
         tokenSymbol: json.value.tokenSymbol,
         tokenDecimals: json.value.tokenDecimals,
         lastUpdatedTimestamp: timestamp,
-        fetchContext: {
+        lastFetchSettings: {
           source: "tokenHolders",
           network,
           contractAddress: normalizedAddress,
@@ -1362,7 +1355,7 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
         tokenSymbol: null,
         tokenDecimals: null,
         lastUpdatedTimestamp: timestamp,
-        fetchContext: {
+        lastFetchSettings: {
           source: "farcasterChannel",
           channelName: (settings.channelName ?? "").trim(),
           channelFilter: (settings.channelFilter ?? "members") as DirectoryChannelFilterOption,
@@ -1770,8 +1763,9 @@ const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>({
         tokenSymbol: null,
         tokenDecimals: null,
         lastUpdatedTimestamp: timestamp,
-        fetchContext: {
+        lastFetchSettings: {
           source: "csv",
+          csvUpload: settings.csvUpload ?? settings.csvUploadedAt ?? "",
           csvUploadedAt: settings.csvUpload ?? settings.csvUploadedAt ?? "",
           csvType: type,
           csvSortBy,

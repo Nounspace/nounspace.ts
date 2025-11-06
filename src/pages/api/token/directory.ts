@@ -88,18 +88,11 @@ type DirectoryMember = {
   githubUrl?: string | null;
 };
 
-type DirectoryFetchContext = {
-  network: DirectoryNetwork;
-  contractAddress: string;
-  assetType: "token" | "nft";
-};
-
 type DirectoryApiResponse = {
   fetchedAt: string;
   members: DirectoryMember[];
   tokenSymbol: string | null;
   tokenDecimals: number | null;
-  fetchContext: DirectoryFetchContext;
 };
 
 type DirectoryErrorResponse = {
@@ -997,11 +990,6 @@ export async function fetchDirectoryData(
     members,
     tokenSymbol: tokenSymbol ?? null,
     tokenDecimals: resolvedDecimals,
-    fetchContext: {
-      network: params.network,
-      contractAddress: normalizedAddress,
-      assetType: params.assetType,
-    },
   };
 }
 

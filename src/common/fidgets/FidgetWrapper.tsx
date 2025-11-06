@@ -86,60 +86,51 @@ export function FidgetWrapper({
 
   const Fidget = fidget;
 
-  const isDirectoryFidget = bundle.fidgetType === "Directory";
-  const fetchContext = (bundle.config?.data as { fetchContext?: Record<string, unknown> } | undefined)
-    ?.fetchContext;
+  // Generic settings backfill: any fidget can use lastFetchSettings in config.data
+  // to automatically backfill empty settings. This is useful when fidgets are created
+  // from external sources (e.g., URL parameters) and need to populate settings.
+  const lastFetchSettings = (bundle.config?.data as {
+    lastFetchSettings?: Partial<FidgetSettings>;
+  } | undefined)?.lastFetchSettings;
 
   const derivedSettings = useMemo<FidgetSettings>(() => {
     const baseSettings = (bundle.config.settings ?? {}) as FidgetSettings;
-    if (!isDirectoryFidget || !fetchContext || typeof fetchContext !== "object") {
+    if (!lastFetchSettings || typeof lastFetchSettings !== "object") {
       return baseSettings;
     }
 
-    const context = fetchContext as Record<string, unknown>;
     const nextSettings: FidgetSettings = { ...baseSettings };
     let changed = false;
 
-    const setString = (key: string, value: unknown) => {
-      if (typeof value !== "string") return;
-      const trimmed = value.trim();
-      if (!trimmed) return;
-
+    // Helper to only fill empty settings
+    const setValue = (key: string, value: unknown) => {
       const current = nextSettings[key];
-      if (typeof current === "string" && current.trim().length > 0) {
-        return;
-      }
-      if (current !== undefined && current !== null && typeof current !== "string") {
+      // Don't overwrite existing non-empty values
+      if (current !== undefined && current !== null && current !== "") {
         return;
       }
 
-      nextSettings[key] = trimmed;
-      changed = true;
+      if (value !== undefined && value !== null) {
+        if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (trimmed) {
+            nextSettings[key] = trimmed;
+            changed = true;
+          }
+        } else {
+          nextSettings[key] = value;
+          changed = true;
+        }
+      }
     };
 
-    const source =
-      typeof context.source === "string" ? context.source.trim() : undefined;
-    if (source && !(typeof nextSettings.source === "string" && nextSettings.source.trim())) {
-      nextSettings.source = source;
-      changed = true;
-    }
-
-    if (source === "tokenHolders") {
-      setString("contractAddress", context.contractAddress);
-      setString("network", context.network);
-      setString("assetType", context.assetType);
-    } else if (source === "farcasterChannel") {
-      setString("channelName", context.channelName);
-      setString("channelFilter", context.channelFilter);
-    } else if (source === "csv") {
-      setString("csvType", context.csvType);
-      setString("csvSortBy", context.csvSortBy);
-      setString("csvUpload", context.csvUploadedAt);
-      setString("csvUploadedAt", context.csvUploadedAt);
-    }
+    // Backfill from lastFetchSettings (any fidget can use this pattern)
+    Object.entries(lastFetchSettings).forEach(([key, value]) => {
+      setValue(key, value);
+    });
 
     return changed ? nextSettings : baseSettings;
-  }, [bundle.config.settings, fetchContext, isDirectoryFidget]);
+  }, [bundle.config.settings, lastFetchSettings]);
 
   const settingsWithDefaults = useMemo(
     () => getSettingsWithDefaults(derivedSettings, bundle.properties),
@@ -147,8 +138,7 @@ export function FidgetWrapper({
   );
 
   const shouldAttemptBackfill =
-    isDirectoryFidget &&
-    !!fetchContext &&
+    !!lastFetchSettings &&
     !isEqual(derivedSettings, bundle.config.settings ?? {});
 
   const lastBackfillAttemptRef = useRef<string | null>(null);
@@ -172,7 +162,7 @@ export function FidgetWrapper({
           settings: derivedSettings,
         });
       } catch (error) {
-        console.error("Failed to backfill Directory settings from fetch context", error);
+        console.error("Failed to backfill settings from lastFetchSettings", error);
         lastBackfillAttemptRef.current = null;
       }
     })();
