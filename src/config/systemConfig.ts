@@ -16,6 +16,7 @@ export interface BrandConfig {
   displayName: string;
   tagline: string;
   description: string;
+  miniAppTags: string[];
 }
 
 export interface AssetConfig {
