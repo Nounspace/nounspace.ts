@@ -1,578 +1,384 @@
 export const clankerHomePage = {
-  defaultTab: "trading",
-  tabOrder: ["trading", "trending", "portfolio", "create", "analytics"],
+  defaultTab: "clank",
+  tabOrder: ["clank", "social", "docs"],
   tabs: {
-    trading: {
-      name: "trading",
-      displayName: "Trading",
-      layoutID: "clanker-trading-layout",
+    clank: {
+      name: "clank",
+      displayName: "Clank",
+      layoutID: "d99e0194-d32e-42da-94b9-d110097e7b05",
       layoutDetails: {
         layoutConfig: {
           layout: [
-            { w: 6, h: 4, x: 0, y: 0, i: "market-data" },
-            { w: 6, h: 4, x: 6, y: 0, i: "portfolio" },
-            { w: 4, h: 3, x: 0, y: 4, i: "swap" },
-            { w: 4, h: 3, x: 4, y: 4, i: "token-feed" },
-            { w: 4, h: 3, x: 8, y: 4, i: "token-gallery" },
-            { w: 12, h: 3, x: 0, y: 7, i: "token-links" }
+            {
+              h: 10,
+              i: "iframe:6b9e0d0a-30e4-4bf1-9d54-e96f465e63c6",
+              isBounded: false,
+              maxH: 36,
+              maxW: 36,
+              minH: 2,
+              minW: 2,
+              moved: false,
+              resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+              static: false,
+              w: 12,
+              x: 0,
+              y: 0
+            }
           ]
         },
         layoutFidget: "grid"
       },
       theme: {
-        id: "clanker-trading-theme",
-        name: "Clanker Trading Theme",
+        id: "Default",
+        name: "Default",
         properties: {
-          font: "Inter, system-ui, sans-serif",
-          fontColor: "#ffffff",
-          headingsFont: "Inter, system-ui, sans-serif",
-          headingsFontColor: "#00d4ff",
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+          background: "#ffffff",
           backgroundHTML: "",
-          musicURL: "",
-          fidgetBackground: "rgba(0, 212, 255, 0.1)",
+          fidgetBackground: "#ffffff",
+          fidgetBorderColor: "#eeeeee",
+          fidgetBorderRadius: "0px",
           fidgetBorderWidth: "1px",
-          fidgetBorderColor: "rgba(0, 212, 255, 0.3)",
-          fidgetShadow: "0 4px 20px rgba(0, 212, 255, 0.2)",
-          fidgetBorderRadius: "12px",
-          gridSpacing: "16"
+          fidgetShadow: "none",
+          font: "Inter",
+          fontColor: "#000000",
+          gridSpacing: "0",
+          headingsFont: "Inter",
+          headingsFontColor: "#000000",
+          musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
         }
       },
       fidgetInstanceDatums: {
-        "market-data": {
-          id: "market-data",
-          fidgetType: "Market",
+        "iframe:6b9e0d0a-30e4-4bf1-9d54-e96f465e63c6": {
           config: {
             data: {},
             editable: true,
             settings: {
-              showMarketCap: true,
-              showVolume: true,
-              showPriceChange: true
+              background: "var(--user-theme-fidget-background)",
+              cropOffsetX: 0,
+              cropOffsetY: 0,
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+              isScrollable: false,
+              showOnMobile: true,
+              url: "https://clanker.world"
             }
-          }
-        },
-        "portfolio": {
-          id: "portfolio",
-          fidgetType: "Portfolio",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showHoldings: true,
-              showValue: true,
-              showPnl: true
-            }
-          }
-        },
-        "swap": {
-          id: "swap",
-          fidgetType: "Swap",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTokenSelection: true,
-              showAmountInput: true
-            }
-          }
-        },
-        "token-feed": {
-          id: "token-feed",
-          fidgetType: "feed",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTokenDiscussions: true,
-              maxCasts: 10
-            }
-          }
-        },
-        "token-gallery": {
-          id: "token-gallery",
-          fidgetType: "gallery",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTokenImages: true,
-              maxImages: 20
-            }
-          }
-        },
-        "token-links": {
-          id: "token-links",
-          fidgetType: "links",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTokenLinks: true,
-              showExternalTools: true
-            }
-          }
-        }
-      },
-      fidgetTrayContents: [
-        "Market",
-        "Portfolio", 
-        "Swap",
-        "feed",
-        "gallery",
-        "links",
-        "text",
-        "iframe"
-      ],
-      isEditable: false,
-      timestamp: new Date().toISOString()
-    },
-    trending: {
-      name: "trending",
-      displayName: "Trending",
-      layoutID: "clanker-trending-layout",
-      layoutDetails: {
-        layoutConfig: {
-          layout: [
-            { w: 8, h: 6, x: 0, y: 0, i: "market-data" },
-            { w: 4, h: 6, x: 8, y: 0, i: "portfolio" },
-            { w: 6, h: 4, x: 0, y: 6, i: "token-feed" },
-            { w: 6, h: 4, x: 6, y: 6, i: "token-gallery" }
-          ]
-        },
-        layoutFidget: "grid"
-      },
-      theme: {
-        id: "clanker-trending-theme",
-        name: "Clanker Trending Theme",
-        properties: {
-          font: "Inter, system-ui, sans-serif",
-          fontColor: "#ffffff",
-          headingsFont: "Inter, system-ui, sans-serif",
-          headingsFontColor: "#ffd700",
-          background: "linear-gradient(135deg, #2d1b69 0%, #11998e 100%)",
-          backgroundHTML: "",
-          musicURL: "",
-          fidgetBackground: "rgba(255, 215, 0, 0.1)",
-          fidgetBorderWidth: "2px",
-          fidgetBorderColor: "#ffd700",
-          fidgetShadow: "0 4px 20px rgba(255, 215, 0, 0.2)",
-          fidgetBorderRadius: "12px",
-          gridSpacing: "16"
-        }
-      },
-      fidgetInstanceDatums: {
-        "market-data": {
-          id: "market-data",
-          fidgetType: "Market",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTrending: true,
-              showVolume: true,
-              showPriceChange: true
-            }
-          }
-        },
-        "portfolio": {
-          id: "portfolio",
-          fidgetType: "Portfolio",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTopHoldings: true,
-              showPerformance: true
-            }
-          }
-        },
-        "token-feed": {
-          id: "token-feed",
-          fidgetType: "feed",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTrendingDiscussions: true,
-              maxCasts: 15
-            }
-          }
-        },
-        "token-gallery": {
-          id: "token-gallery",
-          fidgetType: "gallery",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTrendingImages: true,
-              maxImages: 12
-            }
-          }
-        }
-      },
-      fidgetTrayContents: [
-        "Market",
-        "Portfolio",
-        "feed",
-        "gallery",
-        "links",
-        "Video",
-        "Rss"
-      ],
-      isEditable: false,
-      timestamp: new Date().toISOString()
-    },
-    portfolio: {
-      name: "portfolio",
-      displayName: "Portfolio",
-      layoutID: "clanker-portfolio-layout",
-      layoutDetails: {
-        layoutConfig: {
-          layout: [
-            { w: 6, h: 4, x: 0, y: 0, i: "portfolio" },
-            { w: 6, h: 4, x: 6, y: 0, i: "market-data" },
-            { w: 12, h: 4, x: 0, y: 4, i: "token-feed" },
-            { w: 6, h: 3, x: 0, y: 8, i: "swap" },
-            { w: 6, h: 3, x: 6, y: 8, i: "token-gallery" }
-          ]
-        },
-        layoutFidget: "grid"
-      },
-      theme: {
-        id: "clanker-portfolio-theme",
-        name: "Clanker Portfolio Theme",
-        properties: {
-          font: "Inter, system-ui, sans-serif",
-          fontColor: "#ffffff",
-          headingsFont: "Inter, system-ui, sans-serif",
-          headingsFontColor: "#00ff88",
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-          backgroundHTML: "",
-          musicURL: "",
-          fidgetBackground: "rgba(0, 255, 136, 0.1)",
-          fidgetBorderWidth: "1px",
-          fidgetBorderColor: "rgba(0, 255, 136, 0.3)",
-          fidgetShadow: "0 4px 20px rgba(0, 255, 136, 0.2)",
-          fidgetBorderRadius: "12px",
-          gridSpacing: "16"
-        }
-      },
-      fidgetInstanceDatums: {
-        "portfolio": {
-          id: "portfolio",
-          fidgetType: "Portfolio",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showTotalValue: true,
-              showPnl: true,
-              showAllocation: true
-            }
-          }
-        },
-        "market-data": {
-          id: "market-data",
-          fidgetType: "Market",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showPortfolioTokens: true,
-              showPriceChanges: true
-            }
-          }
-        },
-        "token-feed": {
-          id: "token-feed",
-          fidgetType: "feed",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showPortfolioDiscussions: true,
-              maxCasts: 20
-            }
-          }
-        },
-        "swap": {
-          id: "swap",
-          fidgetType: "Swap",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showQuickSwap: true,
-              showPortfolioTokens: true
-            }
-          }
-        },
-        "token-gallery": {
-          id: "token-gallery",
-          fidgetType: "gallery",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showPortfolioImages: true,
-              maxImages: 15
-            }
-          }
-        }
-      },
-      fidgetTrayContents: [
-        "Portfolio",
-        "Market",
-        "feed",
-        "Swap",
-        "gallery",
-        "links",
-        "Video",
-        "Chat"
-      ],
-      isEditable: false,
-      timestamp: new Date().toISOString()
-    },
-    create: {
-      name: "create",
-      displayName: "Create",
-      layoutID: "clanker-create-layout",
-      layoutDetails: {
-        layoutConfig: {
-          layout: [
-            { w: 8, h: 6, x: 0, y: 0, i: "text" },
-            { w: 4, h: 6, x: 8, y: 0, i: "links" },
-            { w: 6, h: 4, x: 0, y: 6, i: "gallery" },
-            { w: 6, h: 4, x: 6, y: 6, i: "feed" }
-          ]
-        },
-        layoutFidget: "grid"
-      },
-      theme: {
-        id: "clanker-create-theme",
-        name: "Clanker Create Theme",
-        properties: {
-          font: "Inter, system-ui, sans-serif",
-          fontColor: "#ffffff",
-          headingsFont: "Inter, system-ui, sans-serif",
-          headingsFontColor: "#ff6b6b",
-          background: "linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%)",
-          backgroundHTML: "",
-          musicURL: "",
-          fidgetBackground: "rgba(255, 107, 107, 0.1)",
-          fidgetBorderWidth: "2px",
-          fidgetBorderColor: "#ff6b6b",
-          fidgetShadow: "0 6px 24px rgba(255, 107, 107, 0.3)",
-          fidgetBorderRadius: "16px",
-          gridSpacing: "16"
-        }
-      },
-      fidgetInstanceDatums: {
-        "text": {
-          id: "text",
-          fidgetType: "text",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              content: "# Create a Clanker\n\nWelcome to the Clankverse! Here you can create and launch your own tokens.\n\n## Getting Started\n1. Choose a token name and symbol\n2. Set initial supply and parameters\n3. Deploy your token\n4. Start trading!\n\nJoin the community and start building!",
-              showMarkdown: true
-            }
-          }
-        },
-        "links": {
-          id: "links",
-          fidgetType: "links",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showCreationTools: true,
-              showDocumentation: true,
-              showCommunity: true
-            }
-          }
-        },
-        "gallery": {
-          id: "gallery",
-          fidgetType: "gallery",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showRecentCreations: true,
-              showFeaturedTokens: true,
-              maxImages: 12
-            }
-          }
-        },
-        "feed": {
-          id: "feed",
-          fidgetType: "feed",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showCreationDiscussions: true,
-              showTips: true,
-              maxCasts: 15
-            }
-          }
-        }
-      },
-      fidgetTrayContents: [
-        "text",
-        "links",
-        "gallery",
-        "feed",
-        "iframe",
-        "Video",
-        "Chat",
-        "BuilderScore"
-      ],
-      isEditable: false,
-      timestamp: new Date().toISOString()
-    },
-    analytics: {
-      name: "analytics",
-      displayName: "Analytics",
-      layoutID: "clanker-analytics-layout",
-      layoutDetails: {
-        layoutConfig: {
-          layout: [
-            { w: 6, h: 4, x: 0, y: 0, i: "market-data" },
-            { w: 6, h: 4, x: 6, y: 0, i: "portfolio" },
-            { w: 4, h: 4, x: 0, y: 4, i: "rss" },
-            { w: 4, h: 4, x: 4, y: 4, i: "gallery" },
-            { w: 4, h: 4, x: 8, y: 4, i: "feed" },
-            { w: 12, h: 3, x: 0, y: 8, i: "iframe" }
-          ]
-        },
-        layoutFidget: "grid"
-      },
-      theme: {
-        id: "clanker-analytics-theme",
-        name: "Clanker Analytics Theme",
-        properties: {
-          font: "Inter, system-ui, sans-serif",
-          fontColor: "#ffffff",
-          headingsFont: "Inter, system-ui, sans-serif",
-          headingsFontColor: "#a8e6cf",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-          backgroundHTML: "",
-          musicURL: "",
-          fidgetBackground: "rgba(168, 230, 207, 0.15)",
-          fidgetBorderWidth: "1px",
-          fidgetBorderColor: "rgba(168, 230, 207, 0.4)",
-          fidgetShadow: "0 10px 40px rgba(168, 230, 207, 0.2)",
-          fidgetBorderRadius: "20px",
-          gridSpacing: "16"
-        }
-      },
-      fidgetInstanceDatums: {
-        "market-data": {
-          id: "market-data",
-          fidgetType: "Market",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showAnalytics: true,
-              showMarketCap: true,
-              showVolume: true
-            }
-          }
-        },
-        "portfolio": {
-          id: "portfolio",
-          fidgetType: "Portfolio",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showAnalytics: true,
-              showPerformance: true,
-              showMetrics: true
-            }
-          }
-        },
-        "rss": {
-          id: "rss",
-          fidgetType: "Rss",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showMarketNews: true,
-              showTokenNews: true,
-              maxItems: 10
-            }
-          }
-        },
-        "gallery": {
-          id: "gallery",
-          fidgetType: "gallery",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showAnalyticsCharts: true,
-              showDataVisualizations: true,
-              maxImages: 8
-            }
-          }
-        },
-        "feed": {
-          id: "feed",
-          fidgetType: "feed",
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              showAnalyticsDiscussions: true,
-              showMarketInsights: true,
-              maxCasts: 12
-            }
-          }
-        },
-        "iframe": {
-          id: "iframe",
+          },
           fidgetType: "iframe",
+          id: "iframe:6b9e0d0a-30e4-4bf1-9d54-e96f465e63c6"
+        }
+      },
+      fidgetTrayContents: [],
+      isEditable: false,
+      timestamp: "2025-11-06T20:36:32.148Z"
+    },
+    social: {
+      name: "social",
+      displayName: "Social",
+      layoutID: "e83d3c76-dcda-48e1-9537-8313403d38cc",
+      layoutDetails: {
+        layoutConfig: {
+          layout: [
+            {
+              w: 6,
+              h: 10,
+              x: 0,
+              y: 0,
+              i: "feed:d637f537-e22d-4f1d-88d8-4a62592571c3",
+              minW: 4,
+              maxW: 36,
+              minH: 2,
+              maxH: 36,
+              moved: false,
+              static: false,
+              resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+              isBounded: false
+            },
+            {
+              w: 6,
+              h: 6,
+              x: 6,
+              y: 0,
+              i: "feed:9c39372e-8c76-4c1e-9e15-6a5c6a609e24",
+              minW: 4,
+              maxW: 36,
+              minH: 2,
+              maxH: 36,
+              moved: false,
+              static: false,
+              resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+              isBounded: false
+            },
+            {
+              w: 2,
+              h: 4,
+              x: 10,
+              y: 6,
+              i: "links:c37310f3-d1af-45b6-8d30-9febd8cb9df1",
+              minW: 2,
+              maxW: 36,
+              minH: 2,
+              maxH: 36,
+              moved: false,
+              static: false,
+              resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+              isBounded: false
+            },
+            {
+              w: 4,
+              h: 4,
+              x: 6,
+              y: 6,
+              i: "feed:8343cda3-6319-4337-ba43-b053ebd5bb72",
+              minW: 4,
+              maxW: 36,
+              minH: 2,
+              maxH: 36,
+              moved: false,
+              static: false,
+              resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+              isBounded: false
+            }
+          ]
+        },
+        layoutFidget: "grid"
+      },
+      theme: {
+        id: "Clanker",
+        name: "Clanker",
+        properties: {
+          background: "rgba(135, 100, 210, 1)",
+          backgroundHTML: "",
+          fidgetBackground: "#ffffff",
+          fidgetBorderColor: "rgb(103, 41, 179)",
+          fidgetBorderRadius: "12px",
+          fidgetBorderWidth: "4px",
+          fidgetShadow: "0 4px 8px rgba(0,0,0,0.25)",
+          font: "Roboto Mono",
+          fontColor: "#000000",
+          gridSpacing: "23",
+          headingsFont: "Roboto",
+          headingsFontColor: "#000000",
+          musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
+        }
+      },
+      fidgetInstanceDatums: {
+        "feed:8343cda3-6319-4337-ba43-b053ebd5bb72": {
           config: {
             data: {},
             editable: true,
             settings: {
-              showExternalAnalytics: true,
-              showTradingTools: true,
-              url: "https://analytics.clanker.world"
+              Xhandle: "thenounspace",
+              background: "var(--user-theme-fidget-background)",
+              channel: "",
+              feedType: "filter",
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+              filterType: "fids",
+              fontColor: "var(--user-theme-font-color)",
+              fontFamily: "var(--user-theme-font)",
+              keyword: "clanker",
+              selectPlatform: {
+                icon: "/images/farcaster.jpeg",
+                name: "Farcaster"
+              },
+              showOnMobile: true,
+              style: "light",
+              username: "clanker",
+              users: ""
             }
-          }
+          },
+          fidgetType: "feed",
+          id: "feed:8343cda3-6319-4337-ba43-b053ebd5bb72"
+        },
+        "feed:9c39372e-8c76-4c1e-9e15-6a5c6a609e24": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              Xhandle: "thenounspace",
+              background: "var(--user-theme-fidget-background)",
+              channel: "clanker",
+              feedType: "filter",
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+              filterType: "channel_id",
+              fontColor: "var(--user-theme-font-color)",
+              fontFamily: "var(--user-theme-font)",
+              keyword: "",
+              selectPlatform: {
+                icon: "/images/farcaster.jpeg",
+                name: "Farcaster"
+              },
+              showOnMobile: true,
+              style: "light",
+              username: "",
+              users: ""
+            }
+          },
+          fidgetType: "feed",
+          id: "feed:9c39372e-8c76-4c1e-9e15-6a5c6a609e24"
+        },
+        "feed:d637f537-e22d-4f1d-88d8-4a62592571c3": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              Xhandle: "thenounspace",
+              background: "var(--user-theme-fidget-background)",
+              channel: "clankers",
+              feedType: "filter",
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+              filterType: "channel_id",
+              fontColor: "var(--user-theme-font-color)",
+              fontFamily: "var(--user-theme-font)",
+              keyword: "",
+              selectPlatform: {
+                icon: "/images/farcaster.jpeg",
+                name: "Farcaster"
+              },
+              showOnMobile: true,
+              style: "light",
+              username: "",
+              users: ""
+            }
+          },
+          fidgetType: "feed",
+          id: "feed:d637f537-e22d-4f1d-88d8-4a62592571c3"
+        },
+        "links:c37310f3-d1af-45b6-8d30-9febd8cb9df1": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              DescriptionColor: "var(--user-theme-font-color)",
+              HeaderColor: "var(--user-theme-headings-font-color)",
+              background: "var(--user-theme-fidget-background)",
+              css: "",
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+              fontFamily: "Theme Font",
+              headingsFontFamily: "var(--user-theme-headings-font)",
+              itemBackground: "var(--user-theme-fidget-background)",
+              links: [
+                {
+                  avatar:
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAAAAABXZoBIAAAA/0lEQVR4AbXPIazCMACE4d+L2qoZFEGSIGcRc/gJJB5XMzGJmK9EN0HMi+qaibkKVF1txdQe4g0YzPK5yyWXHL9TaPNQ89LojH87N1rbJcXkMF4Fk31UMrf34hm14KUeoQxGArALHTMuQD2cAWQfJXOpgTbksGr9ng8qluShJTPhyCdx63POg7rEim95ZyR68I1ggQpnCEGwyPicw6hZtPEGmnhkycqOio1zm6XuFtyw5XDXfGvuau0dXHzJp8pfBPuhIXO9ZK5ILUCdSvLYMpc6ASBtl3EaC97I4KaFaOCaBE9Zn5jUsVqR2vcTJZO1DdbGoZryVp94Ka/mQfE7f2T3df0WBhLDAAAAAElFTkSuQmCC",
+                  description: "",
+                  text: "@clankeronbase",
+                  url: "https://x.com/clankeronbase"
+                },
+                {
+                  avatar: "/images/farcaster.jpeg",
+                  description: "",
+                  text: "@clanker",
+                  url: "https://farcaster.xyz/clanker"
+                },
+                {
+                  avatar: "/images/farcaster.jpeg",
+                  description: "",
+                  text: "/clanker",
+                  url: "https://farcaster.xyz/~/channel/clanker"
+                },
+                {
+                  avatar: "/images/farcaster.jpeg",
+                  description: "",
+                  text: "/clankers",
+                  url: "https://farcaster.xyz/~/channel/clankers"
+                }
+              ],
+              showOnMobile: true,
+              title: "",
+              viewMode: "list"
+            }
+          },
+          fidgetType: "links",
+          id: "links:c37310f3-d1af-45b6-8d30-9febd8cb9df1"
         }
       },
-      fidgetTrayContents: [
-        "Market",
-        "Portfolio",
-        "Rss",
-        "gallery",
-        "feed",
-        "iframe",
-        "Video",
-        "Chat"
-      ],
+      fidgetTrayContents: [],
       isEditable: false,
-      timestamp: new Date().toISOString()
-    }
-  },
-  layout: {
-    defaultLayoutFidget: "grid",
-    gridSpacing: 16,
-    theme: {
-      background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-      fidgetBackground: "rgba(255, 255, 255, 0.1)",
-      font: "Inter, system-ui, sans-serif",
-      fontColor: "#ffffff"
+      timestamp: "2025-11-06T20:36:45.381Z"
+    },
+    docs: {
+      name: "docs",
+      displayName: "Docs",
+      layoutID: "60a345e4-6c97-4ce8-8bd8-daa3965a576a",
+      layoutDetails: {
+        layoutConfig: {
+          layout: [
+            {
+              w: 12,
+              h: 10,
+              x: 0,
+              y: 0,
+              i: "iframe:1c3fcd3d-7c7d-4c3f-920c-8ab48460eb4e",
+              minW: 2,
+              maxW: 36,
+              minH: 2,
+              maxH: 36,
+              moved: false,
+              static: false,
+              resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+              isBounded: false
+            }
+          ]
+        },
+        layoutFidget: "grid"
+      },
+      theme: {
+        id: "Default",
+        name: "Default",
+        properties: {
+          background: "#ffffff",
+          backgroundHTML: "",
+          fidgetBackground: "#ffffff",
+          fidgetBorderColor: "#eeeeee",
+          fidgetBorderRadius: "0px",
+          fidgetBorderWidth: "1px",
+          fidgetShadow: "none",
+          font: "Inter",
+          fontColor: "#000000",
+          gridSpacing: "0",
+          headingsFont: "Inter",
+          headingsFontColor: "#000000",
+          musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
+        }
+      },
+      fidgetInstanceDatums: {
+        "iframe:1c3fcd3d-7c7d-4c3f-920c-8ab48460eb4e": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              background: "var(--user-theme-fidget-background)",
+              cropOffsetX: 0,
+              cropOffsetY: 0,
+              embedScript: `<iframe src="https://clanker.gitbook.io/clanker-documentation"
+        width="100%"
+        height="100%"
+        allowfullscreen>
+</iframe>`,
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+              isScrollable: false,
+              showOnMobile: true,
+              url: ""
+            }
+          },
+          fidgetType: "iframe",
+          id: "iframe:1c3fcd3d-7c7d-4c3f-920c-8ab48460eb4e"
+        }
+      },
+      fidgetTrayContents: [],
+      isEditable: false,
+      timestamp: "2025-11-06T20:37:03.565Z"
     }
   }
 };
