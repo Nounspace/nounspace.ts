@@ -8,7 +8,7 @@ export const toFarcasterCdnUrl = (
 
     // Respect already-proxied Warpcast CDN URLs
     if (
-      u.hostname.includes('wrpcd.net') &&
+      (u.hostname === 'wrpcd.net' || u.hostname.endsWith('.wrpcd.net')) &&
       (u.pathname.startsWith('/cdn-cgi/image/') ||
         u.pathname.startsWith('/cdn-cgi/imagedelivery/'))
     ) {

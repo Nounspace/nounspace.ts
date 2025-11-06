@@ -997,7 +997,7 @@ const sortMembers = (
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
-  const { source = "tokenHolders" } = settings;
+  const source: DirectorySource = settings.source ?? "tokenHolders";
   const { network, contractAddress } = settings;
   const assetType: DirectoryAssetType = (settings.assetType ?? "token") as DirectoryAssetType;
   // Local view state (defaults from settings)
@@ -1154,18 +1154,20 @@ const Directory: React.FC<
     }
 
     // Extract relevant settings for comparison (only the ones that affect data fetching)
+    // Use settings.source ?? "tokenHolders" (equivalent to source) to prevent type narrowing
+    const sourceValue = settings.source ?? "tokenHolders";
     const currentFetchSettings: Partial<DirectoryFidgetSettings> = {
       source,
-      ...(source === "tokenHolders" && {
+      ...(sourceValue === "tokenHolders" && {
         network,
         contractAddress: normalizedAddress,
         assetType,
       }),
-      ...(source === "farcasterChannel" && {
+      ...(sourceValue === "farcasterChannel" && {
         channelName: debouncedChannelName,
         channelFilter: settings.channelFilter ?? "members",
       }),
-      ...(source === "csv" && {
+      ...(sourceValue === "csv" && {
         csvUpload: settings.csvUpload ?? settings.csvUploadedAt ?? "",
         csvType: settings.csvType,
         csvSortBy: settings.csvSortBy,
