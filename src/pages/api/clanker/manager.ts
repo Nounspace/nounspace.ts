@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import {
   ClankerManagerApiResponse,
   ClankerManagerTokenResult,
+  ClankerUncollectedFeesResponse,
   determineClankerVersion,
   fetchEstimatedRewards,
   fetchTokensDeployedByAddress,
@@ -62,7 +63,7 @@ export default async function handler(
           estimatedRewardsError = "Missing pool address";
         }
 
-        let uncollectedFees = null;
+        let uncollectedFees: ClankerUncollectedFeesResponse | null = null;
         let uncollectedFeesError: string | undefined;
 
         if (!token.locker_address) {
