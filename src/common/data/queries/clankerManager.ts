@@ -1,6 +1,6 @@
 import { isAddress } from "viem";
 
-const CLANKER_API_BASE = "https://www.clanker.world/api";
+const CLANKER_API_BASE = "https://www.clanker.world/api/";
 
 export interface ClankerTokenMetadata {
   auditUrls?: string[];
@@ -104,7 +104,8 @@ function requireApiKey(): string {
 
 async function clankerFetch<T>(path: string, query?: Record<string, string | number | undefined>): Promise<T> {
   const apiKey = requireApiKey();
-  const url = new URL(path, CLANKER_API_BASE);
+  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
+  const url = new URL(normalizedPath, CLANKER_API_BASE);
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
