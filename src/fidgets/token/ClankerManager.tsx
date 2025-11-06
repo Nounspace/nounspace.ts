@@ -370,6 +370,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       normalizedDeployerAddress,
       normalizedRewardRecipient,
     ],
+    initialPageParam: 1,
     queryFn: async ({ pageParam = 1 }) => {
       if (!normalizedDeployerAddress) {
         throw new Error("A valid deployer address is required");
