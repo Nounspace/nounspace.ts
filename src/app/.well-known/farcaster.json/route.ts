@@ -8,6 +8,10 @@ function withValidProperties(properties: Record<string, undefined | string | str
 
 export async function GET() {
   const URL = process.env.NEXT_PUBLIC_URL as string;
+  const envTags = process.env.NEXT_PUBLIC_APP_TAGS
+    ?.split(',')
+    .map(tag => tag.trim())
+    .filter(tag => tag.length > 0);
   return Response.json({
     accountAssociation: {
       header: process.env.FARCASTER_HEADER,
@@ -28,7 +32,7 @@ export async function GET() {
       homeUrl: URL,
       webhookUrl: `${URL}/api/webhook`,
       primaryCategory: metadata.APP_PRIMARY_CATEGORY || process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY,
-      tags: [],
+      tags: metadata.APP_TAGS && metadata.APP_TAGS.length > 0 ? metadata.APP_TAGS : envTags,
       heroImageUrl: metadata.APP_HERO_IMAGE || process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
       tagline: metadata.APP_TAGLINE || process.env.NEXT_PUBLIC_APP_TAGLINE,
       ogTitle: metadata.APP_OG_TITLE || process.env.NEXT_PUBLIC_APP_OG_TITLE,
