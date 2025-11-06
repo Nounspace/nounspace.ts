@@ -25,6 +25,7 @@ const cspHeader = `
     connect-src 'self'
       ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}
       https://auth.privy.nounspace.com
+      https://react-tweet.vercel.app
       https://privy.nounspace.com/api/v1/analytics_events
       https://privy.nounspace.com/api/v1/siwe/init
       https://privy.nounspace.com

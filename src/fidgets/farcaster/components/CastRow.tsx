@@ -123,6 +123,23 @@ const extractUrlsFromText = (text: string): string[] => {
   return text.match(urlRegex) || [];
 };
 
+// Helper: try to extract a tweet id from a URL
+const getTweetIdFromUrl = (u: string) => {
+  try {
+    const cleaned = u.split(/[?#]/)[0];
+    const parts = cleaned.split("/").filter(Boolean);
+    const statusIndex = parts.findIndex((p) => p === "status");
+    if (statusIndex >= 0 && parts.length > statusIndex + 1) return parts[statusIndex + 1];
+    for (let j = parts.length - 1; j >= 0; j--) {
+      if (/^\d{5,}$/.test(parts[j])) return parts[j];
+    }
+  } catch (e) {
+    // ignore parsing errors but keep debug info
+    console.debug("getTweetIdFromUrl error", e);
+  }
+  return null;
+};
+
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
   // Get URLs from embeds and also extract any URLs from the cast text
   const embedUrls = "embeds" in cast && cast.embeds ? cast.embeds : [];
@@ -151,11 +168,17 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
                 : "",
             };
 
+        const isTwitterEmbed =
+          (isEmbedUrl(embed) && typeof embed.url === "string" && (embed.url.includes("twitter.com") || embed.url.startsWith("https://x.com"))) ||
+          (embedData.url && typeof embedData.url === "string" && (embedData.url.includes("twitter.com") || (embedData.url as string).startsWith("https://x.com")));
+
         return (
           <div
             key={`embed-${i}`}
             className={classNames(
-              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center w-full bg-background/50",
+              // only apply clipping for non-twitter embeds
+              !isTwitterEmbed ? "overflow-hidden max-h-[500px]" : "",
               embedData.castId ? "max-w-[100%]" : "max-w-max"
             )}
             onClick={(event) => {
@@ -176,8 +199,37 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
+        // Helper: try to extract a tweet id from a URL
+        const getTweetIdFromUrl = (u: string) => {
+          try {
+            const cleaned = u.split(/[?#]/)[0];
+            const parts = cleaned.split("/").filter(Boolean);
+            const statusIndex = parts.findIndex((p) => p === "status");
+            if (statusIndex >= 0 && parts.length > statusIndex + 1) return parts[statusIndex + 1];
+            for (let j = parts.length - 1; j >= 0; j--) {
+              if (/^\d{5,}$/.test(parts[j])) return parts[j];
+            }
+          } catch (e) {
+            // ignore parsing errors but keep debug info
+            // eslint-disable-next-line no-console
+            console.debug("getTweetIdFromUrl error", e);
+          }
+          return null;
+        };
+
         // Skip if this URL is already in the embeds
-        const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
+        const urlTweetId = getTweetIdFromUrl(url);
+
+        const isAlreadyEmbedded = embedUrls.some((embed) => {
+          if (isEmbedUrl(embed)) {
+            if (embed.url === url) return true;
+            const embedTweetId = getTweetIdFromUrl(embed.url as string);
+            if (embedTweetId && urlTweetId && embedTweetId === urlTweetId) return true;
+          } else if (embed.cast_id && embed.cast_id?.hash) {
+            return false;
+          }
+          return false;
+        });
 
         if (isAlreadyEmbedded) {
           return null;
@@ -188,11 +240,14 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
           key: url,
         };
 
+        const isTwitterTextUrl = url.includes("twitter.com") || url.startsWith("https://x.com");
+
         return (
           <div
             key={`text-url-${i}`}
             className={classNames(
-              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center w-full bg-background/50",
+              !isTwitterTextUrl ? "overflow-hidden max-h-[500px]" : "",
               "max-w-max"
             )}
           >
@@ -634,12 +689,40 @@ const CastBodyComponent = ({
     [onSelectCast]
   );
 
+  // Removes duplicate links from text if an embed already exists
+  const embedUrls = "embeds" in cast && cast.embeds ? cast.embeds : [];
+  let filteredText = cast.text || "";
+  try {
+    const textUrls = extractUrlsFromText(filteredText);
+    const textUrlsToRemove = new Set<string>();
+    textUrls.forEach((u) => {
+      const tid = getTweetIdFromUrl(u);
+      if (!tid) return;
+      const already = embedUrls.some((embed) => {
+        if (isEmbedUrl(embed) && embed.url) {
+          const embedTid = getTweetIdFromUrl(embed.url as string);
+          return embed.url === u || (embedTid && embedTid === tid);
+        }
+        return false;
+      });
+      if (already) textUrlsToRemove.add(u);
+    });
+
+    textUrlsToRemove.forEach((u) => {
+      filteredText = filteredText.replace(u, "");
+    });
+  // Normalizes whitespace after removing URLs
+    filteredText = filteredText.replace(/\n{3,}/g, "\n\n").trim();
+  } catch (e) {
+  // Error filtering URLs
+  }
+
   return (
     <div className="flex flex-col grow">
-      {cast.text && (
+      {filteredText && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
           <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
-            {cast.text}
+            {filteredText}
           </SafeExpandableText>
         </div>
       )}
