@@ -61,7 +61,7 @@ export const clankerHomePage = {
               fidgetShadow: "var(--user-theme-fidget-shadow)",
               isScrollable: false,
               showOnMobile: true,
-              url: "https://clanker.world"
+              url: "https://www.clanker.world"
             }
           },
           fidgetType: "iframe",
