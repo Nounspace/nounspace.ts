@@ -92,7 +92,7 @@ State Management:
 Layout System:
 ├── src/fidgets/layout/tabFullScreen/index.tsx           # Main layout
 └── src/fidgets/layout/tabFullScreen/components/         # Layout components
-    └── TabNavigation.tsx
+    └── MobileNavbar.tsx
 
 Mobile Interface:
 ├── src/common/components/organisms/MobileSettings.tsx   # Drag interface
