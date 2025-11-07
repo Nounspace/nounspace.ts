@@ -417,11 +417,13 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
   const handleClaim = useCallback(
     async (item: ClankerManagerTokenResult) => {
       const contractAddress = item.token.contract_address;
-      const lockerAddress = safeGetAddress(item.token.locker_address);
+      const lockerAddress = safeGetAddress(
+        item.uncollectedFees?.lockerAddress ?? item.token.locker_address,
+      );
       if (!lockerAddress) {
         setClaimState(contractAddress, {
           status: "error",
-          message: "Locker address unavailable.",
+          message: "Locker address unavailable for this token.",
         });
         return;
       }
@@ -581,6 +583,10 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             status: "idle",
           };
           const hasClaimable = claimTargets.length > 0;
+          const lockerAddress = safeGetAddress(
+            item.uncollectedFees?.lockerAddress ?? item.token.locker_address,
+          );
+          const missingLockerAddress = !lockerAddress;
           const estimatedRewardsLabel =
             item.estimatedRewardsUsd != null
               ? usdFormatter.format(item.estimatedRewardsUsd)
@@ -597,6 +603,11 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
           );
           const needsRewardRecipient =
             item.requiresRewardRecipient && !rewardRecipientForClaims;
+          const helperMessage = needsRewardRecipient
+            ? "Provide a reward recipient address in settings to claim v4 fees."
+            : missingLockerAddress
+              ? "Locker address unavailable for this token."
+              : claimState.message || "";
 
           return (
             <div
@@ -692,18 +703,15 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-xs text-neutral-500">
-                  {needsRewardRecipient
-                    ? "Provide a reward recipient address in settings to claim v4 fees."
-                    : claimState.message || ""}
-                </div>
+                <div className="text-xs text-neutral-500">{helperMessage}</div>
                 <Button
                   variant="primary"
                   disabled={
                     claimState.status === "pending" ||
                     !hasClaimable ||
                     needsRewardRecipient ||
-                    Boolean(item.uncollectedFeesError)
+                    Boolean(item.uncollectedFeesError) ||
+                    missingLockerAddress
                   }
                   onClick={() => handleClaim(item)}
                   style={{

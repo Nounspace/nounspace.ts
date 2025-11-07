@@ -66,9 +66,7 @@ export default async function handler(
         let uncollectedFees: ClankerUncollectedFeesResponse | null = null;
         let uncollectedFeesError: string | undefined;
 
-        if (!token.locker_address) {
-          uncollectedFeesError = "Locker address unavailable";
-        } else if (missingRewardRecipient) {
+        if (missingRewardRecipient) {
           uncollectedFeesError = "Reward recipient required for v4 tokens";
         } else {
           try {
