@@ -4,7 +4,6 @@ import {
   ClankerManagerTokenResult,
   ClankerUncollectedFeesResponse,
   determineClankerVersion,
-  fetchEstimatedRewards,
   fetchTokensDeployedByAddress,
   fetchUncollectedFees,
 } from "@/common/data/queries/clankerManager";
@@ -47,22 +46,6 @@ export default async function handler(
         const requiresRewardRecipient = version === "v4";
         const missingRewardRecipient = requiresRewardRecipient && !rewardRecipient;
 
-        let estimatedRewardsUsd: number | null = null;
-        let estimatedRewardsError: string | undefined;
-
-        if (token.pool_address) {
-          try {
-            const estimated = await fetchEstimatedRewards(token.pool_address);
-            estimatedRewardsUsd = Number.isFinite(estimated.userRewards)
-              ? Number(estimated.userRewards)
-              : null;
-          } catch (error) {
-            estimatedRewardsError = error instanceof Error ? error.message : "Failed to fetch estimated rewards";
-          }
-        } else {
-          estimatedRewardsError = "Missing pool address";
-        }
-
         let uncollectedFees: ClankerUncollectedFeesResponse | null = null;
         let uncollectedFeesError: string | undefined;
 
@@ -84,8 +67,6 @@ export default async function handler(
         return {
           token,
           version,
-          estimatedRewardsUsd,
-          estimatedRewardsError,
           uncollectedFees,
           uncollectedFeesError,
           requiresRewardRecipient,

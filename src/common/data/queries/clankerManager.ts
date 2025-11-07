@@ -49,11 +49,6 @@ export interface ClankerTokensResponse {
   total: number;
 }
 
-export interface ClankerEstimatedRewardsResponse {
-  userRewards: number;
-  [key: string]: unknown;
-}
-
 export interface ClankerFeeTokenInfo {
   chainId: number;
   address: string;
@@ -78,8 +73,6 @@ export type ClankerVersion = "v4" | "v3_1" | "unknown";
 export interface ClankerManagerTokenResult {
   token: ClankerDeployedToken;
   version: ClankerVersion;
-  estimatedRewardsUsd: number | null;
-  estimatedRewardsError?: string;
   uncollectedFees: ClankerUncollectedFeesResponse | null;
   uncollectedFeesError?: string;
   requiresRewardRecipient: boolean;
@@ -141,17 +134,6 @@ export async function fetchTokensDeployedByAddress(address: string, page = 1): P
     address,
     page,
   });
-}
-
-export async function fetchEstimatedRewards(poolAddress: string): Promise<ClankerEstimatedRewardsResponse> {
-  if (!isAddress(poolAddress)) {
-    throw new Error("Invalid pool address provided");
-  }
-
-  return clankerFetch<ClankerEstimatedRewardsResponse>(
-    "/tokens/estimate-rewards-by-pool-address",
-    { poolAddress },
-  );
 }
 
 export async function fetchUncollectedFees(options: {

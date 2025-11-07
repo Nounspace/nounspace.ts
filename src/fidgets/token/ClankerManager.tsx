@@ -202,13 +202,6 @@ type ClaimTargets = {
   name?: string;
 }[];
 
-const usdFormatter = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 function truncateMiddle(value: string, chars = 4): string {
   if (value.length <= chars * 2 + 2) {
     return value;
@@ -405,7 +398,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
 
   const [claimStates, setClaimStates] = useState<Record<string, ClaimState>>({});
 
-  const { isConnected, chainId } = useAccount();
+  const { address: connectedAddress, chainId } = useAccount();
   const { connectAsync, connectors } = useConnect();
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
@@ -452,26 +445,30 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       setClaimState(contractAddress, { status: "pending" });
 
       try {
-        const targetChainId = item.token.chain_id
-          ? Number(item.token.chain_id)
-          : undefined;
+        const targetChainId = item.token.chain_id ? Number(item.token.chain_id) : undefined;
+        let activeAccount = connectedAddress ? safeGetAddress(connectedAddress) : undefined;
+        let activeChainId = chainId;
 
-        if (!isConnected) {
+        if (!activeAccount) {
           const preferred = connectors?.[0];
           if (!preferred) {
             throw new Error("Connect a wallet to claim fees.");
           }
-          await connectAsync({
+          const connection = await connectAsync({
             connector: preferred,
             chainId: targetChainId,
           });
+          activeAccount = safeGetAddress(connection.accounts?.[0]);
+          activeChainId = connection.chainId;
         }
 
-        if (
-          targetChainId &&
-          chainId !== targetChainId
-        ) {
-          await switchChainAsync({ chainId: targetChainId });
+        if (!activeAccount) {
+          throw new Error("Unable to determine a connected wallet address.");
+        }
+
+        if (targetChainId && activeChainId !== targetChainId) {
+          const switched = await switchChainAsync({ chainId: targetChainId });
+          activeChainId = switched.id;
         }
 
         if (item.version === "v4") {
@@ -480,6 +477,8 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
               abi: CLANKER_FEE_LOCKER_ABI,
               address: lockerAddress,
               functionName: "claim",
+              account: activeAccount,
+              chainId: targetChainId ?? activeChainId,
               args: [rewardRecipient as Address, target.address],
             });
             await waitForTransactionReceipt(wagmiConfig, { hash });
@@ -493,6 +492,8 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             abi: LP_LOCKER_V2_ABI,
             address: lockerAddress,
             functionName: "claimRewards",
+            account: activeAccount,
+            chainId: targetChainId ?? activeChainId,
             args: [BigInt(tokenId)],
           });
           await waitForTransactionReceipt(wagmiConfig, { hash });
@@ -515,9 +516,9 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
     },
     [
       chainId,
+      connectedAddress,
       connectAsync,
       connectors,
-      isConnected,
       rewardRecipientForClaims,
       refetch,
       setClaimState,
@@ -587,10 +588,6 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             item.uncollectedFees?.lockerAddress ?? item.token.locker_address,
           );
           const missingLockerAddress = !lockerAddress;
-          const estimatedRewardsLabel =
-            item.estimatedRewardsUsd != null
-              ? usdFormatter.format(item.estimatedRewardsUsd)
-              : "—";
           const token0Label = formatTokenAmount(
             item.uncollectedFees?.token0UncollectedRewards,
             item.uncollectedFees?.token0?.decimals,
@@ -663,20 +660,6 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
               </div>
 
               <div className="grid gap-2 text-sm sm:grid-cols-2">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: secondaryColor, fontFamily: secondaryFont }}
-                  >
-                    Estimated Rewards
-                  </span>
-                  <span>{estimatedRewardsLabel}</span>
-                  {item.estimatedRewardsError ? (
-                    <span className="text-xs text-neutral-500">
-                      {item.estimatedRewardsError}
-                    </span>
-                  ) : null}
-                </div>
                 <div className="flex flex-col gap-1">
                   <span
                     className="text-xs font-semibold uppercase tracking-wide"
