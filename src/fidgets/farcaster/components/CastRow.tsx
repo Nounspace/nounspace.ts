@@ -176,10 +176,11 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
-        // Skip if this URL is already in the embeds
+        // Skip if this URL is already embedded or is a YouTube video.
         const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
+        const isYouTubeUrl = url.includes("youtube.com/watch?v=") || url.includes("youtu.be/");
 
-        if (isAlreadyEmbedded) {
+        if (isAlreadyEmbedded || isYouTubeUrl) {
           return null;
         }
 
@@ -639,7 +640,8 @@ const CastBodyComponent = ({
       {cast.text && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
           <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
-            {cast.text}
+          {/* Remove YouTube links from text */}
+            {cast.text.replace(/https?:\/\/(www\.)?(youtube\.com\/watch\?v=[\w-]{11}|youtu\.be\/[\w-]{11})/g, "")}
           </SafeExpandableText>
         </div>
       )}

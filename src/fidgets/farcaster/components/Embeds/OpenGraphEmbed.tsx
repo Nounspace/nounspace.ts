@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface OpenGraphEmbedProps {
@@ -43,6 +43,47 @@ const OpenGraphEmbed: React.FC<OpenGraphEmbedProps> = ({ url }) => {
 
     fetchOGData();
   }, [url]);
+
+  // Function to extract the YouTube video ID.
+  const getYouTubeId = (link: string) => {
+    try {
+      // For links like https://www.youtube.com/watch?v=ID
+      const urlObj = new URL(link);
+      if (urlObj.hostname.includes('youtube.com')) {
+        const v = urlObj.searchParams.get('v');
+        if (v && v.length === 11) return v;
+        // For links like /embed/ID or /v/ID
+        const pathMatch = urlObj.pathname.match(/\/embed\/([\w-]{11})|\/v\/([\w-]{11})/);
+        if (pathMatch) return pathMatch[1] || pathMatch[2];
+      }
+      // For links like https://youtu.be/ID
+      if (urlObj.hostname === 'youtu.be') {
+        const id = urlObj.pathname.split('/')[1];
+        if (id && id.length === 11) return id;
+      }
+    } catch {
+      // Ignore invalid URLs
+    }
+    return null;
+  };
+
+  const youtubeId = getYouTubeId(url);
+
+  if (youtubeId) {
+    return (
+  <div className="w-full max-w-full aspect-video rounded-xl overflow-hidden">
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title="YouTube video player"
+            className="w-full h-full"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+     
+    );
+  }
 
   if (isLoading) {
     return (
