@@ -47,7 +47,7 @@
     "@farcaster/hub-web": "^0.11.4",
     "@farcaster/miniapp-sdk": "^0.1.7",
     "@frames.js/render": "^0.5.6",
-    "@googleapis/youtube": "^18.0.0",
+    "@googleapis/youtube": "^29.0.0",
     "@gumlet/react-hls-player": "^1.0.1",
     "@heroicons/react": "^2.0.18",
     "@internationalized/date": "^3.10.0",
