@@ -37,7 +37,7 @@
     "node": "^22.11.0"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20251011.0",
+    "@cloudflare/workers-types": "^4.20251109.0",
     "@coinbase/onchainkit": "^0.38.19",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
