@@ -3,9 +3,10 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
-import React from "react";
+import React, { useMemo } from "react";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
+import { useInView } from "react-intersection-observer";
 import {
   FidgetArgs,
   FidgetBundle,
@@ -85,6 +86,26 @@ export function FidgetWrapper({
   }
 
   const Fidget = fidget;
+
+  // Only mount heavy fidget content when it's visible in viewport or when selected.
+  const isClient = typeof window !== "undefined";
+  const { ref, inView } = useInView({
+    /*
+      rootMargin gives a small pre-load buffer so fidgets just outside the
+      viewport are mounted slightly before they appear.
+    */
+    rootMargin: "300px",
+    triggerOnce: true,
+  });
+
+  const shouldMountFidget = useMemo(() => {
+    // always mount if selected
+    if (selectedFidgetID === bundle.id) return true;
+    // if not client (SSR), avoid mounting heavy content
+    if (!isClient) return false;
+    // mount when in view (or already triggered)
+    return inView;
+  }, [selectedFidgetID, bundle.id, isClient, inView]);
 
   const saveData = (data: FidgetData) => {
     return saveConfig({
@@ -212,13 +233,20 @@ export function FidgetWrapper({
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
           <CardContent className="size-full p-0">
-            <Fidget
-              {...{
-                settings: settingsWithDefaults,
-                data: bundle.config.data,
-                saveData,
-              }}
-            />
+            <div ref={ref} className="size-full">
+              {shouldMountFidget ? (
+                <Fidget
+                  {...{
+                    settings: settingsWithDefaults,
+                    data: bundle.config.data,
+                    saveData,
+                  }}
+                />
+              ) : (
+                // lightweight placeholder keeps layout stable until fidget mounts
+                <div aria-hidden className="w-full h-full bg-transparent" />
+              )}
+            </div>
           </CardContent>
         </ScopedStyles>
       </Card>
