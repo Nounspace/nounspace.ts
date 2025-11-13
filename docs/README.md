@@ -34,6 +34,9 @@ Nounspace is a highly customizable Farcaster client funded by Nouns DAO. This do
 
 ### Fidgets
 - [Fidget Overview](SYSTEMS/FIDGETS/OVERVIEW.md) - Fidget architecture
+- [Data Field Patterns](SYSTEMS/FIDGETS/DATA_FIELD_PATTERNS.md) - Patterns for using config.data field
+- [Directory Fidget](SYSTEMS/FIDGETS/DIRECTORY.md) - Directory fidget usage guide
+- [Settings Backfill](SYSTEMS/FIDGETS/SETTINGS_BACKFILL.md) - Automatic settings backfill system
 - [Development Guide](SYSTEMS/FIDGETS/DEVELOPMENT_GUIDE.md) - Creating fidgets
 - [Fidget Types](SYSTEMS/FIDGETS/FIDGET_TYPES.md) - Available fidget types
 

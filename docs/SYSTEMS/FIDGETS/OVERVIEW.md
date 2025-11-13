@@ -15,475 +15,199 @@ Fidgets are mini-applications that can be added to spaces to provide specific fu
 
 ### Fidget Architecture
 
-```typescript
-// Fidget instance data structure
-export type FidgetInstanceData = {
-  id: string;
-  fidgetType: string;
-  config: FidgetConfig;
-};
+Fidgets are structured using three main types:
 
-// Fidget configuration
-export type FidgetConfig = {
-  editable: boolean;
-  data: Record<string, any>;
-  settings: FidgetSettings;
-};
+- **FidgetInstanceData**: Contains the fidget's unique ID, type identifier, and configuration. Each fidget instance has a unique ID generated when created.
 
-// Fidget bundle (instance + properties)
-export type FidgetBundle = FidgetInstanceData & {
-  properties: FidgetProperties;
-};
-```
+- **FidgetConfig**: The core configuration object containing:
+  - `editable`: Boolean flag indicating if the fidget can be edited
+  - `data`: Runtime state and cached data that persists to the database
+  - `settings`: User-configurable settings that control the fidget's behavior
+
+- **FidgetBundle**: Combines a fidget instance with its properties metadata, providing everything needed to render the fidget.
 
 ## Fidget System Components
 
 ### 1. Fidget Registry
 
-The `CompleteFidgets` registry contains all available fidgets:
+The `CompleteFidgets` registry contains all available fidgets organized by category:
 
-```typescript
-export const CompleteFidgets = {
-  // UI Fidgets
-  gallery: Gallery,
-  text: TextFidget,
-  iframe: IFrame,
-  links: Links,
-  video: VideoFidget,
-  channel: Channel,
-  profile: Profile,
-  
-  // Farcaster Fidgets
-  frame: Frame,
-  feed: Feed,
-  cast: Cast,
-  builderScore: BuilderScore,
-  
-  // Community Fidgets
-  governance: NounishGovernance,
-  snapShot: snapShot,
-  nounsHome: NounsHome,
-  
-  // Token Fidgets
-  market: marketData,
-  portfolio: Portfolio,
-  swap: Swap,
-  
-  // Other Fidgets
-  rss: rss,
-  chat: chat,
-  framesV2: FramesFidget,
-  
-  // Development only
-  example: Example, // Only in development
-};
-```
+- **UI Fidgets**: Basic UI components including gallery, text, iframe, links, video, channel, and profile
+- **Farcaster Fidgets**: Protocol integration fidgets for frames, feeds, casts, and builder scores
+- **Community Fidgets**: Community-specific functionality like governance, snapshot, and nouns home
+- **Token Fidgets**: Token and portfolio management including market data, portfolio tracking, swap functionality, and directory listings
+- **Other Fidgets**: Additional utilities like RSS feeds, chat, and frames v2
+- **Development Fidgets**: Example fidgets available only in development environments
 
 ### 2. Fidget Properties
 
-Each fidget defines its properties and configuration:
-
-```typescript
-// Fidget properties structure
-export type FidgetProperties = {
-  fidgetName: string;
-  description: string;
-  fields: FidgetField[];
-  category: string;
-  tags: string[];
-  version: string;
-};
-```
+Each fidget defines its properties and configuration through a `FidgetProperties` object that includes:
+- The fidget's display name and description
+- An array of configurable fields that define the settings UI
+- Category and tags for organization and discovery
+- Version information for tracking changes
 
 ### 3. Fidget Instance Management
 
-```typescript
-// Create fidget instance
-const generateFidgetInstance = (
-  fidgetId: string,
-  fidget: FidgetModule<FidgetArgs>,
-  customSettings?: Partial<FidgetSettings>,
-): FidgetInstanceData => {
-  const baseSettings = allFields(fidget);
-  const finalSettings = customSettings ? { ...baseSettings, ...customSettings } : baseSettings;
-
-  return {
-    config: {
-      editable: true,
-      data: {},
-      settings: finalSettings,
-    },
-    fidgetType: fidgetId,
-    id: fidgetId + ":" + uuidv4(),
-  };
-};
-```
+Fidget instances are created using a generator function that:
+- Takes a fidget type identifier and the fidget module
+- Optionally accepts custom settings to override defaults
+- Merges base settings from the fidget's field definitions with any custom settings
+- Generates a unique ID by combining the fidget type with a UUID
+- Initializes the configuration with editable set to true and empty data object
 
 ## Fidget Lifecycle
 
 ### 1. Creation
 
-```typescript
-// Create new fidget
-const createFidget = async (
-  fidgetType: string,
-  settings: FidgetSettings,
-  position: { x: number; y: number }
-) => {
-  const fidgetInstance = generateFidgetInstance(fidgetType, fidget, settings);
-  
-  // Add to space
-  set((draft) => {
-    draft.homebase.spaces[spaceId].tabs[tabName].fidgetInstanceDatums[fidgetInstance.id] = fidgetInstance;
-  }, "createFidget");
-  
-  // Save to server
-  await saveFidgetConfig(fidgetInstance.id, fidgetType)(fidgetInstance.config);
-};
-```
+When creating a new fidget, the system:
+- Generates a fidget instance with the specified type and settings
+- Adds the instance to the current space's tab configuration
+- Saves the configuration to the server for persistence
+- Assigns a position in the layout
 
 ### 2. Configuration
 
-```typescript
-// Configure fidget settings
-const configureFidget = async (
-  fidgetId: string,
-  newSettings: FidgetSettings
-) => {
-  const currentConfig = get().homebase.spaces[spaceId].tabs[tabName].fidgetInstanceDatums[fidgetId];
-  
-  // Update configuration
-  set((draft) => {
-    draft.homebase.spaces[spaceId].tabs[tabName].fidgetInstanceDatums[fidgetId].config.settings = newSettings;
-  }, "configureFidget");
-  
-  // Save to server
-  await saveFidgetConfig(fidgetId, currentConfig.fidgetType)({
-    ...currentConfig.config,
-    settings: newSettings,
-  });
-};
-```
+Fidget settings can be updated at any time:
+- The current configuration is retrieved from the store
+- Settings are updated optimistically in the local state
+- Changes are synchronized with the server
+- The fidget re-renders with the new configuration
 
 ### 3. Rendering
 
-```typescript
-// Render fidget in layout
-const renderFidget = (fidgetData: FidgetInstanceData, isEditable: boolean) => {
-  const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-  if (!fidgetModule) return null;
-  
-  const bundle = createFidgetBundle(fidgetData, isEditable);
-  if (!bundle) return null;
-  
-  return (
-    <fidgetModule.Component
-      {...bundle.config}
-      properties={bundle.properties}
-      theme={theme}
-      onSave={onSave}
-      onRemove={onRemove}
-    />
-  );
-};
-```
+When rendering a fidget:
+- The fidget module is looked up from the registry by type
+- A bundle is created combining the instance data with properties
+- The fidget component receives the configuration, properties, theme, and callback functions
+- Rendering is handled by the fidget's own component implementation
 
 ## Layout Integration
 
 ### 1. Grid Layout
 
-```typescript
-// Grid layout fidget
-const Grid: LayoutFidget<GridLayoutProps> = ({
-  fidgetInstanceDatums,
-  layoutConfig,
-  theme,
-  saveConfig,
-}) => {
-  const fidgetBundles = useMemo(() => {
-    const bundles: Record<string, FidgetBundle> = {};
-    
-    Object.values(fidgetInstanceDatums).forEach(fidgetData => {
-      const bundle = createFidgetBundle(fidgetData, true);
-      if (bundle) {
-        bundles[fidgetData.id] = bundle;
-      }
-    });
-    
-    return bundles;
-  }, [fidgetInstanceDatums]);
-  
-  return (
-    <div className="grid-layout">
-      {Object.values(fidgetBundles).map(bundle => (
-        <FidgetRenderer
-          key={bundle.id}
-          bundle={bundle}
-          onSave={saveConfig}
-          theme={theme}
-        />
-      ))}
-    </div>
-  );
-};
-```
+The grid layout displays fidgets in a flexible grid system:
+- All fidget instances in the current tab are converted to bundles
+- Bundles are memoized for performance
+- Each bundle is rendered in its assigned grid position
+- The layout supports drag-and-drop repositioning
 
 ### 2. Mobile Stack Layout
 
-```typescript
-// Mobile stack layout fidget
-const MobileStack: LayoutFidget<TabFullScreenProps> = ({
-  fidgetInstanceDatums,
-  layoutConfig,
-  theme,
-  feed,
-  isHomebasePath = false,
-}) => {
-  const validFidgetIds = useMemo(() => 
-    getValidFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
-  
-  const fidgetBundles = useMemo(() => {
-    const bundles: Record<string, FidgetBundle> = {};
-    
-    validFidgetIds.forEach(id => {
-      const fidgetData = fidgetInstanceDatums[id];
-      if (!fidgetData) return;
-      
-      const bundle = createFidgetBundle(fidgetData, false);
-      if (bundle) {
-        bundles[id] = bundle;
-      }
-    });
-    
-    return bundles;
-  }, [validFidgetIds, fidgetInstanceDatums]);
-  
-  return (
-    <div className="mobile-stack">
-      {feed && <div className="feed-section">{feed}</div>}
-      {Object.values(fidgetBundles).map(bundle => (
-        <FidgetRenderer
-          key={bundle.id}
-          bundle={bundle}
-          theme={theme}
-        />
-      ))}
-    </div>
-  );
-};
-```
+The mobile stack layout provides a vertical scrolling experience:
+- Only fidgets valid for mobile are included
+- Fidgets are stacked vertically in order
+- An optional feed section can be included at the top
+- Bundles are created with editable set to false for mobile viewing
 
 ## Fidget Development
 
 ### 1. Creating a Fidget
 
-```typescript
-// Example fidget implementation
-const MyFidget: FidgetModule<MyFidgetArgs> = {
-  Component: ({ config, properties, theme, onSave, onRemove }) => {
-    const [settings, setSettings] = useState(config.settings);
-    
-    const handleSave = (newSettings: FidgetSettings) => {
-      setSettings(newSettings);
-      onSave(newSettings);
-    };
-    
-    return (
-      <div className="my-fidget">
-        <h3>{properties.fidgetName}</h3>
-        <SettingsEditor
-          settings={settings}
-          properties={properties}
-          onSave={handleSave}
-        />
-        {config.editable && (
-          <button onClick={onRemove}>Remove</button>
-        )}
-      </div>
-    );
-  },
-  properties: {
-    fidgetName: "My Fidget",
-    description: "A custom fidget",
-    fields: [
-      {
-        fieldName: "title",
-        type: "string",
-        default: "Default Title",
-        label: "Title"
-      }
-    ],
-    category: "custom",
-    tags: ["custom", "example"],
-    version: "1.0.0"
-  }
-};
-```
+A fidget consists of two main parts:
+- **Component**: A React component that receives configuration, properties, theme, and callback functions. It manages its own local state for settings and renders the fidget UI. When editable, it can display a settings editor and remove button.
+- **Properties**: Metadata defining the fidget's name, description, configurable fields, category, tags, and version. Fields define what settings are available and how they're displayed in the settings editor.
 
 ### 2. Fidget Settings
 
-```typescript
-// Fidget settings structure
-export type FidgetSettings = Record<string, any>;
-
-// Settings field definition
-export type FidgetField = {
-  fieldName: string;
-  type: "string" | "number" | "boolean" | "select" | "color";
-  default: any;
-  label: string;
-  options?: string[];
-  validation?: (value: any) => boolean;
-};
-```
+Settings are stored as a key-value record where keys correspond to field names. Each field definition specifies:
+- The field name used as the key in settings
+- The data type (string, number, boolean, select, or color)
+- A default value
+- A display label
+- Optional options for select fields
+- Optional validation function
 
 ### 3. Fidget Validation
 
-```typescript
-// Validate fidget settings
-const validateFidgetSettings = (
-  settings: FidgetSettings,
-  properties: FidgetProperties
-): boolean => {
-  return properties.fields.every(field => {
-    const value = settings[field.fieldName];
-    if (field.validation) {
-      return field.validation(value);
-    }
-    return value !== undefined;
-  });
-};
-```
+Settings are validated by checking each field defined in properties:
+- If a field has a validation function, it's used to check the value
+- Otherwise, the system checks that the value is defined
+- All fields must pass validation for the settings to be considered valid
+
+### 4. Fidget Data Field
+
+The `config.data` field in `FidgetConfig` is used to store runtime state and cached data. **Important: This field is persisted to the database**, making it suitable for:
+
+- Cached API responses
+- Runtime state that should survive page reloads
+- Metadata about the last data fetch
+- Any data that needs to persist across sessions
+
+**Key Points:**
+- `config.data` is persisted to the database (unlike previous implementations)
+- Use `saveData` prop passed to fidgets to update data
+- Always provide defaults when reading from `data` prop
+- Use change detection before persisting to avoid unnecessary writes
+
+**Best Practices:**
+See [Data Field Patterns](DATA_FIELD_PATTERNS.md) for comprehensive patterns and examples including:
+- Local state management
+- Data synchronization
+- Change detection before persistence
+- Refresh detection with `lastFetchSettings`
+- Staleness detection
+- And more...
+
+### 5. FidgetWrapper
+
+The `FidgetWrapper` component provides common functionality for all fidgets:
+
+**Features:**
+- **Settings Backfill**: Automatically populates empty settings from `lastFetchSettings` stored in `config.data`
+- **Stable `saveData`**: Provides a memoized `saveData` function to prevent unnecessary re-renders
+- **Settings Editor**: Integrates with `FidgetSettingsEditor` for configuration UI
+- **Error Handling**: Wraps fidgets with error boundaries
+
+**Settings Backfill Pattern:**
+Any fidget can use the `lastFetchSettings` pattern to automatically backfill empty settings when created from external sources. When your fidget fetches data, store a snapshot of the settings used for that fetch in `config.data.lastFetchSettings`. The FidgetWrapper will automatically detect empty settings and populate them from this snapshot, ensuring fidgets created programmatically (e.g., from URL parameters) have their settings properly configured.
+
+See [Settings Backfill System](SETTINGS_BACKFILL.md) for detailed documentation.
 
 ## Performance Considerations
 
 ### 1. Lazy Loading
 
-```typescript
-// Lazy load fidget components
-const LazyFidget = lazy(() => import(`./fidgets/${fidgetType}`));
-
-// Render with suspense
-const FidgetRenderer = ({ fidgetType, ...props }) => (
-  <Suspense fallback={<div>Loading...</div>}>
-    <LazyFidget {...props} />
-  </Suspense>
-);
-```
+Fidget components can be lazy-loaded to reduce initial bundle size. Components are loaded on-demand when needed, with a loading fallback displayed during the import.
 
 ### 2. Memoization
 
-```typescript
-// Memoize fidget bundles
-const fidgetBundles = useMemo(() => {
-  const bundles: Record<string, FidgetBundle> = {};
-  
-  Object.values(fidgetInstanceDatums).forEach(fidgetData => {
-    const bundle = createFidgetBundle(fidgetData, isEditable);
-    if (bundle) {
-      bundles[fidgetData.id] = bundle;
-    }
-  });
-  
-  return bundles;
-}, [fidgetInstanceDatums, isEditable]);
-```
+Fidget bundles are memoized to prevent unnecessary re-computation. Bundles are recalculated only when the underlying fidget instance data or editability changes.
 
 ### 3. Bundle Optimization
 
-```typescript
-// Optimize fidget bundles
-const createOptimizedBundle = (fidgetData: FidgetInstanceData): FidgetBundle | null => {
-  if (!fidgetData) return null;
-  
-  const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-  if (!fidgetModule) return null;
-  
-  return {
-    ...fidgetData,
-    properties: fidgetModule.properties,
-    config: { ...fidgetData.config, editable: isEditable },
-  };
-};
-```
+Bundle creation includes validation checks to ensure the fidget module exists before creating the bundle. This prevents errors from invalid fidget types and optimizes the bundle creation process.
 
 ## Error Handling
 
 ### 1. Fidget Errors
 
-```typescript
-// Handle fidget errors
-const FidgetErrorBoundary = ({ children, fidgetId }) => {
-  return (
-    <ErrorBoundary
-      fallback={<div>Fidget Error: {fidgetId}</div>}
-      onError={(error) => {
-        console.error('Fidget error:', error);
-        // Report error to analytics
-      }}
-    >
-      {children}
-    </ErrorBoundary>
-  );
-};
-```
+Fidgets are wrapped in error boundaries to prevent a single fidget error from crashing the entire space. When an error occurs, a fallback UI is displayed and the error is logged for debugging. Errors can also be reported to analytics systems for monitoring.
 
 ### 2. Missing Fidgets
 
-```typescript
-// Handle missing fidgets
-const getValidFidgetIds = (
-  layout: any,
-  fidgetInstanceDatums: Record<string, FidgetInstanceData>,
-  isMobile: boolean
-): string[] => {
-  const fidgetIds = extractFidgetIds(layout);
-  
-  return fidgetIds.filter(id => {
-    const fidgetData = fidgetInstanceDatums[id];
-    if (!fidgetData) return false;
-    
-    const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-    if (!fidgetModule) return false;
-    
-    // Check mobile compatibility
-    if (isMobile && fidgetModule.properties.mobile === false) return false;
-    
-    return true;
-  });
-};
-```
+The system handles missing or invalid fidgets gracefully:
+- Fidget IDs from layouts are validated against available instances
+- Missing fidget modules are filtered out
+- Mobile compatibility is checked before including fidgets in mobile layouts
+- Only valid, available fidgets are rendered
 
 ## Testing
 
 ### 1. Unit Tests
 
-```typescript
-// Test fidget creation
-describe('Fidget System', () => {
-  it('should create fidget instance', () => {
-    const fidget = generateFidgetInstance('text', textFidget, { title: 'Test' });
-    expect(fidget.fidgetType).toBe('text');
-    expect(fidget.config.settings.title).toBe('Test');
-  });
-});
-```
+Unit tests verify individual fidget functionality:
+- Fidget instance creation with correct type and settings
+- Settings validation and default value application
+- Property definitions and field configurations
 
 ### 2. Integration Tests
 
-```typescript
-// Test fidget rendering
-describe('Fidget Rendering', () => {
-  it('should render fidget in layout', () => {
-    const fidgetData = createTestFidgetData();
-    const bundle = createFidgetBundle(fidgetData, true);
-    
-    render(<FidgetRenderer bundle={bundle} />);
-    expect(screen.getByText('Test Fidget')).toBeInTheDocument();
-  });
-});
-```
+Integration tests verify fidget behavior in context:
+- Fidget rendering within layouts
+- Settings editor functionality
+- Save and remove operations
+- Interaction with the fidget wrapper
 
 ## Troubleshooting
 

@@ -169,6 +169,45 @@ export type CurrentSpaceStore = {
 - Context switching
 - State synchronization
 
+## Fidget Configuration Persistence
+
+### FidgetConfig Data Field
+
+The `FidgetConfig` type includes a `data` field that stores runtime state and cached data:
+
+```typescript
+export type FidgetConfig = {
+  editable: boolean;
+  data: Record<string, any>;  // Persisted to database
+  settings: FidgetSettings;    // User-configurable settings
+};
+```
+
+**Important:** The `data` field is persisted to the database. This means:
+- Fidget runtime state survives page reloads
+- Cached API responses can be stored in `data`
+- Metadata about data fetches can be persisted
+- The full `FidgetConfig` (including `data`) is saved when spaces are saved
+
+**Database Schema:**
+The `DatabaseWritableSpaceConfig` type includes the full `FidgetConfig`:
+
+```typescript
+export type DatabaseWritableSpaceConfig = Omit<SpaceConfig, "fidgetInstanceDatums" | "isEditable"> & {
+  fidgetInstanceDatums: {
+    [key: string]: Omit<FidgetInstanceData, "config"> & {
+      config: FidgetConfig; // Includes data field
+    };
+  };
+};
+```
+
+**Best Practices:**
+- Use `saveData` prop passed to fidgets to update `config.data`
+- Always provide defaults when reading from `data` prop
+- Use change detection before persisting to avoid unnecessary writes
+- See [Data Field Patterns](../SYSTEMS/FIDGETS/DATA_FIELD_PATTERNS.md) for comprehensive patterns
+
 ## Persistence Strategy
 
 ### 1. Selective Persistence

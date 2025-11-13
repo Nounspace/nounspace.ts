@@ -23,7 +23,10 @@ docs/
 │   │   ├── MULTIPLE_LAYOUTS_OVERVIEW.md # Multiple layouts system
 │   │   └── LAYOUT_MIGRATION_GUIDE.md # Layout migration guide
 │   ├── FIDGETS/                       # Fidget system
-│   │   └── OVERVIEW.md               # Fidget architecture
+│   │   ├── OVERVIEW.md               # Fidget architecture
+│   │   ├── DATA_FIELD_PATTERNS.md    # Patterns for using config.data field
+│   │   ├── DIRECTORY.md              # Directory fidget usage guide
+│   │   └── SETTINGS_BACKFILL.md      # Automatic settings backfill system
 │   ├── THEMES/                        # Theme system
 │   │   └── OVERVIEW.md               # Theme architecture
 │   └── DISCOVERY/                     # Discovery system
@@ -66,6 +69,9 @@ docs/
 - **SYSTEMS/SPACES/MULTIPLE_LAYOUTS_OVERVIEW.md** - Multiple layouts system
 - **SYSTEMS/SPACES/LAYOUT_MIGRATION_GUIDE.md** - Layout migration guide
 - **SYSTEMS/FIDGETS/OVERVIEW.md** - Fidget system, types, development patterns
+- **SYSTEMS/FIDGETS/DATA_FIELD_PATTERNS.md** - Patterns for using config.data field
+- **SYSTEMS/FIDGETS/DIRECTORY.md** - Directory fidget usage guide
+- **SYSTEMS/FIDGETS/SETTINGS_BACKFILL.md** - Automatic settings backfill system
 - **SYSTEMS/THEMES/OVERVIEW.md** - Theme system, customization, CSS variables
 - **SYSTEMS/DISCOVERY/MINI_APP_DISCOVERY_SYSTEM.md** - Mini-app discovery system
 
