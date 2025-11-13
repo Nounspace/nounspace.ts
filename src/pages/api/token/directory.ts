@@ -397,7 +397,7 @@ async function fetchAlchemyNftOwners(
     throw new Error(`Alchemy NFT owners are not supported on ${params.network}`);
   }
 
-  const baseEndpoint = `${ALCHEMY_API(alchemyNetwork)}nft/v3/${apiKey}/getOwnersForCollection`;
+  const baseEndpoint = `${ALCHEMY_API(alchemyNetwork)}nft/v3/${apiKey}/getOwnersForContract`;
   const holders: AlchemyNftOwner[] = [];
   const updatedAt: string = new Date().toISOString();
   let tokenSymbol: string | null = null;

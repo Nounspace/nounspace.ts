@@ -157,7 +157,7 @@ describe("token directory API", () => {
 
     const fetchMock = vi.fn(async (input: any, init?: any) => {
       const url = typeof input === "string" ? input : input.toString();
-      if (url.includes("alchemy.com") && url.includes("getOwnersForCollection")) {
+      if (url.includes("alchemy.com") && url.includes("getOwnersForContract")) {
         const response = alchemyResponses.shift();
         if (!response) {
           throw new Error("Unexpected extra Alchemy request");
@@ -217,7 +217,7 @@ describe("token directory API", () => {
     );
     expect(alchemyCalls).toHaveLength(2);
     expect((alchemyCalls[0][0] as string).toLowerCase()).toContain(
-      "getownersforcollection?contractaddress=0x000000000000000000000000000000000000aaaa",
+      "getownersforcontract?contractaddress=0x000000000000000000000000000000000000aaaa",
     );
     expect((alchemyCalls[1][0] as string).toLowerCase()).toContain("pagekey=next-page");
 
@@ -259,7 +259,7 @@ describe("token directory API", () => {
   it("uses Alchemy for Base NFT owner lookups", async () => {
     const fetchMock = vi.fn(async (input: any) => {
       const url = typeof input === "string" ? input : input.toString();
-      if (url.includes("alchemy.com") && url.includes("getOwnersForCollection")) {
+      if (url.includes("alchemy.com") && url.includes("getOwnersForContract")) {
         return {
           ok: true,
           status: 200,
