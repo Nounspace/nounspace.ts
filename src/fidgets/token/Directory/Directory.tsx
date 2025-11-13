@@ -5,175 +5,86 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
 import { isEqual } from "lodash";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/common/components/atoms/avatar";
-import BoringAvatar from "boring-avatars";
-import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import {
   FONT_FAMILY_OPTIONS,
-  FONT_FAMILY_OPTIONS_BY_NAME,
 } from "@/common/lib/theme/fonts";
 import {
   type FidgetArgs,
-  type FidgetData,
   type FidgetModule,
   type FidgetProperties,
-  type FidgetSettings,
-  type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
+import {
+  extractNeynarPrimaryAddress,
+  extractNeynarSocialAccounts,
+  buildEtherscanUrl,
+  getBlockExplorerLink,
+  normalizeAddress as normalizeAddressUtil,
+  parseSocialRecord,
+} from "@/common/data/api/token/utils";
+import {
+  BadgeIcons,
+  ProfileLink,
+  PaginationControls,
+  DirectoryCardView,
+  DirectoryListView,
+} from "./components";
+import {
+  resolveFontFamily,
+  getLastActivityLabel,
+  sortMembers,
+  sanitizeSortOption,
+} from "./utils";
+import {
+  STALE_AFTER_MS,
+  PAGE_SIZE,
+  CHANNEL_FETCH_DEBOUNCE_MS,
+  NETWORK_OPTIONS,
+  SORT_OPTIONS,
+  LAYOUT_OPTIONS,
+  ASSET_TYPE_OPTIONS,
+  INCLUDE_OPTIONS,
+  SOURCE_OPTIONS,
+  CHANNEL_FILTER_OPTIONS,
+  CSV_TYPE_OPTIONS,
+  CSV_SORT_OPTIONS,
+} from "./constants";
+import type {
+  DirectoryNetwork,
+  DirectoryAssetType,
+  DirectorySortOption,
+  DirectoryLayoutStyle,
+  DirectoryIncludeOption,
+  DirectorySource,
+  DirectoryChannelFilterOption,
+  CsvTypeOption,
+  CsvSortOption,
+  DirectoryMemberData,
+  DirectoryFidgetData,
+  DirectoryFidgetSettings,
+} from "./types";
 
-const STALE_AFTER_MS = 60 * 60 * 1000;
-const PAGE_SIZE = 100;
-const CHANNEL_FETCH_DEBOUNCE_MS = 800;
-
-export type DirectoryNetwork = "base" | "polygon" | "mainnet";
-export type DirectoryAssetType = "token" | "nft";
-export type DirectorySortOption = "tokenHoldings" | "followers";
-export type DirectoryLayoutStyle = "cards" | "list";
-export type DirectoryIncludeOption =
-  | "holdersWithFarcasterAccount"
-  | "allHolders";
-
-export type DirectorySource = "tokenHolders" | "farcasterChannel" | "csv";
-export type DirectoryChannelFilterOption = "members" | "followers" | "all";
-export type CsvTypeOption = "address" | "fid" | "username";
-export type CsvSortOption = "followers" | "csvOrder";
-
-export interface DirectoryMemberData {
-  address: string;
-  balanceRaw: string;
-  balanceFormatted: string;
-  username?: string | null;
-  displayName?: string | null;
-  fid?: number | null;
-  pfpUrl?: string | null;
-  followers?: number | null;
-  lastTransferAt?: string | null;
-  ensName?: string | null;
-  ensAvatarUrl?: string | null;
-  primaryAddress?: string | null;
-  etherscanUrl?: string | null;
-  xHandle?: string | null;
-  xUrl?: string | null;
-  githubHandle?: string | null;
-  githubUrl?: string | null;
-}
-
-export interface DirectoryFidgetData extends FidgetData {
-  members: DirectoryMemberData[];
-  lastUpdatedTimestamp?: string | null;
-  tokenSymbol?: string | null;
-  tokenDecimals?: number | null;
-  lastFetchSettings?: Partial<DirectoryFidgetSettings>; // Snapshot of settings used for last fetch
-}
-
-export type DirectoryFidgetSettings = FidgetSettings &
-  FidgetSettingsStyle & {
-    source: DirectorySource;
-    network: DirectoryNetwork;
-    contractAddress: string;
-    assetType: DirectoryAssetType;
-    sortBy: DirectorySortOption;
-    layoutStyle: DirectoryLayoutStyle;
-    include: DirectoryIncludeOption;
-    channelName?: string;
-    channelFilter?: DirectoryChannelFilterOption;
-    csvType?: CsvTypeOption;
-    csvSortBy?: CsvSortOption;
-    csvContent?: string; // raw csv text
-    csvUploadedAt?: string; // iso timestamp (legacy)
-    csvUpload?: string; // iso timestamp to trigger refresh
-    csvFilename?: string; // last uploaded filename
-    refreshToken?: string;
-    subheader?: string;
-    primaryFontFamily?: string;
-    primaryFontColor?: string;
-    secondaryFontFamily?: string;
-    secondaryFontColor?: string;
-  };
-
-const NETWORK_OPTIONS = [
-  { name: "Base", value: "base" },
-  { name: "Polygon", value: "polygon" },
-  { name: "Ethereum Mainnet", value: "mainnet" },
-] as const;
-
-const SORT_OPTIONS = [
-  { name: "Token holdings", value: "tokenHoldings" },
-  { name: "Followers", value: "followers" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  value: DirectorySortOption;
-}>;
-
-const LAYOUT_OPTIONS = [
-  { name: "Cards", value: "cards" },
-  { name: "List", value: "list" },
-] as const;
-
-const ASSET_TYPE_OPTIONS = [
-  { name: "Token", value: "token" },
-  { name: "NFT", value: "nft" },
-] as const;
-
-const INCLUDE_OPTIONS = [
-  {
-    name: "Holders with Farcaster Account",
-    value: "holdersWithFarcasterAccount",
-  },
-  { name: "All holders", value: "allHolders" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  value: DirectoryIncludeOption;
-}>;
-
-const SOURCE_OPTIONS = [
-  { name: "Token Holders", value: "tokenHolders" },
-  { name: "Farcaster Channel", value: "farcasterChannel" },
-  { name: "CSV", value: "csv" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  value: DirectorySource;
-}>;
-
-const CHANNEL_FILTER_OPTIONS = [
-  { name: "Members", value: "members" },
-  { name: "Followers", value: "followers" },
-  { name: "All", value: "all" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  value: DirectoryChannelFilterOption;
-}>;
-
-const CSV_TYPE_OPTIONS = [
-  { name: "Address", value: "address" },
-  { name: "FID", value: "fid" },
-  { name: "Farcaster username", value: "username" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  value: CsvTypeOption;
-}>;
-
-const CSV_SORT_OPTIONS = [
-  { name: "Followers", value: "followers" },
-  { name: "CSV order", value: "csvOrder" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  value: CsvSortOption;
-}>;
+// Re-export types for backward compatibility
+export type {
+  DirectoryNetwork,
+  DirectoryAssetType,
+  DirectorySortOption,
+  DirectoryLayoutStyle,
+  DirectoryIncludeOption,
+  DirectorySource,
+  DirectoryChannelFilterOption,
+  CsvTypeOption,
+  CsvSortOption,
+  DirectoryMemberData,
+  DirectoryFidgetData,
+  DirectoryFidgetSettings,
+};
 
 const HiddenField: React.FC<any> = () => null;
 
@@ -569,431 +480,6 @@ const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
   },
 };
 
-const parseSocialRecordValue = (
-  value: unknown,
-  platform: "twitter" | "github",
-): { handle: string; url: string } | null => {
-  if (typeof value !== "string") {
-    return null;
-  }
-  let handle = value.trim();
-  if (!handle) return null;
-
-  const patterns =
-    platform === "twitter"
-      ? [
-          /^https?:\/\/(www\.)?twitter\.com\//i,
-          /^https?:\/\/(www\.)?x\.com\//i,
-        ]
-      : [/^https?:\/\/(www\.)?github\.com\//i];
-
-  for (const pattern of patterns) {
-    handle = handle.replace(pattern, "");
-  }
-
-  handle = handle.replace(/^@/, "");
-  handle = handle.replace(/\/+$/, "");
-  if (!handle) return null;
-
-  const url =
-    platform === "twitter"
-      ? `https://twitter.com/${handle}`
-      : `https://github.com/${handle}`;
-  return { handle, url };
-};
-
-const extractNeynarPrimaryAddress = (user: any): string | null => {
-  if (!user || typeof user !== "object") return null;
-  const verified = (user as { verified_addresses?: any }).verified_addresses;
-  if (verified && typeof verified === "object") {
-    const primary = verified.primary;
-    if (primary && typeof primary.eth_address === "string" && primary.eth_address) {
-      return primary.eth_address.toLowerCase();
-    }
-    if (Array.isArray(verified.eth_addresses)) {
-      const candidate = verified.eth_addresses.find(
-        (value: unknown): value is string =>
-          typeof value === "string" && value.length > 0,
-      );
-      if (candidate) {
-        return candidate.toLowerCase();
-      }
-    }
-  }
-  const custody = (user as { custody_address?: string | null }).custody_address;
-  if (typeof custody === "string" && custody) {
-    return custody.toLowerCase();
-  }
-  const verifications = (user as { verifications?: string[] }).verifications;
-  if (Array.isArray(verifications)) {
-    const candidate = verifications.find(
-      (value): value is string => typeof value === "string" && value.length > 0,
-    );
-    if (candidate) {
-      return candidate.toLowerCase();
-    }
-  }
-  const authAddresses = (user as { auth_addresses?: Array<{ address?: string }> }).auth_addresses;
-  if (Array.isArray(authAddresses)) {
-    const entry = authAddresses.find(
-      (item) => item && typeof item.address === "string" && item.address.length > 0,
-    );
-    if (entry?.address) {
-      return entry.address.toLowerCase();
-    }
-  }
-  return null;
-};
-
-const extractNeynarSocialAccounts = (
-  user: any,
-): {
-  xHandle: string | null;
-  xUrl: string | null;
-  githubHandle: string | null;
-  githubUrl: string | null;
-} => {
-  if (!user || typeof user !== "object") {
-    return { xHandle: null, xUrl: null, githubHandle: null, githubUrl: null };
-  }
-  const verifiedAccounts = (user as { verified_accounts?: Array<any> }).verified_accounts;
-  let xHandle: string | null = null;
-  let xUrl: string | null = null;
-  let githubHandle: string | null = null;
-  let githubUrl: string | null = null;
-  if (Array.isArray(verifiedAccounts)) {
-    for (const account of verifiedAccounts) {
-      const platform =
-        typeof account?.platform === "string" ? account.platform.toLowerCase() : "";
-      const username =
-        typeof account?.username === "string" ? account.username.replace(/^@/, "").trim() : "";
-      if (!username) continue;
-      if (!xHandle && (platform === "x" || platform === "twitter")) {
-        xHandle = username;
-        xUrl = `https://twitter.com/${username}`;
-      } else if (!githubHandle && platform === "github") {
-        githubHandle = username;
-        githubUrl = `https://github.com/${username}`;
-      }
-    }
-  }
-  return { xHandle, xUrl, githubHandle, githubUrl };
-};
-
-const buildEtherscanUrl = (address?: string | null) =>
-  address ? `https://etherscan.io/address/${address.toLowerCase()}` : null;
-
-const normalizeAddress = (address: string) => address.trim().toLowerCase();
-
-const blockExplorerForNetwork: Record<DirectoryNetwork, string> = {
-  mainnet: "https://etherscan.io/address/",
-  base: "https://basescan.org/address/",
-  polygon: "https://polygonscan.com/address/",
-};
-
-const resolveFontFamily = (value: string | undefined, fallback: string): string => {
-  if (!value) return fallback;
-  const fontOption = FONT_FAMILY_OPTIONS.find(
-    (option) =>
-      option.name === value || option.config.style.fontFamily === value,
-  );
-  if (fontOption?.config?.style?.fontFamily) {
-    return fontOption.config.style.fontFamily as string;
-  }
-  return value;
-};
-
-const formatTokenBalance = (value: string | null | undefined): string => {
-  if (value == null || value === "") return "0";
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) {
-    return value;
-  }
-  return parsed.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-};
-
-const FARCASTER_BADGE_SRC = "/images/farcaster.jpeg"; // place provided Farcaster icon here
-const ENS_BADGE_SRC = "/images/ens.svg"; // ENS badge SVG placed in public/images
-const X_BADGE_SRC = "/images/twitter.avif";
-const GITHUB_BADGE_SRC = "/images/github.svg";
-const ETHERSCAN_BADGE_SRC = "/images/etherscan.svg";
-
-const getFarcasterProfileUrl = (username?: string | null, fid?: number | null) => {
-  const normalizedUsername = username?.replace(/^@/, "").trim();
-  if (normalizedUsername) {
-    return `https://warpcast.com/${normalizedUsername}`;
-  }
-  if (typeof fid === "number" && Number.isFinite(fid)) {
-    return `https://warpcast.com/~/identity?fid=${fid}`;
-  }
-  return null;
-};
-
-const getEnsProfileUrl = (ensName?: string | null) =>
-  ensName ? `https://app.ens.domains/${ensName}` : null;
-
-type BadgeIconsProps = {
-  username?: string | null;
-  ensName?: string | null;
-  ensAvatarUrl?: string | null;
-  fid?: number | null;
-  primaryAddress?: string | null;
-  etherscanUrl?: string | null;
-  xHandle?: string | null;
-  xUrl?: string | null;
-  githubHandle?: string | null;
-  githubUrl?: string | null;
-  size?: number; // px
-  gapClassName?: string;
-};
-
-const BadgeIcons: React.FC<BadgeIconsProps> = ({
-  username,
-  ensName,
-  ensAvatarUrl,
-  fid,
-  primaryAddress,
-  etherscanUrl,
-  xHandle,
-  xUrl,
-  githubHandle,
-  githubUrl,
-  size = 16,
-  gapClassName,
-}) => {
-  const normalizedUsername = username?.replace(/^@/, "").trim();
-  const hasFarcasterIdentity =
-    Boolean(normalizedUsername && normalizedUsername.length > 0) ||
-    typeof fid === "number";
-  const farcasterUrl = hasFarcasterIdentity
-    ? getFarcasterProfileUrl(normalizedUsername, fid)
-    : null;
-
-  const hasEnsIdentity =
-    Boolean(ensName && ensName.trim().length > 0) ||
-    Boolean(ensAvatarUrl && ensAvatarUrl.trim().length > 0);
-  const ensUrl = hasEnsIdentity ? getEnsProfileUrl(ensName?.trim()) : null;
-
-  const normalizedPrimaryAddress = primaryAddress
-    ? primaryAddress.trim().toLowerCase()
-    : null;
-  const resolvedEtherscanUrl =
-    etherscanUrl ??
-    (normalizedPrimaryAddress
-      ? `https://etherscan.io/address/${normalizedPrimaryAddress}`
-      : null);
-
-  const normalizedXHandle = xHandle?.replace(/^@/, "").trim() || "";
-  const fallbackXHandleFromUrl =
-    !normalizedXHandle && xUrl
-      ? xUrl.replace(/^https?:\/\/(www\.)?(twitter|x)\.com\//i, "").replace(/\/+$/, "")
-      : "";
-  const finalXHandle = normalizedXHandle || fallbackXHandleFromUrl || null;
-  const finalXUrl =
-    xUrl ?? (finalXHandle ? `https://twitter.com/${finalXHandle}` : null);
-  const hasXIdentity = Boolean(finalXHandle || finalXUrl);
-
-  const normalizedGithubHandle = githubHandle?.replace(/^@/, "").trim() || "";
-  const fallbackGithubHandleFromUrl =
-    !normalizedGithubHandle && githubUrl
-      ? githubUrl.replace(/^https?:\/\/(www\.)?github\.com\//i, "").replace(/\/+$/, "")
-      : "";
-  const finalGithubHandle =
-    normalizedGithubHandle || fallbackGithubHandleFromUrl || null;
-  const finalGithubUrl =
-    githubUrl ?? (finalGithubHandle ? `https://github.com/${finalGithubHandle}` : null);
-  const hasGithubIdentity = Boolean(finalGithubHandle || finalGithubUrl);
-
-  const hasEtherscan = Boolean(resolvedEtherscanUrl);
-
-  if (
-    !hasFarcasterIdentity &&
-    !hasEnsIdentity &&
-    !hasXIdentity &&
-    !hasGithubIdentity &&
-    !hasEtherscan
-  ) {
-    return null;
-  }
-
-  const dim = `${size}px`;
-  const imgClass = "rounded-full object-cover ring-1 ring-black/10";
-
-  type BadgeEntry = {
-    key: string;
-    src: string;
-    alt: string;
-    title: string;
-    href?: string | null;
-  };
-
-  const badges: BadgeEntry[] = [];
-
-  if (hasFarcasterIdentity) {
-    badges.push({
-      key: "farcaster",
-      src: FARCASTER_BADGE_SRC,
-      alt: "Farcaster",
-      title: normalizedUsername
-        ? `Farcaster (@${normalizedUsername})`
-        : "Farcaster profile",
-      href: farcasterUrl,
-    });
-  }
-
-  if (hasEnsIdentity) {
-    badges.push({
-      key: "ens",
-      src: ENS_BADGE_SRC,
-      alt: "ENS",
-      title: ensName ? `ENS (${ensName})` : "ENS profile",
-      href: ensUrl,
-    });
-  }
-
-  if (hasXIdentity) {
-    badges.push({
-      key: "x",
-      src: X_BADGE_SRC,
-      alt: "X",
-      title: finalXHandle ? `X (@${finalXHandle})` : "X profile",
-      href: finalXUrl,
-    });
-  }
-
-  if (hasGithubIdentity) {
-    badges.push({
-      key: "github",
-      src: GITHUB_BADGE_SRC,
-      alt: "GitHub",
-      title: finalGithubHandle ? `GitHub (${finalGithubHandle})` : "GitHub profile",
-      href: finalGithubUrl,
-    });
-  }
-
-  if (hasEtherscan) {
-    badges.push({
-      key: "etherscan",
-      src: ETHERSCAN_BADGE_SRC,
-      alt: "Etherscan",
-      title: normalizedPrimaryAddress
-        ? `View ${normalizedPrimaryAddress} on Etherscan`
-        : "View on Etherscan",
-      href: resolvedEtherscanUrl,
-    });
-  }
-
-  return (
-    <div className={mergeClasses("flex items-center gap-1", gapClassName)}>
-      {badges.map((badge) =>
-        badge.href ? (
-          <a
-            key={badge.key}
-            href={badge.href}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={badge.title}
-            title={badge.title}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={badge.src}
-              alt={badge.alt}
-              width={size}
-              height={size}
-              style={{ width: dim, height: dim }}
-              className={imgClass}
-            />
-          </a>
-        ) : (
-          <span key={badge.key} className="inline-flex" aria-label={badge.title} title={badge.title}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={badge.src}
-              alt={badge.alt}
-              width={size}
-              height={size}
-              style={{ width: dim, height: dim }}
-              className={imgClass}
-            />
-          </span>
-        ),
-      )}
-    </div>
-  );
-};
-
-const getBlockExplorerLink = (network: DirectoryNetwork, address: string) =>
-  `${blockExplorerForNetwork[network]}${address}`;
-
-const getMemberPrimaryLabel = (member: DirectoryMemberData) =>
-  member.displayName || member.username || member.ensName || member.address;
-
-const getMemberSecondaryLabel = (member: DirectoryMemberData) => {
-  if (member.username) {
-    return `@${member.username}`;
-  }
-
-  if (member.ensName) {
-    return member.address;
-  }
-
-  return null;
-};
-
-const getMemberAvatarSrc = (member: DirectoryMemberData) => {
-  const proxied = member.pfpUrl ? toFarcasterCdnUrl(member.pfpUrl) : undefined;
-  return proxied ?? member.ensAvatarUrl ?? undefined;
-};
-
-const getMemberAvatarFallback = (member: DirectoryMemberData) =>
-  getMemberPrimaryLabel(member)?.slice(0, 2)?.toUpperCase();
-
-const getLastActivityLabel = (timestamp?: string | null) => {
-  if (!timestamp) {
-    return null;
-  }
-
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return formatDistanceToNow(date, { addSuffix: true });
-};
-
-const sanitizeSortOption = (value: unknown): DirectorySortOption =>
-  value === "followers" ? "followers" : "tokenHoldings";
-
-const sortMembers = (
-  members: DirectoryMemberData[],
-  sortBy: DirectorySortOption,
-): DirectoryMemberData[] => {
-  const entries = [...members];
-
-  if (sortBy === "followers") {
-    entries.sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1));
-    return entries;
-  }
-
-  entries.sort((a, b) => {
-    try {
-      const aValue = BigInt(a.balanceRaw ?? "0");
-      const bValue = BigInt(b.balanceRaw ?? "0");
-      if (bValue > aValue) return 1;
-      if (bValue < aValue) return -1;
-      return 0;
-    } catch (error) {
-      return 0;
-    }
-  });
-
-  return entries;
-};
-
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
 > = ({ settings, data, saveData }) => {
@@ -1025,7 +511,7 @@ const Directory: React.FC<
       abortControllerRef.current?.abort();
     };
   }, []);
-  const normalizedAddress = normalizeAddress(contractAddress || "");
+  const normalizedAddress = normalizeAddressUtil(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
   const [debouncedChannelName, setDebouncedChannelName] = useState(channelName);
   const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
@@ -1036,11 +522,17 @@ const Directory: React.FC<
         ? channelName.length > 0
         : (csvUploadedAt as string).length > 0;
   const primaryFontFamily = useMemo(
-    () => resolveFontFamily(settings.primaryFontFamily, "var(--user-theme-headings-font)"),
+    () => resolveFontFamily(
+      settings.primaryFontFamily,
+      "var(--user-theme-headings-font)",
+    ),
     [settings.primaryFontFamily],
   );
   const secondaryFontFamily = useMemo(
-    () => resolveFontFamily(settings.secondaryFontFamily, "var(--user-theme-font)"),
+    () => resolveFontFamily(
+      settings.secondaryFontFamily,
+      "var(--user-theme-font)",
+    ),
     [settings.secondaryFontFamily],
   );
   const primaryFontColor =
@@ -1614,14 +1106,14 @@ const Directory: React.FC<
               const ensName = rec?.name || null;
               const ensAvatarUrl = rec?.avatar || null;
               const recordsObj = rec?.records;
-              const parsedTwitter = parseSocialRecordValue(
+              const parsedTwitter = parseSocialRecord(
                 recordsObj?.["com.twitter"] ??
                   recordsObj?.twitter ??
                   recordsObj?.["com.x"] ??
                   recordsObj?.x,
                 "twitter",
               );
-              const parsedGithub = parseSocialRecordValue(
+              const parsedGithub = parseSocialRecord(
                 recordsObj?.["com.github"] ?? recordsObj?.github,
                 "github",
               );
@@ -1941,16 +1433,7 @@ const Directory: React.FC<
         : "No Farcaster profiles found for this asset yet.";
 
   const lastUpdatedLabel = useMemo(() => {
-    if (!directoryData.lastUpdatedTimestamp) {
-      return null;
-    }
-
-    const date = new Date(directoryData.lastUpdatedTimestamp);
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
-
-    return formatDistanceToNow(date, { addSuffix: true });
+    return getLastActivityLabel(directoryData.lastUpdatedTimestamp);
   }, [directoryData.lastUpdatedTimestamp]);
 
   if (!isConfigured) {
@@ -2070,200 +1553,24 @@ const Directory: React.FC<
             {emptyStateMessage}
           </div>
         ) : currentLayout === "list" ? (
-          <ul className="divide-y divide-black/5">
-            {displayedMembers.map((member) => {
-              const lastActivity = getLastActivityLabel(member.lastTransferAt);
-              const fallbackAddress =
-                member.primaryAddress ??
-                (member.address?.startsWith("0x") ? member.address : null);
-              const fallbackHref =
-                (settings.source ?? "tokenHolders") === "tokenHolders" &&
-                includeFilter === "allHolders" &&
-                !member.username &&
-                fallbackAddress
-                  ? getBlockExplorerLink(network, fallbackAddress)
-                  : undefined;
-              const primaryLabel = getMemberPrimaryLabel(member);
-              const secondaryLabel = getMemberSecondaryLabel(member);
-              return (
-                <li key={`${member.fid ?? member.address}`} className="flex items-center gap-3 py-3">
-                  <ProfileLink username={member.username} fallbackHref={fallbackHref}>
-                    <Avatar className="size-11 shrink-0">
-                      <AvatarImage
-                        src={getMemberAvatarSrc(member)}
-                        alt={primaryLabel}
-                      />
-                      <AvatarFallback className="bg-black/5 text-xs">
-                        {!member.username && !member.ensName ? (
-                          <BoringAvatar
-                            size={44}
-                            name={member.address}
-                            variant="beam"
-                          />
-                        ) : (
-                          getMemberAvatarFallback(member)
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                  </ProfileLink>
-                  <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <ProfileLink
-                        username={member.username}
-                        fallbackHref={fallbackHref}
-                        className="block truncate font-semibold hover:underline"
-                      >
-                        <span style={headingTextStyle}>{primaryLabel}</span>
-                      </ProfileLink>
-                      <BadgeIcons
-                        username={member.username}
-                        ensName={member.ensName}
-                        ensAvatarUrl={member.ensAvatarUrl}
-                        fid={member.fid}
-                        primaryAddress={
-                          member.primaryAddress ??
-                          (member.address?.startsWith("0x") ? member.address : null)
-                        }
-                        etherscanUrl={
-                          member.etherscanUrl ??
-                          (member.address?.startsWith("0x")
-                            ? buildEtherscanUrl(member.address)
-                            : null)
-                        }
-                        xHandle={member.xHandle}
-                        xUrl={member.xUrl}
-                        githubHandle={member.githubHandle}
-                        githubUrl={member.githubUrl}
-                        size={16}
-                      />
-                    </div>
-                    {secondaryLabel && (
-                      <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-1 text-right text-xs text-muted-foreground">
-                    {(settings.source ?? "tokenHolders") === "tokenHolders" && (
-                      <span className="font-semibold" style={headingTextStyle}>
-                        {formatTokenBalance(member.balanceFormatted)}
-                        {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
-                      </span>
-                    )}
-                    {typeof member.followers === "number" && (
-                      <span>{`${member.followers.toLocaleString()} followers`}</span>
-                    )}
-                    {(settings.source ?? "tokenHolders") === "tokenHolders" && lastActivity && (
-                      <span>{lastActivity}</span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <DirectoryListView
+            members={displayedMembers}
+            settings={settings}
+            tokenSymbol={directoryData.tokenSymbol}
+            headingTextStyle={headingTextStyle}
+            network={network}
+            includeFilter={includeFilter}
+          />
         ) : (
-          <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
-            {displayedMembers.map((member) => {
-              const lastActivity = getLastActivityLabel(member.lastTransferAt);
-              const fallbackAddress =
-                member.primaryAddress ??
-                (member.address?.startsWith("0x") ? member.address : null);
-              const fallbackHref =
-                (settings.source ?? "tokenHolders") === "tokenHolders" &&
-                includeFilter === "allHolders" &&
-                !member.username &&
-                fallbackAddress
-                  ? getBlockExplorerLink(network, fallbackAddress)
-                  : undefined;
-              const primaryLabel = getMemberPrimaryLabel(member);
-              const secondaryLabel = getMemberSecondaryLabel(member);
-              return (
-                <div key={`${member.fid ?? member.address}`} className="relative h-full">
-                  {/* Card content as link */}
-                  <ProfileLink
-                    username={member.username}
-                    fallbackHref={fallbackHref}
-                    className="flex h-full flex-col gap-3 rounded-xl border border-black/5 bg-white/80 p-4 shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-12">
-                        <AvatarImage
-                          src={getMemberAvatarSrc(member)}
-                          alt={primaryLabel}
-                        />
-                        <AvatarFallback className="bg-black/5 text-sm font-semibold">
-                          {!member.username && !member.ensName ? (
-                            <BoringAvatar
-                              size={48}
-                              name={member.address}
-                              variant="beam"
-                            />
-                          ) : (
-                            getMemberAvatarFallback(member)
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex flex-col text-sm">
-                        <span className="block truncate font-semibold" style={headingTextStyle}>
-                          {primaryLabel}
-                        </span>
-                        {secondaryLabel && (
-                          <span className="block truncate text-xs text-muted-foreground">{secondaryLabel}</span>
-                        )}
-                      </div>
-                    </div>
-                    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                      {(settings.source ?? "tokenHolders") === "tokenHolders" && (
-                        <div>
-                          <dt className="uppercase tracking-wide" style={headingFontFamilyStyle}>Holdings</dt>
-                          <dd className="font-semibold" style={headingTextStyle}>
-                            {formatTokenBalance(member.balanceFormatted)}
-                            {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
-                          </dd>
-                        </div>
-                      )}
-                      {typeof member.followers === "number" && (
-                        <div>
-                          <dt className="uppercase tracking-wide" style={headingFontFamilyStyle}>Followers</dt>
-                          <dd className="font-semibold" style={headingTextStyle}>
-                            {member.followers.toLocaleString()}
-                          </dd>
-                        </div>
-                      )}
-                      {(settings.source ?? "tokenHolders") === "tokenHolders" && lastActivity && (
-                        <div className="col-span-2 text-xs">
-                          <dt className="uppercase tracking-wide">Last activity</dt>
-                          <dd>{lastActivity}</dd>
-                        </div>
-                      )}
-                    </dl>
-                  </ProfileLink>
-                  {/* Badges overlay top-right */}
-                  <div className="pointer-events-auto absolute right-2 top-2 z-10 flex items-center gap-1">
-                    <BadgeIcons
-                      username={member.username}
-                      ensName={member.ensName}
-                      ensAvatarUrl={member.ensAvatarUrl}
-                      fid={member.fid}
-                      primaryAddress={
-                        member.primaryAddress ??
-                        (member.address?.startsWith("0x") ? member.address : null)
-                      }
-                      etherscanUrl={
-                        member.etherscanUrl ??
-                        (member.address?.startsWith("0x")
-                          ? buildEtherscanUrl(member.address)
-                          : null)
-                      }
-                      xHandle={member.xHandle}
-                      xUrl={member.xUrl}
-                      githubHandle={member.githubHandle}
-                      githubUrl={member.githubUrl}
-                      size={18}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <DirectoryCardView
+            members={displayedMembers}
+            settings={settings}
+            tokenSymbol={directoryData.tokenSymbol}
+            headingTextStyle={headingTextStyle}
+            headingFontFamilyStyle={headingFontFamilyStyle}
+            network={network}
+            includeFilter={includeFilter}
+          />
         )}
         {/* Bottom pagination */}
         {filteredSortedMembers.length > 0 && (
@@ -2282,88 +1589,7 @@ const Directory: React.FC<
   );
 };
 
-type ProfileLinkProps = {
-  username?: string | null;
-  fallbackHref?: string;
-  className?: string;
-  children: React.ReactNode;
-};
-
-const ProfileLink = ({ username, fallbackHref, className, children }: ProfileLinkProps) => {
-  const href = username ? `/s/${username}` : fallbackHref;
-
-  if (!href) {
-    return <div className={mergeClasses("cursor-default", className)}>{children}</div>;
-  }
-
-  const baseClassName = mergeClasses(
-    "transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-    className,
-  );
-
-  if (username) {
-    return (
-      <Link href={href} className={baseClassName}>
-        {children}
-      </Link>
-    );
-  }
-
-  return (
-    <a href={href} className={baseClassName} target="_blank" rel="noreferrer">
-      {children}
-    </a>
-  );
-};
-
-type PaginationControlsProps = {
-  currentPage: number;
-  pageCount: number;
-  onPrev: () => void;
-  onNext: () => void;
-  totalCount: number;
-};
-
-const PaginationControls: React.FC<PaginationControlsProps> = ({
-  currentPage,
-  pageCount,
-  onPrev,
-  onNext,
-  totalCount,
-}) => {
-  const start = (currentPage - 1) * PAGE_SIZE + 1;
-  const end = Math.min(totalCount, currentPage * PAGE_SIZE);
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[11px] text-muted-foreground">
-        Showing {totalCount === 0 ? 0 : start}-{end} of {totalCount}
-      </span>
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          aria-label="Previous page"
-          onClick={onPrev}
-          disabled={currentPage <= 1}
-          className="rounded-full border border-black/10 px-2 py-1 text-xs font-semibold text-foreground disabled:opacity-40"
-        >
-          Prev
-        </button>
-        <span className="text-[11px] text-muted-foreground">
-          Page {currentPage} / {pageCount}
-        </span>
-        <button
-          type="button"
-          aria-label="Next page"
-          onClick={onNext}
-          disabled={currentPage >= pageCount}
-          className="rounded-full border border-black/10 px-2 py-1 text-xs font-semibold text-foreground disabled:opacity-40"
-        >
-          Next
-        </button>
-      </div>
-    </div>
-  );
-};
+// ProfileLink and PaginationControls moved to ./components
 
 const DirectoryModule: FidgetModule<FidgetArgs> = {
   fidget: Directory as unknown as React.FC<FidgetArgs>,

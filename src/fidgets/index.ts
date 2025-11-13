@@ -19,7 +19,7 @@ import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import Portfolio from "./token/Portfolio";
-import Directory from "./token/Directory";
+import Directory from "./token/Directory/Directory";
 import chat from "./ui/chat";
 import BuilderScore from "./farcaster/BuilderScore";
 import MobileStack from "./layout/tabFullScreen";

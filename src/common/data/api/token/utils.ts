@@ -135,3 +135,121 @@ export function getMoralisChainFallbacks(
   }
 }
 
+/**
+ * Extracts primary Ethereum address from Neynar user object
+ * Checks multiple possible locations in the user object
+ */
+export function extractNeynarPrimaryAddress(user: any): string | null {
+  if (!user || typeof user !== "object") return null;
+  
+  const verified = (user as { verified_addresses?: any }).verified_addresses;
+  if (verified && typeof verified === "object") {
+    const primary = verified.primary;
+    if (primary && typeof primary.eth_address === "string" && primary.eth_address) {
+      return normalizeAddress(primary.eth_address);
+    }
+    if (Array.isArray(verified.eth_addresses)) {
+      const candidate = verified.eth_addresses.find(
+        (value: unknown): value is string =>
+          typeof value === "string" && value.length > 0,
+      );
+      if (candidate) {
+        return normalizeAddress(candidate);
+      }
+    }
+  }
+  
+  const custody = (user as { custody_address?: string | null }).custody_address;
+  if (typeof custody === "string" && custody) {
+    return normalizeAddress(custody);
+  }
+  
+  const verifications = (user as { verifications?: string[] }).verifications;
+  if (Array.isArray(verifications)) {
+    const candidate = verifications.find(
+      (value): value is string => typeof value === "string" && value.length > 0,
+    );
+    if (candidate) {
+      return normalizeAddress(candidate);
+    }
+  }
+  
+  const authAddresses = (user as { auth_addresses?: Array<{ address?: string }> }).auth_addresses;
+  if (Array.isArray(authAddresses)) {
+    const entry = authAddresses.find(
+      (item) => item && typeof item.address === "string" && item.address.length > 0,
+    );
+    if (entry?.address) {
+      return normalizeAddress(entry.address);
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Extracts social media accounts (X/Twitter and GitHub) from Neynar user object
+ */
+export function extractNeynarSocialAccounts(user: any): {
+  xHandle: string | null;
+  xUrl: string | null;
+  githubHandle: string | null;
+  githubUrl: string | null;
+} {
+  if (!user || typeof user !== "object") {
+    return { xHandle: null, xUrl: null, githubHandle: null, githubUrl: null };
+  }
+  
+  const verifiedAccounts = (user as { verified_accounts?: Array<any> }).verified_accounts;
+  let xHandle: string | null = null;
+  let xUrl: string | null = null;
+  let githubHandle: string | null = null;
+  let githubUrl: string | null = null;
+  
+  if (Array.isArray(verifiedAccounts)) {
+    for (const account of verifiedAccounts) {
+      const platform =
+        typeof account?.platform === "string" ? account.platform.toLowerCase() : "";
+      const username =
+        typeof account?.username === "string" ? account.username.replace(/^@/, "").trim() : "";
+      if (!username) continue;
+      
+      if (!xHandle && (platform === "x" || platform === "twitter")) {
+        xHandle = username;
+        xUrl = `https://twitter.com/${username}`;
+      } else if (!githubHandle && platform === "github") {
+        githubHandle = username;
+        githubUrl = `https://github.com/${username}`;
+      }
+    }
+  }
+  
+  return { xHandle, xUrl, githubHandle, githubUrl };
+}
+
+/**
+ * Builds Etherscan URL for an Ethereum address
+ */
+export function buildEtherscanUrl(address?: string | null): string | null {
+  return address ? `https://etherscan.io/address/${normalizeAddress(address)}` : null;
+}
+
+/**
+ * Block explorer base URLs by network
+ */
+export const BLOCK_EXPLORER_URLS: Record<"base" | "polygon" | "mainnet", string> = {
+  mainnet: "https://etherscan.io/address/",
+  base: "https://basescan.org/address/",
+  polygon: "https://polygonscan.com/address/",
+};
+
+/**
+ * Gets block explorer link for an address on a specific network
+ */
+export function getBlockExplorerLink(
+  network: "base" | "polygon" | "mainnet",
+  address: string
+): string {
+  return `${BLOCK_EXPLORER_URLS[network]}${normalizeAddress(address)}`;
+}
+
