@@ -140,7 +140,7 @@
     "wagmi": "^2.19.2",
     "web-push": "^3.6.7",
     "zod": "^3.22.4",
-    "zustand": "^4.5.2"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@lens-protocol/client": "^2.3.0",
