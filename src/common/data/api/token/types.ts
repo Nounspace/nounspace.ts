@@ -45,23 +45,6 @@ export type MoralisErc20HoldersResponse = {
   token_symbol?: string | null;
 };
 
-export type MoralisNftOwner = {
-  owner_of?: string | null;
-  token_id?: string | null;
-  amount?: string | null;
-  name?: string | null;
-  symbol?: string | null;
-};
-
-export type MoralisNftOwnersResponse = {
-  result?: MoralisNftOwner[] | null;
-  cursor?: string | null;
-  next?: string | null;
-  page_size?: number | null;
-  name?: string | null;
-  symbol?: string | null;
-};
-
 // Neynar types
 export type NeynarBulkUsersResponse = Awaited<
   ReturnType<typeof neynar.fetchBulkUsersByEthOrSolAddress>
@@ -128,4 +111,3 @@ export type FetchHoldersResult = {
   tokenSymbol: string | null;
   updatedAt: string;
 };
-

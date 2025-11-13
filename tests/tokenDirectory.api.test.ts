@@ -124,30 +124,31 @@ describe("token directory API", () => {
   });
 
   it("paginates through NFT owners until page size reached", async () => {
-    const moralisResponses = [
+    const alchemyResponses = [
       {
         ok: true,
         status: 200,
         json: async () => ({
-          result: [
+          owners: [
             {
-              owner_of: "0x000000000000000000000000000000000000aaaa",
-              amount: "2",
-              symbol: "NFTEST",
+              address: "0x000000000000000000000000000000000000aaaa",
+              tokenBalances: [{ balance: "2" }],
             },
           ],
-          cursor: "next-page",
-          symbol: "NFTEST",
+          pageKey: "next-page",
+          contractMetadata: {
+            symbol: "NFTEST",
+          },
         }),
       },
       {
         ok: true,
         status: 200,
         json: async () => ({
-          result: [
+          owners: [
             {
-              owner_of: "0x000000000000000000000000000000000000bbbb",
-              amount: null,
+              address: "0x000000000000000000000000000000000000bbbb",
+              tokenBalances: [{ balance: "1" }],
             },
           ],
         }),
@@ -156,10 +157,10 @@ describe("token directory API", () => {
 
     const fetchMock = vi.fn(async (input: any, init?: any) => {
       const url = typeof input === "string" ? input : input.toString();
-      if (url.includes("deep-index.moralis.io")) {
-        const response = moralisResponses.shift();
+      if (url.includes("alchemy.com") && url.includes("getOwnersForCollection")) {
+        const response = alchemyResponses.shift();
         if (!response) {
-          throw new Error("Unexpected extra Moralis request");
+          throw new Error("Unexpected extra Alchemy request");
         }
         return response as any;
       }
@@ -211,24 +212,14 @@ describe("token directory API", () => {
     );
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    const moralisCalls = fetchMock.mock.calls.filter(([url]) =>
-      (typeof url === "string" ? url : url.toString()).includes(
-        "deep-index.moralis.io",
-      ),
+    const alchemyCalls = fetchMock.mock.calls.filter(([url]) =>
+      (typeof url === "string" ? url : url.toString()).includes("alchemy.com"),
     );
-    expect(moralisCalls).toHaveLength(2);
-    expect((moralisCalls[0][0] as string)).toContain(
-      "https://deep-index.moralis.io/api/v2.2/nft/0x000000000000000000000000000000000000aaaa/owners",
+    expect(alchemyCalls).toHaveLength(2);
+    expect((alchemyCalls[0][0] as string).toLowerCase()).toContain(
+      "getownersforcollection?contractaddress=0x000000000000000000000000000000000000aaaa",
     );
-    expect((moralisCalls[0][1] as any)).toMatchObject({
-      method: "GET",
-      headers: expect.objectContaining({
-        Accept: "application/json",
-        "X-API-Key": "test-moralis-key",
-      }),
-      cache: "no-store",
-    });
-    expect((moralisCalls[1][0] as string)).toContain("cursor=next-page");
+    expect((alchemyCalls[1][0] as string).toLowerCase()).toContain("pagekey=next-page");
 
     expect(result.members).toHaveLength(2);
     expect(result.members[0]).toMatchObject({
@@ -245,7 +236,14 @@ describe("token directory API", () => {
       ensName: null,
       ensAvatarUrl: null,
     });
+    expect(result.tokenSymbol).toBe("NFTEST");
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
+    expect(neynarMock.fetchBulkUsersByEthOrSolAddress).toHaveBeenCalledWith({
+      addresses: [
+        "0x000000000000000000000000000000000000aaaa",
+        "0x000000000000000000000000000000000000bbbb",
+      ],
+    });
     expect(getEnsNameMock).toHaveBeenNthCalledWith(
       1,
       "0x000000000000000000000000000000000000aaaa",
