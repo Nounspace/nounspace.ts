@@ -640,8 +640,8 @@ const CastBodyComponent = ({
       {cast.text && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
           <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
-          {/* Remove YouTube links from text */}
-            {cast.text.replace(/https?:\/\/(www\.)?(youtube\.com\/watch\?v=[\w-]{11}|youtu\.be\/[\w-]{11})/g, "")}
+            {/* Remove YouTube links (including Shorts) from the text */}
+            {cast.text.replace(/https?:\/\/(www\.)?(youtube\.com\/(watch\?v=[\w-]{11}|shorts\/[\w-]{11}|embed\/[\w-]{11}|v\/[\w-]{11})|youtu\.be\/[\w-]{11})/g, "")}
           </SafeExpandableText>
         </div>
       )}
