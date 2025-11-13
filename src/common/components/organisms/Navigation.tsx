@@ -34,6 +34,7 @@ import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import SearchModal, { SearchModalHandle } from "./SearchModal";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { loadSystemConfig } from "@/config";
 
 type NavItemProps = {
@@ -120,7 +121,7 @@ const Navigation = React.memo(
       user && user.pfp_url ? (
         <img
           className="aspect-square rounded-full w-6 h-6"
-          src={user.pfp_url}
+          src={toFarcasterCdnUrl(user.pfp_url || "")}
         />
       ) : (
         <CgProfile />

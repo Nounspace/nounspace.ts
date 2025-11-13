@@ -14,6 +14,7 @@ import {
   CommandInput,
 } from "@/common/components/atoms/command";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 
 type SearchAutocompleteInputProps = {
   onSelect: () => void;
@@ -116,7 +117,7 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
                   className="gap-x-2 cursor-pointer"
                 >
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={user.pfp_url} alt={user.display_name} />
+                    <AvatarImage src={toFarcasterCdnUrl(user.pfp_url || '')} alt={user.display_name} />
                   </Avatar>
                   <div className="leading-[1.3]">
                     <p className="font-bold opacity-80">{user.display_name}</p>
