@@ -7,53 +7,41 @@ import React, {
 } from "react";
 import { isEqual } from "lodash";
 
-import SettingsSelector from "@/common/components/molecules/SettingsSelector";
-import TextInput from "@/common/components/molecules/TextInput";
-import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
-import {
-  FONT_FAMILY_OPTIONS,
-} from "@/common/lib/theme/fonts";
 import {
   type FidgetArgs,
   type FidgetModule,
   type FidgetProperties,
 } from "@/common/fidgets";
-import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import {
-  extractNeynarPrimaryAddress,
-  extractNeynarSocialAccounts,
   buildEtherscanUrl,
   getBlockExplorerLink,
   normalizeAddress as normalizeAddressUtil,
   parseSocialRecord,
 } from "@/common/data/api/token/utils";
 import {
-  BadgeIcons,
-  ProfileLink,
   PaginationControls,
   DirectoryCardView,
   DirectoryListView,
+  EmptyState,
+  DirectoryHeader,
+  DirectoryControls,
 } from "./components";
 import {
   resolveFontFamily,
   getLastActivityLabel,
   sortMembers,
   sanitizeSortOption,
+  parseCsv,
+  chunkArray,
+  getNestedUser,
+  mapNeynarUserToMember,
+  createDefaultMemberForCsv,
+  type NeynarUser,
 } from "./utils";
 import {
   STALE_AFTER_MS,
   PAGE_SIZE,
   CHANNEL_FETCH_DEBOUNCE_MS,
-  NETWORK_OPTIONS,
-  SORT_OPTIONS,
-  LAYOUT_OPTIONS,
-  ASSET_TYPE_OPTIONS,
-  INCLUDE_OPTIONS,
-  SOURCE_OPTIONS,
-  CHANNEL_FILTER_OPTIONS,
-  CSV_TYPE_OPTIONS,
-  CSV_SORT_OPTIONS,
 } from "./constants";
 import type {
   DirectoryNetwork,
@@ -86,399 +74,7 @@ export type {
   DirectoryFidgetSettings,
 };
 
-const HiddenField: React.FC<any> = () => null;
-
-const styleFields = defaultStyleFields.filter((field) =>
-  [
-    "background",
-    "fidgetBorderColor",
-    "fidgetBorderWidth",
-    "fidgetShadow",
-    "showOnMobile",
-    "customMobileDisplayName",
-    "mobileIconName",
-  ].includes(field.fieldName),
-);
-
-const directoryProperties: FidgetProperties<DirectoryFidgetSettings> = {
-  fidgetName: "Directory",
-  icon: 0x1f465,
-  fields: [
-    {
-      fieldName: "source",
-      displayName: "Source",
-      default: "tokenHolders",
-      required: true,
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={SOURCE_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "subheader",
-      displayName: "Subheader",
-      default: "",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <TextInput
-            {...props}
-            className="[&_label]:!normal-case"
-            placeholder="Optional subheader"
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    // CSV-specific settings
-    {
-      fieldName: "csvType",
-      displayName: "Type",
-      default: "username",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "csv",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={CSV_TYPE_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "csvUpload",
-      displayName: "Upload CSV",
-      required: false,
-      disabledIf: (settings) => settings?.source !== "csv",
-      inputSelector: ({ updateSettings }) => {
-        const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-        const handleSelectClick = () => fileInputRef.current?.click();
-        const onFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          try {
-            const text = await file.text();
-            updateSettings?.({
-              csvContent: text,
-              csvUpload: new Date().toISOString(),
-              csvFilename: file.name,
-            });
-            console.log("[Directory] CSV selected:", file.name, "size:", file.size);
-          } catch (err) {
-            console.error("Failed to read CSV", err);
-          } finally {
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-          }
-        };
-
-        return (
-          <WithMargin>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5"
-                onClick={handleSelectClick}
-              >
-                Select CSV…
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                className="hidden"
-                onChange={onFileChange}
-              />
-            </div>
-          </WithMargin>
-        );
-      },
-      group: "settings",
-    },
-    {
-      fieldName: "csvContent",
-      displayName: "CSV Content",
-      required: false,
-      disabledIf: () => true,
-      inputSelector: HiddenField,
-      group: "settings",
-    },
-    {
-      fieldName: "csvFilename",
-      displayName: "CSV File",
-      default: "",
-      required: false,
-      disabledIf: (settings) => settings?.source !== "csv",
-      inputSelector: (props) => (
-        <WithMargin>
-          <div className="text-xs text-muted-foreground">
-            <span className="font-semibold">{String(props.value || "—")}</span>
-          </div>
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "csvSortBy",
-      displayName: "Sort by",
-      default: "followers",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "csv",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={CSV_SORT_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "network",
-      displayName: "Network",
-      default: "base",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "tokenHolders",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={NETWORK_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "assetType",
-      displayName: "Type",
-      default: "token",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "tokenHolders",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={ASSET_TYPE_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "contractAddress",
-      displayName: "Contract Address",
-      default: "",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "tokenHolders",
-      validator: (value: string) =>
-        !value || /^0x[a-fA-F0-9]{40}$/.test(value.trim()),
-      inputSelector: (props) => (
-        <WithMargin>
-          <TextInput {...props} className="[&_label]:!normal-case" />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "sortBy",
-      displayName: "Sort by",
-      default: "tokenHoldings",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "tokenHolders",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={SORT_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "layoutStyle",
-      displayName: "Style",
-      default: "cards",
-      required: true,
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={LAYOUT_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "include",
-      displayName: "Filter",
-      default: "holdersWithFarcasterAccount",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "tokenHolders",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={INCLUDE_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    // Farcaster Channel specific settings
-    {
-      fieldName: "channelName",
-      displayName: "Channel Name",
-      default: "",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "farcasterChannel",
-      inputSelector: (props) => (
-        <WithMargin>
-          <TextInput {...props} className="[&_label]:!normal-case" />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "channelFilter",
-      displayName: "Filter",
-      default: "members",
-      required: true,
-      disabledIf: (settings) => settings?.source !== "farcasterChannel",
-      inputSelector: (props) => (
-        <WithMargin>
-          <SettingsSelector
-            {...props}
-            className="[&_label]:!normal-case"
-            settings={CHANNEL_FILTER_OPTIONS}
-          />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "refreshToken",
-      displayName: "Refresh Data",
-      default: "",
-      required: false,
-      disabledIf: (settings) => {
-        const source = settings?.source ?? "tokenHolders";
-        if (source === "tokenHolders") {
-          return !settings?.contractAddress;
-        }
-        if (source === "farcasterChannel") {
-          return !(settings?.channelName && settings.channelName.trim().length > 0);
-        }
-        if (source === "csv") {
-          return !(settings?.csvUpload ?? settings?.csvUploadedAt);
-        }
-        return true;
-      },
-      inputSelector: ({ updateSettings }) => {
-        return (
-          <WithMargin>
-            <button
-              type="button"
-              onClick={() => updateSettings?.({ refreshToken: new Date().toISOString() })}
-              className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-black/5"
-            >
-              Refresh Members
-            </button>
-          </WithMargin>
-        );
-      },
-      group: "settings",
-    },
-    {
-      fieldName: "primaryFontFamily",
-      displayName: "Primary Font",
-      displayNameHint: "Applied to titles, member names, and other prominent text.",
-      default: "var(--user-theme-headings-font)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <FontSelector {...props} />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "primaryFontColor",
-      displayName: "Primary Font Color",
-      displayNameHint: "Color used for headings and primary text accents.",
-      default: "var(--user-theme-headings-font-color)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ThemeColorSelector
-            {...props}
-            themeVariable="var(--user-theme-headings-font-color)"
-            defaultColor="#000000"
-            colorType="font color"
-          />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "secondaryFontFamily",
-      displayName: "Secondary Font",
-      displayNameHint: "Used for body copy and supporting text.",
-      default: "var(--user-theme-font)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <FontSelector {...props} />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "secondaryFontColor",
-      displayName: "Secondary Font Color",
-      displayNameHint: "Color applied to body text within the directory.",
-      default: "var(--user-theme-font-color)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ThemeColorSelector
-            {...props}
-            themeVariable="var(--user-theme-font-color)"
-            defaultColor="#1f2933"
-            colorType="font color"
-          />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    ...styleFields,
-  ],
-  size: {
-    minHeight: 4,
-    maxHeight: 36,
-    minWidth: 4,
-    maxWidth: 36,
-  },
-};
+import { directoryProperties } from "./properties";
 
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
@@ -498,6 +94,7 @@ const Directory: React.FC<
   );
   const includeFilter = (settings.include ?? "holdersWithFarcasterAccount") as DirectoryIncludeOption;
   const [currentPage, setCurrentPage] = useState<number>(1);
+  
   // Keep defaults in sync if the fidget settings change
   useEffect(() => {
     setCurrentSort(sanitizeSortOption(settings.sortBy));
@@ -754,23 +351,6 @@ const Directory: React.FC<
 
   const fetchChannelDirectory = useCallback(
     async (controller: AbortController) => {
-      // Helper to normalize various user shapes coming from Neynar
-      type NeynarUser = {
-        fid?: number | null;
-        username?: string | null;
-        display_name?: string | null;
-        pfp_url?: string | null;
-        follower_count?: number | null;
-      };
-      const getNestedUser = (u: any): NeynarUser | undefined => {
-        if (!u) return undefined;
-        if (typeof u === "object" && u !== null) {
-          if ("user" in u && u.user) return getNestedUser(u.user);
-          return u as NeynarUser;
-        }
-        return undefined;
-      };
-
       const fetchMembers = async () => {
         const res = await fetch(
           `/api/farcaster/neynar/channel/members?id=${encodeURIComponent(
@@ -816,30 +396,7 @@ const Directory: React.FC<
         users = Array.from(byFid.values());
       }
 
-      const members: DirectoryMemberData[] = users.map((u) => {
-        const primaryAddress = extractNeynarPrimaryAddress(u);
-        const { xHandle: userXHandle, xUrl: userXUrl, githubHandle: userGithubHandle, githubUrl: userGithubUrl } =
-          extractNeynarSocialAccounts(u);
-        return {
-          address: `fc_fid_${u.fid ?? Math.random().toString(36).slice(2)}`,
-          balanceRaw: "0",
-          balanceFormatted: "",
-          username: u.username ?? undefined,
-          displayName: u.display_name ?? undefined,
-          fid: typeof u.fid === "number" ? u.fid : undefined,
-          pfpUrl: u.pfp_url ?? undefined,
-          followers: typeof u.follower_count === "number" ? u.follower_count : undefined,
-          lastTransferAt: null,
-          ensName: null,
-          ensAvatarUrl: null,
-          primaryAddress,
-          etherscanUrl: buildEtherscanUrl(primaryAddress),
-          xHandle: userXHandle,
-          xUrl: userXUrl,
-          githubHandle: userGithubHandle,
-          githubUrl: userGithubUrl,
-        };
-      });
+      const members: DirectoryMemberData[] = users.map(mapNeynarUserToMember);
 
       // For channel lists, default to sorting by followers
       const sortedMembers = sortMembers(members, "followers");
@@ -860,81 +417,6 @@ const Directory: React.FC<
     [persistDataIfChanged, settings.channelName, settings.channelFilter],
   );
 
-  const parseCsv = (raw: string, type: CsvTypeOption) => {
-    const text = raw.replace(/^\uFEFF/, "").trim();
-    if (!text) return [] as string[];
-    const rows = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    if (rows.length === 0) return [] as string[];
-
-    const split = (line: string) => {
-      // naive CSV split with basic quote handling
-      const result: string[] = [];
-      let cur = "";
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') {
-          inQuotes = !inQuotes;
-          continue;
-        }
-        if (ch === "," && !inQuotes) {
-          result.push(cur.trim());
-          cur = "";
-        } else {
-          cur += ch;
-        }
-      }
-      result.push(cur.trim());
-      return result.map((v) => v.replace(/^"|"$/g, ""));
-    };
-
-    const headerColsRaw = split(rows[0]);
-    const headerCols = headerColsRaw.map((c) => c.toLowerCase());
-    let colIndex = 0;
-    let hasHeader = false;
-    const candidates: Record<CsvTypeOption, string[]> = {
-      address: ["address", "eth", "wallet"],
-      fid: ["fid", "id"],
-      username: ["username", "handle", "fc"],
-    };
-    const headerMatch = (value: string) =>
-      candidates[type].includes(value.trim().toLowerCase());
-
-    if (headerCols.length > 1) {
-      const idx = headerCols.findIndex((c) => headerMatch(c));
-      if (idx >= 0) {
-        colIndex = idx;
-        hasHeader = true;
-      }
-    } else if (headerCols.length === 1 && headerMatch(headerCols[0])) {
-      hasHeader = true;
-    }
-
-    const items: string[] = [];
-    for (let i = hasHeader ? 1 : 0; i < rows.length; i++) {
-      const cols = split(rows[i]);
-      const rawVal = (cols[colIndex] || "").trim();
-      if (!rawVal) continue;
-      if (type === "username") {
-        items.push(rawVal.replace(/^@/, ""));
-      } else {
-        items.push(rawVal);
-      }
-    }
-    if (items.length === 0) {
-      const fallbackRows = rows.slice(hasHeader ? 1 : 0);
-      fallbackRows.forEach((row) => {
-        const value = row.trim();
-        if (!value) return;
-        if (type === "username") {
-          items.push(value.replace(/^@/, ""));
-        } else {
-          items.push(value);
-        }
-      });
-    }
-    return items;
-  };
 
   const fetchCsvDirectory = useCallback(
     async (controller: AbortController) => {
@@ -960,36 +442,6 @@ const Directory: React.FC<
       const unique = Array.from(new Set(entries));
 
       const byKey = new Map<string, DirectoryMemberData>();
-
-      const chunkArray = <T,>(array: T[], size: number) =>
-        Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
-          array.slice(i * size, i * size + size),
-        );
-
-      const mapUserToMember = (u: any): DirectoryMemberData => {
-        const primaryAddress = extractNeynarPrimaryAddress(u);
-        const { xHandle: userXHandle, xUrl: userXUrl, githubHandle: userGithubHandle, githubUrl: userGithubUrl } =
-          extractNeynarSocialAccounts(u);
-        return {
-          address: `fc_fid_${u?.fid ?? Math.random().toString(36).slice(2)}`,
-          balanceRaw: "0",
-          balanceFormatted: "",
-          username: u?.username ?? null,
-          displayName: u?.display_name ?? null,
-          fid: typeof u?.fid === "number" ? u.fid : null,
-          pfpUrl: u?.pfp_url ?? null,
-          followers: typeof u?.follower_count === "number" ? u.follower_count : null,
-          lastTransferAt: null,
-          ensName: null,
-          ensAvatarUrl: null,
-          primaryAddress: primaryAddress,
-          etherscanUrl: buildEtherscanUrl(primaryAddress),
-          xHandle: userXHandle,
-          xUrl: userXUrl,
-          githubHandle: userGithubHandle,
-          githubUrl: userGithubUrl,
-        };
-      };
 
       if (type === "username") {
         const usernameChunks = chunkArray(unique, 50);
@@ -1029,7 +481,9 @@ const Directory: React.FC<
           const data = await res.json();
           const users: any[] = Array.isArray(data?.users) ? data.users : [];
           users.forEach((u) => {
-            const member = mapUserToMember(u);
+            const nestedUser = getNestedUser(u);
+            if (!nestedUser) return;
+            const member = mapNeynarUserToMember(nestedUser);
             if (member.fid != null) {
               byKey.set(String(member.fid), member);
               const lookedUpUsername = usernameOfFid.get(member.fid);
@@ -1055,7 +509,9 @@ const Directory: React.FC<
           const data = await res.json();
           const users: any[] = Array.isArray(data?.users) ? data.users : [];
           users.forEach((u) => {
-            const member = mapUserToMember(u);
+            const nestedUser = getNestedUser(u);
+            if (!nestedUser) return;
+            const member = mapNeynarUserToMember(nestedUser);
             if (member.fid != null) byKey.set(String(member.fid), member);
             if (member.username) byKey.set(member.username.toLowerCase(), member);
           });
@@ -1077,8 +533,11 @@ const Directory: React.FC<
               Object.entries<any>(data || {}).forEach(([addr, users]) => {
                 const first = Array.isArray(users) && users.length > 0 ? users[0] : undefined;
                 if (first) {
-                  const member = mapUserToMember(first);
-                  byKey.set(addr.toLowerCase(), member);
+                  const nestedUser = getNestedUser(first);
+                  if (nestedUser) {
+                    const member = mapNeynarUserToMember(nestedUser);
+                    byKey.set(addr.toLowerCase(), member);
+                  }
                 }
               });
             }
@@ -1171,77 +630,8 @@ const Directory: React.FC<
 
       // Build members preserving CSV order
       const members: DirectoryMemberData[] = entries.map((val) => {
-        if (type === "username") {
-          const key = val.toLowerCase();
-          return (
-            byKey.get(key) || {
-              address: `fc_username_${key}`,
-              balanceRaw: "0",
-              balanceFormatted: "",
-              username: key,
-              displayName: null,
-              fid: null,
-              pfpUrl: null,
-              followers: null,
-              lastTransferAt: null,
-              ensName: null,
-              ensAvatarUrl: null,
-              primaryAddress: null,
-              etherscanUrl: null,
-              xHandle: null,
-              xUrl: null,
-              githubHandle: null,
-              githubUrl: null,
-            }
-          );
-        }
-        if (type === "fid") {
-          const key = String(Number(val));
-          return (
-            byKey.get(key) || {
-              address: `fc_fid_${key}`,
-              balanceRaw: "0",
-              balanceFormatted: "",
-              username: null,
-              displayName: null,
-              fid: Number.isNaN(Number(key)) ? null : Number(key),
-              pfpUrl: null,
-              followers: null,
-              lastTransferAt: null,
-              ensName: null,
-              ensAvatarUrl: null,
-              primaryAddress: null,
-              etherscanUrl: null,
-              xHandle: null,
-              xUrl: null,
-              githubHandle: null,
-              githubUrl: null,
-            }
-          );
-        }
-        // address
-        const key = val.toLowerCase();
-        return (
-          byKey.get(key) || {
-            address: key,
-            balanceRaw: "0",
-            balanceFormatted: "",
-            username: null,
-            displayName: null,
-            fid: null,
-            pfpUrl: null,
-            followers: null,
-            lastTransferAt: null,
-            ensName: null,
-            ensAvatarUrl: null,
-            primaryAddress: key,
-            etherscanUrl: buildEtherscanUrl(key),
-            xHandle: null,
-            xUrl: null,
-            githubHandle: null,
-            githubUrl: null,
-          }
-        );
+        const key = type === "username" ? val.toLowerCase() : type === "fid" ? String(Number(val)) : val.toLowerCase();
+        return byKey.get(key) || createDefaultMemberForCsv(type, val);
       });
 
       const finalMembers = csvSortBy === "followers"
@@ -1432,110 +822,39 @@ const Directory: React.FC<
         ? "No holders found for this asset yet."
         : "No Farcaster profiles found for this asset yet.";
 
-  const lastUpdatedLabel = useMemo(() => {
-    return getLastActivityLabel(directoryData.lastUpdatedTimestamp);
-  }, [directoryData.lastUpdatedTimestamp]);
 
   if (!isConfigured) {
     return (
-      <div
-        className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground"
-        style={secondaryTextStyle}
-      >
-        {(settings.source ?? "tokenHolders") === "tokenHolders" ? (
-          <>
-            <p className="font-medium" style={headingTextStyle}>
-              Connect a contract address to build the directory.
-            </p>
-            <p className="max-w-[40ch] text-xs text-muted-foreground/80">
-              Provide an ERC-20 token or NFT contract address and network to surface the
-              holders with Farcaster profiles.
-            </p>
-          </>
-        ) : (settings.source ?? "tokenHolders") === "farcasterChannel" ? (
-          <>
-            <p className="font-medium" style={headingTextStyle}>
-              Enter a Farcaster channel name to build the directory.
-            </p>
-            <p className="max-w-[40ch] text-xs text-muted-foreground/80">
-              Example: nouns, purple. The filter selects Members, Followers, or both.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="font-medium" style={headingTextStyle}>
-              Upload a CSV to build the directory.
-            </p>
-            <p className="max-w-[40ch] text-xs text-muted-foreground/80">
-              Choose Type (Address, FID, or Farcaster username), then use Upload CSV in settings.
-            </p>
-          </>
-        )}
-      </div>
+      <EmptyState
+        source={source}
+        headingTextStyle={headingTextStyle}
+        secondaryTextStyle={secondaryTextStyle}
+      />
     );
   }
 
   return (
     <div className="flex h-full flex-col" style={secondaryTextStyle}>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
-        <div className="flex flex-col gap-1">
-          <span className="font-semibold" style={headingTextStyle}>
-            Community Directory
-          </span>
-          {computedSubheader && (
-            <span
-              className="text-xs font-medium"
-              style={{
-                ...headingFontFamilyStyle,
-                color: primaryFontColor,
-                opacity: 0.75,
-              }}
-            >
-              {computedSubheader}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3 text-[11px]">
-          {lastUpdatedLabel && (
-            <span className="rounded-full bg-black/5 px-2 py-1 font-medium text-muted-foreground">
-              Updated {lastUpdatedLabel}
-            </span>
-          )}
-        </div>
-      </div>
+      <DirectoryHeader
+        subheader={computedSubheader}
+        headingTextStyle={headingTextStyle}
+        headingFontFamilyStyle={headingFontFamilyStyle}
+        primaryFontColor={primaryFontColor}
+        lastUpdatedTimestamp={directoryData.lastUpdatedTimestamp}
+      />
 
-      {/* View controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-2 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="uppercase tracking-wide text-muted-foreground">Style</span>
-          <SettingsSelector
-            onChange={(value) => setCurrentLayout(value as DirectoryLayoutStyle)}
-            value={currentLayout}
-            settings={LAYOUT_OPTIONS as unknown as { name: string; value: string }[]}
-          />
-        </div>
-        {(settings.source ?? "tokenHolders") === "tokenHolders" && (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="uppercase tracking-wide text-muted-foreground">Sort by</span>
-              <SettingsSelector
-                onChange={(value) => setCurrentSort(value as DirectorySortOption)}
-                value={currentSort}
-                settings={SORT_OPTIONS as unknown as { name: string; value: string }[]}
-              />
-            </div>
-          </>
-        )}
-        <div className="ml-auto flex items-center gap-2">
-          <PaginationControls
-            currentPage={currentPage}
-            pageCount={pageCount}
-            onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            onNext={() => setCurrentPage((p) => Math.min(pageCount, p + 1))}
-            totalCount={filteredSortedMembers.length}
-          />
-        </div>
-      </div>
+      <DirectoryControls
+        source={source}
+        currentLayout={currentLayout}
+        currentSort={currentSort}
+        currentPage={currentPage}
+        pageCount={pageCount}
+        totalCount={filteredSortedMembers.length}
+        onLayoutChange={(layout) => setCurrentLayout(layout)}
+        onSortChange={(sort) => setCurrentSort(sort)}
+        onPagePrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+        onPageNext={() => setCurrentPage((p) => Math.min(pageCount, p + 1))}
+      />
 
       {error && (
         <div className="m-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
@@ -1588,8 +907,6 @@ const Directory: React.FC<
     </div>
   );
 };
-
-// ProfileLink and PaginationControls moved to ./components
 
 const DirectoryModule: FidgetModule<FidgetArgs> = {
   fidget: Directory as unknown as React.FC<FidgetArgs>,
