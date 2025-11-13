@@ -8,6 +8,7 @@ import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
 import { ReactionType } from "@farcaster/core";
 import {
@@ -106,7 +107,11 @@ export const CastAvatar = ({ user, className }: { user: User; className?: string
           className
         )}
       >
-        <AvatarImage src={`${user.pfp_url}`} alt={user?.display_name} className="object-cover" />
+        <AvatarImage
+          src={toFarcasterCdnUrl(user.pfp_url || "")}
+          alt={user?.display_name}
+          className="object-cover"
+        />
       </Avatar>
     </PriorityLink>
   );

@@ -38,6 +38,7 @@ type FidgetSettingsRowProps = {
   onChange: (value: any) => void;
   hide?: boolean;
   id: string;
+  updateSettings?: (partial: FidgetSettings) => void;
 };
 
 export const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
@@ -63,6 +64,7 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   onChange,
   hide,
   id,
+  updateSettings,
 }) => {
   const InputComponent = field.inputSelector;
   const isValid = !field.validator || field.validator(value);
@@ -100,6 +102,8 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
           id={id}
           value={value}
           onChange={onChange}
+          // Provide extended API for custom inputs that need to update multiple settings
+          updateSettings={updateSettings}
           className={mergeClasses(
             "!h-9 !rounded-md font-medium !shadow-none",
             !isValid && "border-red-500"
@@ -122,6 +126,11 @@ export const FidgetSettingsGroup: React.FC<{
       {fields.map((field, i) => {
         const value =
           (field.fieldName in state && state[field.fieldName]) || "";
+        const updateSettings = (partial: FidgetSettings) => {
+          const data = { ...state, ...partial };
+          setState(data);
+          onSave(data);
+        };
         return (
           <FidgetSettingsRow
             field={field}
@@ -137,6 +146,7 @@ export const FidgetSettingsGroup: React.FC<{
               setState(data);
               onSave(data);
             }}
+            updateSettings={updateSettings}
             hide={field.disabledIf && field.disabledIf(state)}
           />
         );

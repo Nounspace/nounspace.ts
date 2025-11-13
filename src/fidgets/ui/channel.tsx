@@ -6,6 +6,7 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { LazyImage } from "@/fidgets/farcaster/components/LazyLoad";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import { first } from "lodash";
 import Link from "next/link";
@@ -132,6 +133,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   // Validate and sanitize owner profile picture URL
   const isPfpUrlValid = ownerUser?.pfp_url ? isValidHttpUrl(ownerUser.pfp_url) : false;
   const safeOwnerPfpUrl = useSafeUrl(ownerUser?.pfp_url || "") || undefined;
+  const proxiedOwnerPfpUrl = safeOwnerPfpUrl ? toFarcasterCdnUrl(safeOwnerPfpUrl) : undefined;
 
   if (!channelId) {
     return (
@@ -217,7 +219,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
               >
                 <Avatar className="h-6 w-6">
                   <AvatarImage
-                    src={isPfpUrlValid ? safeOwnerPfpUrl : undefined}
+                    src={isPfpUrlValid ? proxiedOwnerPfpUrl : undefined}
                     alt={ownerUser.display_name || ownerUser.username || ""}
                   />
                   <AvatarFallback>
@@ -231,7 +233,7 @@ const ChannelFidget: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
             ) : (
               <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={isPfpUrlValid ? safeOwnerPfpUrl : undefined} alt={ownerUser.display_name || ""} />
+                  <AvatarImage src={isPfpUrlValid ? proxiedOwnerPfpUrl : undefined} alt={ownerUser.display_name || ""} />
                   <AvatarFallback>
                     {(ownerUser.display_name || "?")
                       .slice(0, 2)
