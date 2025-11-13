@@ -30,6 +30,7 @@ import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
+import { isYouTubeUrl } from "@/common/lib/utils/youtubeUtils";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
 
@@ -176,19 +177,15 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
-        // Skip if this URL is already embedded or is a YouTube video.
+        // Skip if this URL is already embedded or is a YouTube
         const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
-        const isYouTubeUrl = url.includes("youtube.com/watch?v=") || url.includes("youtu.be/");
-
-        if (isAlreadyEmbedded || isYouTubeUrl) {
+        if (isAlreadyEmbedded || isYouTubeUrl(url)) {
           return null;
         }
-
         const embedData: CastEmbed = {
           url: url,
           key: url,
         };
-
         return (
           <div
             key={`text-url-${i}`}
@@ -640,8 +637,8 @@ const CastBodyComponent = ({
       {cast.text && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
           <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
-            {/* Remove YouTube links (including Shorts) from the text */}
-            {cast.text.replace(/https?:\/\/(www\.)?(youtube\.com\/(watch\?v=[\w-]{11}|shorts\/[\w-]{11}|embed\/[\w-]{11}|v\/[\w-]{11})|youtu\.be\/[\w-]{11})/g, "")}
+           {/* Remove only YouTube URLs using this utility, preserving other links and avoiding double spaces */}
+            {cast.text.replace(/https?:\/\/[^\s]+/g, (url) => isYouTubeUrl(url) ? "" : url).replace(/\s{2,}/g, " ").trim()}
           </SafeExpandableText>
         </div>
       )}
