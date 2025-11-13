@@ -213,15 +213,23 @@ Token balances are formatted with appropriate decimals and symbols.
 
 ### Caching
 
-- Fetched data is cached in `config.data`
+- Fetched data is cached in `config.data` (stored in Zustand store)
 - Data includes `lastUpdatedTimestamp` for staleness detection
-- Settings snapshots stored in `lastFetchSettings`
+- Settings snapshots stored in `lastFetchSettings` (for backfill system)
+- **No local state** - data flows directly from store → component → store
 
 ### AbortController
 
 - All fetch operations use `AbortController` for cancellation
 - Prevents race conditions when settings change rapidly
 - Cleanup on component unmount
+
+### Refresh Detection
+
+- **Settings changes**: React dependencies automatically detect when fetch-relevant settings change
+- **Staleness**: Separate effect watches timestamp and refreshes if data is older than 5 minutes
+- **Initial load**: Only fetches if no data exists in store
+- **No comparison logic**: React's dependency system handles change detection
 
 ## Error Handling
 
@@ -233,9 +241,10 @@ Token balances are formatted with appropriate decimals and symbols.
 
 ### Error Recovery
 
-- Errors reset `suppressAutoRefresh` flag
+- Errors don't block future fetches (no suppression needed)
 - Manual refresh always available
-- Settings changes reset error state
+- Settings changes reset error state automatically
+- React's dependency system prevents infinite retry loops
 
 ## Examples
 

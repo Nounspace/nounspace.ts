@@ -2,14 +2,16 @@
 
 This document outlines essential patterns for fidgets that use the `data` field in `FidgetConfig` to store runtime state and cached data. These patterns are derived from the Directory fidget implementation and should be considered best practices.
 
+**Key Architecture Principle**: The Zustand store is the single source of truth. Fidgets receive `data` as a prop and should use it directly - no local state needed. When you call `saveData()`, the store updates immediately and the component re-renders automatically.
+
 ## Table of Contents
 
-1. [Local State Management](#local-state-management)
-2. [Data Synchronization](#data-synchronization)
+1. [Using Data Prop Directly (Recommended)](#using-data-prop-directly-recommended)
+2. [Two-Phase Save System](#two-phase-save-system)
 3. [Change Detection Before Persistence](#change-detection-before-persistence)
 4. [AbortController for Async Operations](#abortcontroller-for-async-operations)
 5. [Error State Management](#error-state-management)
-6. [Refresh Detection with lastFetchSettings](#refresh-detection-with-lastfetchsettings)
+6. [Refresh Detection with React Dependencies](#refresh-detection-with-react-dependencies-simplified)
 7. [Staleness Detection](#staleness-detection)
 8. [Debouncing User Input](#debouncing-user-input)
 9. [Loading State Management](#loading-state-management)
@@ -17,88 +19,120 @@ This document outlines essential patterns for fidgets that use the `data` field 
 
 ---
 
-## Local State Management
+## Using Data Prop Directly (Recommended)
 
-**Pattern**: Initialize local state from props with proper fallbacks, allowing for local updates while keeping external data as source of truth.
+**Pattern**: Use the `data` prop directly from the Zustand store. No local state needed - the store is the single source of truth.
 
 ```typescript
-const [fidgetData, setFidgetData] = useState<FidgetData>(() => ({
-  // Provide defaults for all data fields
-  items: data?.items ?? [],
-  lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
-  metadata: data?.metadata ?? null,
-  lastFetchSettings: data?.lastFetchSettings,
-}));
+const Directory: React.FC<FidgetArgs<Settings, Data>> = ({ settings, data, saveData }) => {
+  // Read directly from prop - store is source of truth
+  const members = data?.members ?? [];
+  const lastUpdated = data?.lastUpdatedTimestamp;
+  const tokenSymbol = data?.tokenSymbol;
+  
+  // Use data prop in useMemo, useCallback, etc.
+  const filteredMembers = useMemo(() => {
+    return members.filter(/* ... */);
+  }, [members, /* other deps */]);
+}
 ```
 
 **Why**: 
-- Prevents undefined access errors
-- Allows local state updates without immediately persisting
-- Provides initialization from persisted data
+- **Single source of truth**: Zustand store is the authoritative source
+- **Automatic updates**: Store updates trigger component re-renders automatically
+- **Simpler code**: No sync logic, no state drift, no equality checks needed
+- **Immediate updates**: When you call `saveData()`, store updates immediately and component re-renders
 
 **Key Points**:
-- Use function initializer `() => ({ ... })` for performance
-- Always provide sensible defaults
-- Include `lastFetchSettings` if you use refresh detection
+- Always provide defaults when reading: `data?.field ?? defaultValue`
+- Use optional chaining: `data?.members` instead of `data.members`
+- Store updates automatically trigger re-renders - no manual sync needed
+- Only use local state for transient UI state (loading, error, form inputs)
+
+**Data Flow**:
+```
+Zustand Store → data prop → Component reads directly
+Component calls saveData() → Store updates → Component re-renders automatically
+```
 
 ---
 
-## Data Synchronization
+## When You Might Need Local State
 
-**Pattern**: Use `useEffect` to sync external `data` prop changes to local state, preserving local updates when external data hasn't changed.
+**Only use local state for**:
+- **Transient UI state**: `isRefreshing`, `error`, form inputs
+- **Derived/computed state**: Values computed from props that shouldn't trigger store updates
+- **Optimistic updates**: If you need to show data before API confirms (not recommended)
 
+**Don't use local state for**:
+- Data that comes from the store (use `data` prop directly)
+- Data that needs to persist (use `saveData()`)
+- Data that should sync with store updates (React handles this automatically)
+
+---
+
+## Two-Phase Save System
+
+**Pattern**: The system uses a two-phase save approach: immediate store update, then later database commit.
+
+**Phase 1: Store Update (Immediate)**
 ```typescript
-useEffect(() => {
-  setFidgetData((prev) => ({
-    // Only update if external data exists, otherwise keep local state
-    items: data?.items ?? prev.items,
-    lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
-    metadata: data?.metadata ?? prev.metadata,
-    lastFetchSettings: data?.lastFetchSettings ?? prev.lastFetchSettings,
-  }));
-}, [
-  data?.items,
-  data?.lastUpdatedTimestamp,
-  data?.metadata,
-  data?.lastFetchSettings,
-]);
+await saveData(payload);
+// → Updates Zustand store immediately
+// → Component re-renders automatically with new data prop
+// → UI updates instantly
+```
+
+**Phase 2: Database Commit (Later)**
+```typescript
+commitConfig();
+// → Reads from store
+// → Creates signed file
+// → Saves to Supabase storage (database)
 ```
 
 **Why**:
-- External data prop can change from:
-  - Remote database loads
-  - Space config resets
-  - Other fidget instances updating shared state
-- Prevents losing local state unnecessarily
-- Ensures UI stays in sync with persisted data
+- **Immediate UI updates**: Store updates trigger re-renders right away
+- **Offline support**: Changes persist locally even if DB is unavailable
+- **Batch commits**: Multiple changes can be batched before committing
+- **Undo/rollback**: Can reset to `remoteSpaces` if needed
 
 **Key Points**:
-- Use `prev` fallback pattern to preserve local state
-- Depend on specific data fields, not the entire `data` object
-- Handle `null` vs `undefined` appropriately
+- `saveData()` updates the store immediately (not the database)
+- Store is the source of truth for the UI
+- Database commit happens separately via `commitConfig()`
+- Component reads from store via `data` prop
+- Store updates automatically trigger component re-renders
 
 ---
 
 ## Change Detection Before Persistence
 
-**Pattern**: Use `isEqual` (lodash) to detect actual changes before calling `saveData`, avoiding unnecessary persistence operations.
+**Pattern**: Use `isEqual` (lodash) to detect actual changes before calling `saveData`, comparing against the current `data` prop from the store.
 
 ```typescript
 const persistDataIfChanged = useCallback(
   async (payload: FidgetData) => {
-    const hasChanged =
-      !isEqual(fidgetData.items, payload.items) ||
-      fidgetData.lastUpdatedTimestamp !== payload.lastUpdatedTimestamp ||
-      !isEqual(fidgetData.metadata, payload.metadata) ||
-      !isEqual(fidgetData.lastFetchSettings, payload.lastFetchSettings);
+    // Compare against current data prop (from store)
+    const currentData = data ?? {
+      items: [],
+      lastUpdatedTimestamp: null,
+      metadata: null,
+      lastFetchSettings: undefined,
+    };
 
-    setFidgetData(payload);
+    const hasChanged =
+      !isEqual(currentData.items, payload.items) ||
+      currentData.lastUpdatedTimestamp !== payload.lastUpdatedTimestamp ||
+      !isEqual(currentData.metadata, payload.metadata) ||
+      !isEqual(currentData.lastFetchSettings, payload.lastFetchSettings);
 
     if (hasChanged) {
       await saveData(payload);
+      // Store updates automatically → component re-renders with new data prop
     }
   },
-  [fidgetData, saveData],
+  [data, saveData],
 );
 ```
 
@@ -106,13 +140,14 @@ const persistDataIfChanged = useCallback(
 - Reduces unnecessary persistence calls
 - Prevents infinite update loops
 - Improves performance
-- Only triggers space config updates when necessary
+- Only triggers store updates when necessary
 
 **Key Points**:
+- Compare against `data` prop (from store), not local state
 - Use `isEqual` for deep object comparisons
 - Use `===` for primitive values (timestamps, IDs)
-- Update local state first, then persist if changed
 - Include all relevant data fields in change detection
+- Store update triggers automatic re-render - no manual state update needed
 
 ---
 
@@ -169,11 +204,10 @@ const fetchData = useCallback(async () => {
 
 ## Error State Management
 
-**Pattern**: Track error state separately, suppress auto-refresh on errors, and reset when settings change.
+**Pattern**: Track error state separately and reset when settings change. No suppression needed - errors don't block future fetches.
 
 ```typescript
 const [error, setError] = useState<string | null>(null);
-const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
 
 // In fetch function
 try {
@@ -181,15 +215,14 @@ try {
   setError(null);
 } catch (err) {
   if ((err as Error).name === "AbortError") {
-    return;
+    return; // Expected when cancelling
   }
   setError(`Failed to load data: ${err.message}`);
-  setSuppressAutoRefresh(true); // Prevent infinite retry loop
+  // No suppression - user can retry or change settings
 }
 
-// Reset error when settings change
+// Reset error when settings change (gives fresh start)
 useEffect(() => {
-  setSuppressAutoRefresh(false);
   setError(null);
 }, [
   // List all settings that affect data fetching
@@ -200,69 +233,57 @@ useEffect(() => {
 ```
 
 **Why**:
-- Prevents infinite retry loops on persistent errors
 - Allows user to see error messages
 - Automatically recovers when settings change
+- No suppression needed - React dependencies prevent infinite loops
 - Provides better UX
 
 **Key Points**:
 - Separate error state from loading state
-- Suppress auto-refresh on errors
-- Reset suppression when relevant settings change
 - Clear error state when settings change (gives fresh start)
+- No suppression flag needed - React's dependency system prevents loops
+- User can always retry via manual refresh or settings change
 
 ---
 
-## Refresh Detection with lastFetchSettings
+## Refresh Detection with React Dependencies (Simplified)
 
-**Pattern**: Store a snapshot of settings used for the last fetch, compare with current settings to detect changes.
+**Pattern**: Use React's dependency system to detect settings changes. No comparison logic needed - React automatically detects when dependencies change.
 
 ```typescript
-interface FidgetData extends FidgetData {
-  items: Item[];
-  lastUpdatedTimestamp?: string | null;
-  lastFetchSettings?: Partial<FidgetSettings>; // Snapshot of settings
-}
-
-// Extract relevant settings for comparison
-const shouldRefresh = useMemo(() => {
-  if (!isConfigured) {
-    return false;
+// Fetch when fetch-relevant settings change - React dependencies detect changes automatically
+const hasMountedRef = useRef(false);
+useEffect(() => {
+  if (source === "csv" || !isConfigured || isRefreshing) {
+    return;
   }
 
-  const lastFetch = fidgetData.lastFetchSettings;
-  const lastUpdated = fidgetData.lastUpdatedTimestamp
-    ? Date.parse(fidgetData.lastUpdatedTimestamp)
-    : 0;
-
-  // If no previous fetch, need to fetch
-  if (!lastFetch || !lastUpdated) {
-    return true;
+  // On initial mount, only fetch if we don't have data yet
+  if (!hasMountedRef.current) {
+    hasMountedRef.current = true;
+    const hasData = data?.lastUpdatedTimestamp != null;
+    if (!hasData) {
+      void fetchData();
+    }
+    return;
   }
 
-  // Extract only settings that affect data fetching
-  const currentFetchSettings: Partial<FidgetSettings> = {
-    source: settings.source,
-    network: settings.network,
-    contractAddress: normalizedAddress,
-    // ... other relevant settings
-  };
-
-  // If settings changed, need refresh
-  if (!isEqual(currentFetchSettings, lastFetch)) {
-    return true;
-  }
-
-  // Otherwise check staleness
-  return Date.now() - lastUpdated > STALE_AFTER_MS;
+  // After mount, any change to these dependencies means settings changed - fetch immediately
+  void fetchData();
 }, [
-  fidgetData.lastFetchSettings,
-  fidgetData.lastUpdatedTimestamp,
+  source,
+  network,
+  normalizedAddress,
+  assetType,
+  debouncedChannelName,
+  settings.channelFilter,
   isConfigured,
-  // ... all settings used in currentFetchSettings
+  isRefreshing,
+  fetchData,
+  // Note: data?.lastUpdatedTimestamp NOT in deps - we don't want to fetch when data updates
 ]);
 
-// When fetching, save the settings snapshot
+// When fetching, save the settings snapshot (for backfill system)
 await persistDataIfChanged({
   items: fetchedItems,
   lastUpdatedTimestamp: new Date().toISOString(),
@@ -275,53 +296,66 @@ await persistDataIfChanged({
 ```
 
 **Why**:
-- Detects when settings change (user input, URL params, etc.)
-- Avoids unnecessary fetches when only display settings change
-- Works with `FidgetWrapper`'s automatic settings backfill
-- Provides clear separation between data-fetching settings and display settings
+- **Simpler**: No comparison logic needed - React handles change detection
+- **More reliable**: React's dependency system is battle-tested
+- **Immediate**: Settings changes trigger fetches immediately
+- **Works with backfill**: `lastFetchSettings` still saved for `FidgetWrapper`'s backfill system
 
 **Key Points**:
-- Only include settings that affect data fetching
-- Use `isEqual` for comparison (deep object comparison)
-- Store normalized values (e.g., lowercase addresses)
-- Update `lastFetchSettings` every time you fetch
+- Watch fetch-relevant settings directly via React dependencies
+- Use `hasMountedRef` to prevent fetch on initial mount if data exists
+- Don't include `data?.lastUpdatedTimestamp` in deps (would trigger on every data update)
+- Still save `lastFetchSettings` for the backfill system (used by `FidgetWrapper`)
+- Separate effect for staleness detection (see next pattern)
 
 ---
 
 ## Staleness Detection
 
-**Pattern**: Use timestamps to determine if cached data is stale and needs refresh.
+**Pattern**: Use a separate `useEffect` to watch the timestamp and refresh if data becomes stale. Keep this separate from settings change detection.
 
 ```typescript
 const STALE_AFTER_MS = 60 * 60 * 1000; // 1 hour
 
-const shouldRefresh = useMemo(() => {
-  // ... check if settings changed first ...
-  
-  const lastUpdated = fidgetData.lastUpdatedTimestamp
-    ? Date.parse(fidgetData.lastUpdatedTimestamp)
-    : 0;
-
-  if (!lastUpdated) {
-    return true; // No data yet
+// Separate effect for staleness check - only runs when timestamp changes
+useEffect(() => {
+  if (source === "csv" || !isConfigured || isRefreshing) {
+    return;
   }
 
-  // Check if data is stale
-  return Date.now() - lastUpdated > STALE_AFTER_MS;
-}, [fidgetData.lastUpdatedTimestamp, /* ... */]);
+  const lastUpdated = data?.lastUpdatedTimestamp
+    ? Date.parse(data.lastUpdatedTimestamp)
+    : 0;
+  if (lastUpdated > 0) {
+    const isStale = Date.now() - lastUpdated > STALE_AFTER_MS;
+    if (isStale) {
+      void fetchData();
+    }
+  }
+}, [
+  source,
+  isConfigured,
+  isRefreshing,
+  data?.lastUpdatedTimestamp, // Watch timestamp from store
+  fetchData,
+]);
 ```
 
 **Why**:
-- Automatically refreshes stale data
-- Prevents showing outdated information
-- Configurable staleness threshold per fidget type
-- Works in conjunction with settings change detection
+- Ensures data doesn't become too stale
+- Provides automatic background refresh
+- Works independently of settings changes
+- Improves data freshness
+- Separate from settings change detection for clarity
 
 **Key Points**:
+- Use a separate `useEffect` for staleness (don't mix with settings change detection)
+- Watch `data?.lastUpdatedTimestamp` from the store (not local state)
+- Use a reasonable staleness threshold (e.g., 1 hour)
+- Only refresh if not already refreshing
+- Keep it simple - just check if timestamp is stale
 - Always save timestamp when fetching: `new Date().toISOString()`
 - Use ISO string format for consistency
-- Choose appropriate staleness threshold for your data type
-- Combine with settings change detection
 
 ---
 

@@ -1070,47 +1070,11 @@ const Directory: React.FC<
     [primaryFontFamily],
   );
 
-  const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>(() => ({
-    members: data?.members ?? [],
-    lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
-    tokenSymbol: data?.tokenSymbol ?? null,
-    tokenDecimals: data?.tokenDecimals ?? null,
-    lastFetchSettings: data?.lastFetchSettings,
-  }));
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const [suppressAutoRefresh, setSuppressAutoRefresh] = useState(false);
   const lastCsvTriggerRef = useRef<string | null>(null);
   const lastManualRefreshRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-
-    setDirectoryData((prev) => {
-      const next: DirectoryFidgetData = {
-        members: data.members ?? prev.members,
-        lastUpdatedTimestamp: data.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
-        tokenSymbol: data.tokenSymbol ?? prev.tokenSymbol ?? null,
-        tokenDecimals: data.tokenDecimals ?? prev.tokenDecimals ?? null,
-        lastFetchSettings: data.lastFetchSettings ?? prev.lastFetchSettings,
-      };
-
-      if (
-        isEqual(prev.members, next.members) &&
-        prev.lastUpdatedTimestamp === next.lastUpdatedTimestamp &&
-        prev.tokenSymbol === next.tokenSymbol &&
-        prev.tokenDecimals === next.tokenDecimals &&
-        isEqual(prev.lastFetchSettings, next.lastFetchSettings)
-      ) {
-        return prev;
-      }
-
-      return next;
-    });
-  }, [data]);
 
   useEffect(() => {
     return () => {
@@ -1133,87 +1097,44 @@ const Directory: React.FC<
       return customSubheader;
     }
     if (source === "tokenHolders") {
-      return directoryData.tokenSymbol ? `${directoryData.tokenSymbol} • ${network}` : null;
+      return data?.tokenSymbol ? `${data.tokenSymbol} • ${network}` : null;
     }
     if (source === "farcasterChannel") {
       return channelName ? `/${channelName}` : null;
     }
     return null;
-  }, [customSubheader, source, directoryData.tokenSymbol, network, channelName]);
+  }, [customSubheader, source, data?.tokenSymbol, network, channelName]);
 
   // Reset or clamp page when filter/sort/data changes
   useEffect(() => {
     setCurrentPage(1);
   }, [includeFilter, currentSort]);
 
-  const shouldRefresh = useMemo(() => {
-    if (!isConfigured) {
-      return false;
-    }
-
-    if (source === "csv") {
-      return false;
-    }
-
-    const lastFetch = directoryData.lastFetchSettings;
-    const lastUpdated = directoryData.lastUpdatedTimestamp
-      ? Date.parse(directoryData.lastUpdatedTimestamp)
-      : 0;
-
-    // If no previous fetch, need to fetch
-    if (!lastFetch || !lastUpdated) {
-      return true;
-    }
-
-    // Extract relevant settings for comparison (only the ones that affect data fetching)
-    const currentFetchSettings: Partial<DirectoryFidgetSettings> = {
-      source,
-      ...(source === "tokenHolders" && {
-        network,
-        contractAddress: normalizedAddress,
-        assetType,
-      }),
-      ...(source === "farcasterChannel" && {
-        channelName: debouncedChannelName,
-        channelFilter: settings.channelFilter ?? "members",
-      }),
-    };
-
-    // If settings changed, need refresh
-    if (!isEqual(currentFetchSettings, lastFetch)) {
-      return true;
-    }
-
-    // Otherwise check if data is stale
-    return Date.now() - lastUpdated > STALE_AFTER_MS;
-  }, [
-    directoryData.lastFetchSettings,
-    directoryData.lastUpdatedTimestamp,
-    isConfigured,
-    source,
-    network,
-    normalizedAddress,
-    assetType,
-    debouncedChannelName,
-    settings.channelFilter,
-  ]);
-
   const persistDataIfChanged = useCallback(
     async (payload: DirectoryFidgetData) => {
-      const hasChanged =
-        !isEqual(directoryData.members, payload.members) ||
-        directoryData.lastUpdatedTimestamp !== payload.lastUpdatedTimestamp ||
-        directoryData.tokenSymbol !== payload.tokenSymbol ||
-        directoryData.tokenDecimals !== payload.tokenDecimals ||
-        !isEqual(directoryData.lastFetchSettings, payload.lastFetchSettings);
+      const currentData = data ?? {
+        members: [],
+        lastUpdatedTimestamp: null,
+        tokenSymbol: null,
+        tokenDecimals: null,
+        lastFetchSettings: undefined,
+      };
 
-      setDirectoryData(payload);
+      // Check if meaningful data changed (members, timestamp, token info)
+      // Note: lastFetchSettings is always included in payload but comparison is still useful
+      // to avoid unnecessary saves if only lastFetchSettings changed but data didn't
+      const hasChanged =
+        !isEqual(currentData.members, payload.members) ||
+        currentData.lastUpdatedTimestamp !== payload.lastUpdatedTimestamp ||
+        currentData.tokenSymbol !== payload.tokenSymbol ||
+        currentData.tokenDecimals !== payload.tokenDecimals ||
+        !isEqual(currentData.lastFetchSettings, payload.lastFetchSettings);
 
       if (hasChanged) {
         await saveData(payload);
       }
     },
-    [directoryData, saveData],
+    [data, saveData],
   );
 
   const fetchTokenDirectory = useCallback(
@@ -1818,24 +1739,69 @@ const Directory: React.FC<
           ? "Failed to load Farcaster channel users"
           : "Failed to import CSV";
       setError(`${prefix}: ${(err as Error).message || "Unknown error"}`);
-      setSuppressAutoRefresh(true);
     } finally {
       setIsRefreshing(false);
     }
   }, [isConfigured, settings.source, fetchTokenDirectory, fetchChannelDirectory, fetchCsvDirectory]);
 
+  // Fetch when fetch-relevant settings change - React dependencies detect changes automatically
+  // This effect ONLY runs when settings change, not when data updates
+  const hasMountedRef = useRef(false);
   useEffect(() => {
-    if (source === "csv") {
+    if (source === "csv" || !isConfigured || isRefreshing) {
       return;
     }
-    if (shouldRefresh && !isRefreshing && !suppressAutoRefresh) {
-      void fetchDirectory();
-    }
-  }, [source, fetchDirectory, isRefreshing, shouldRefresh, suppressAutoRefresh]);
 
-  // If fetch context changes, reset error and allow auto refresh
+    // On initial mount, only fetch if we don't have data yet
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      const hasData = data?.lastUpdatedTimestamp != null;
+      if (!hasData) {
+        void fetchDirectory();
+      }
+      return;
+    }
+
+    // After mount, any change to these dependencies means settings changed - fetch immediately
+    void fetchDirectory();
+  }, [
+    source,
+    network,
+    normalizedAddress,
+    assetType,
+    debouncedChannelName,
+    settings.channelFilter,
+    isConfigured,
+    isRefreshing,
+    fetchDirectory,
+    // Note: data?.lastUpdatedTimestamp NOT in deps - we don't want to fetch when data updates
+  ]);
+
+  // Separate effect for staleness check - only runs when timestamp changes
   useEffect(() => {
-    setSuppressAutoRefresh(false);
+    if (source === "csv" || !isConfigured || isRefreshing) {
+      return;
+    }
+
+    const lastUpdated = data?.lastUpdatedTimestamp
+      ? Date.parse(data.lastUpdatedTimestamp)
+      : 0;
+    if (lastUpdated > 0) {
+      const isStale = Date.now() - lastUpdated > STALE_AFTER_MS;
+      if (isStale) {
+        void fetchDirectory();
+      }
+    }
+  }, [
+    source,
+    isConfigured,
+    isRefreshing,
+    data?.lastUpdatedTimestamp,
+    fetchDirectory,
+  ]);
+
+  // Reset error when fetch-relevant settings change (user changed settings, clear old errors)
+  useEffect(() => {
     setError(null);
   }, [
     source,
@@ -1843,12 +1809,7 @@ const Directory: React.FC<
     normalizedAddress,
     assetType,
     channelName,
-    currentChannelFilter,
-    settings.csvUploadedAt,
-    settings.csvUpload,
-    settings.csvType,
-    settings.csvSortBy,
-    settings.refreshToken,
+    settings.channelFilter,
   ]);
 
   // Trigger fetch when CSV upload or manual refresh changes
@@ -1867,7 +1828,6 @@ const Directory: React.FC<
       return;
     }
     lastCsvTriggerRef.current = combined;
-    setSuppressAutoRefresh(false);
     setError(null);
     void fetchDirectory();
   }, [settings.source, settings.csvUpload, settings.csvUploadedAt, settings.refreshToken, fetchDirectory]);
@@ -1885,7 +1845,6 @@ const Directory: React.FC<
       return;
     }
     lastManualRefreshRef.current = key;
-    setSuppressAutoRefresh(false);
     setError(null);
     void fetchDirectory();
   }, [settings.refreshToken, settings.source, fetchDirectory]);
@@ -1893,10 +1852,10 @@ const Directory: React.FC<
   const filteredSortedMembers = useMemo(() => {
     if ((settings.source ?? "tokenHolders") !== "tokenHolders") {
       // Already sorted when fetched
-      return directoryData.members ?? [];
+      return data?.members ?? [];
     }
     // Optional client-side safety net: drop duplicate fids if any slip through
-    const base = directoryData.members ?? [];
+    const base = data?.members ?? [];
     const seenFids = new Set<number>();
     const deduped = base.filter((m) => {
       if (typeof m.fid === "number" && m.fid > 0) {
@@ -1911,7 +1870,7 @@ const Directory: React.FC<
       return members.filter((member) => Boolean(member.username));
     }
     return members;
-  }, [directoryData.members, includeFilter, currentSort, settings.source]);
+  }, [data?.members, includeFilter, currentSort, settings.source]);
 
   const pageCount = useMemo(() => {
     const total = filteredSortedMembers.length;
@@ -1941,17 +1900,17 @@ const Directory: React.FC<
         : "No Farcaster profiles found for this asset yet.";
 
   const lastUpdatedLabel = useMemo(() => {
-    if (!directoryData.lastUpdatedTimestamp) {
+    if (!data?.lastUpdatedTimestamp) {
       return null;
     }
 
-    const date = new Date(directoryData.lastUpdatedTimestamp);
+    const date = new Date(data.lastUpdatedTimestamp);
     if (Number.isNaN(date.getTime())) {
       return null;
     }
 
     return formatDistanceToNow(date, { addSuffix: true });
-  }, [directoryData.lastUpdatedTimestamp]);
+  }, [data?.lastUpdatedTimestamp]);
 
   if (!isConfigured) {
     return (
@@ -2061,7 +2020,7 @@ const Directory: React.FC<
       )}
 
       <div className="flex-1 overflow-y-auto px-4 pb-4">
-        {isRefreshing && !directoryData.members?.length ? (
+        {isRefreshing && !data?.members?.length ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             Loading directory…
           </div>
@@ -2145,7 +2104,7 @@ const Directory: React.FC<
                     {(settings.source ?? "tokenHolders") === "tokenHolders" && (
                       <span className="font-semibold" style={headingTextStyle}>
                         {formatTokenBalance(member.balanceFormatted)}
-                        {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
+                        {data?.tokenSymbol ? ` ${data.tokenSymbol}` : ""}
                       </span>
                     )}
                     {typeof member.followers === "number" && (
@@ -2216,7 +2175,7 @@ const Directory: React.FC<
                           <dt className="uppercase tracking-wide" style={headingFontFamilyStyle}>Holdings</dt>
                           <dd className="font-semibold" style={headingTextStyle}>
                             {formatTokenBalance(member.balanceFormatted)}
-                            {directoryData.tokenSymbol ? ` ${directoryData.tokenSymbol}` : ""}
+                            {data?.tokenSymbol ? ` ${data.tokenSymbol}` : ""}
                           </dd>
                         </div>
                       )}

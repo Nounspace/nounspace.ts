@@ -135,18 +135,27 @@ The `config.data` field in `FidgetConfig` is used to store runtime state and cac
 - Any data that needs to persist across sessions
 
 **Key Points:**
-- `config.data` is persisted to the database (unlike previous implementations)
+- `config.data` is persisted to the database and stored in the Zustand store
+- **Use `data` prop directly** - no local state needed (store is single source of truth)
 - Use `saveData` prop passed to fidgets to update data
-- Always provide defaults when reading from `data` prop
+- Always provide defaults when reading: `data?.field ?? defaultValue`
+- Store updates trigger automatic re-renders - no manual sync needed
 - Use change detection before persisting to avoid unnecessary writes
+
+**Data Flow:**
+```
+Zustand Store → data prop → Component reads directly
+Component calls saveData() → Store updates immediately → Component re-renders automatically
+Later: commitConfig() → Database (persistent storage)
+```
 
 **Best Practices:**
 See [Data Field Patterns](DATA_FIELD_PATTERNS.md) for comprehensive patterns and examples including:
-- Local state management
-- Data synchronization
+- Using data prop directly (no local state)
 - Change detection before persistence
-- Refresh detection with `lastFetchSettings`
+- Refresh detection with React dependencies
 - Staleness detection
+- Error handling
 - And more...
 
 ### 5. FidgetWrapper
