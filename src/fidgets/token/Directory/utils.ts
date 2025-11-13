@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { FONT_FAMILY_OPTIONS } from "@/common/lib/theme/fonts";
 import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
-import type { DirectoryMemberData, DirectorySortOption } from "../types";
+import type { DirectoryMemberData, DirectorySortOption } from "./types";
 
 /**
  * Formats a token balance string with locale-aware number formatting
