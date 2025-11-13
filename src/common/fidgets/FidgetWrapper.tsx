@@ -3,7 +3,7 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce, isEqual } from "lodash";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
@@ -168,12 +168,14 @@ export function FidgetWrapper({
     })();
   }, [shouldAttemptBackfill, derivedSettings, bundle.config, saveConfig]);
 
-  const saveData = (data: FidgetData) => {
-    return saveConfig({
-      ...bundle.config,
-      data,
-    });
-  };
+  const saveData = useCallback(
+    (data: FidgetData) =>
+      saveConfig({
+        ...bundle.config,
+        data,
+      }),
+    [bundle.config, saveConfig],
+  );
 
   const onSave = async (
     newSettings: FidgetSettings,

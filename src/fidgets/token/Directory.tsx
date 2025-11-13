@@ -1085,20 +1085,32 @@ const Directory: React.FC<
   const lastManualRefreshRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setDirectoryData((prev) => ({
-      members: data?.members ?? prev.members,
-      lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
-      tokenSymbol: data?.tokenSymbol ?? prev.tokenSymbol ?? null,
-      tokenDecimals: data?.tokenDecimals ?? prev.tokenDecimals ?? null,
-      lastFetchSettings: data?.lastFetchSettings ?? prev.lastFetchSettings,
-    }));
-  }, [
-    data?.members,
-    data?.lastUpdatedTimestamp,
-    data?.tokenSymbol,
-    data?.tokenDecimals,
-    data?.lastFetchSettings,
-  ]);
+    if (!data) {
+      return;
+    }
+
+    setDirectoryData((prev) => {
+      const next: DirectoryFidgetData = {
+        members: data.members ?? prev.members,
+        lastUpdatedTimestamp: data.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
+        tokenSymbol: data.tokenSymbol ?? prev.tokenSymbol ?? null,
+        tokenDecimals: data.tokenDecimals ?? prev.tokenDecimals ?? null,
+        lastFetchSettings: data.lastFetchSettings ?? prev.lastFetchSettings,
+      };
+
+      if (
+        isEqual(prev.members, next.members) &&
+        prev.lastUpdatedTimestamp === next.lastUpdatedTimestamp &&
+        prev.tokenSymbol === next.tokenSymbol &&
+        prev.tokenDecimals === next.tokenDecimals &&
+        isEqual(prev.lastFetchSettings, next.lastFetchSettings)
+      ) {
+        return prev;
+      }
+
+      return next;
+    });
+  }, [data]);
 
   useEffect(() => {
     return () => {
@@ -1154,23 +1166,16 @@ const Directory: React.FC<
     }
 
     // Extract relevant settings for comparison (only the ones that affect data fetching)
-    // Use settings.source ?? "tokenHolders" (equivalent to source) to prevent type narrowing
-    const sourceValue = settings.source ?? "tokenHolders";
     const currentFetchSettings: Partial<DirectoryFidgetSettings> = {
       source,
-      ...(sourceValue === "tokenHolders" && {
+      ...(source === "tokenHolders" && {
         network,
         contractAddress: normalizedAddress,
         assetType,
       }),
-      ...(sourceValue === "farcasterChannel" && {
+      ...(source === "farcasterChannel" && {
         channelName: debouncedChannelName,
         channelFilter: settings.channelFilter ?? "members",
-      }),
-      ...(sourceValue === "csv" && {
-        csvUpload: settings.csvUpload ?? settings.csvUploadedAt ?? "",
-        csvType: settings.csvType,
-        csvSortBy: settings.csvSortBy,
       }),
     };
 
@@ -1191,10 +1196,6 @@ const Directory: React.FC<
     assetType,
     debouncedChannelName,
     settings.channelFilter,
-    settings.csvUpload,
-    settings.csvUploadedAt,
-    settings.csvType,
-    settings.csvSortBy,
   ]);
 
   const persistDataIfChanged = useCallback(
