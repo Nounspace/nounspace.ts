@@ -144,10 +144,10 @@
     viem "^2.31.7"
     zustand "5.0.3"
 
-"@cloudflare/workers-types@^4.20251011.0":
-  version "4.20251011.0"
-  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-4.20251011.0.tgz#03a6e76c2aaacf3b3dbe40397354cb043824005a"
-  integrity sha512-gQpih+pbq3sP4uXltUeCSbPgZxTNp2gQd8639SaIbQMwgA6oJNHLhIART1fWy6DQACngiRzDVULA2x0ohmkGTQ==
+"@cloudflare/workers-types@^4.20251109.0":
+  version "4.20251109.0"
+  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-4.20251109.0.tgz#5ea99335b0531fd200509bb26064dbb1157f5657"
+  integrity sha512-/wMfoS6NmoY0GgKVoRUp4x0yiZM0eNXwXTTzM7gFJKcm+0NtZmzUzgXj6xpShkfWSrmug0mX7BbyaFMAMHFlPA==
 
 "@coinbase/cdp-sdk@^1.0.0":
   version "1.38.5"
