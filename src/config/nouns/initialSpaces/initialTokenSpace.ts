@@ -14,6 +14,7 @@ export const createInitialTokenSpaceConfigForAddress = (
   symbol: string,
   isClankerToken: boolean,
   network: EtherScanChainName = "base",
+  ownerAddress?: Address,
 ): Omit<SpaceConfig, "isEditable"> => {
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 
@@ -152,6 +153,7 @@ export const createInitialTokenSpaceConfigForAddress = (
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
           roomName: address,
+          roomOwnerAddress: ownerAddress ?? "",
         },
       },
       fidgetType: "Chat",
