@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { isEqual } from "lodash";
+import { shallow } from "zustand/shallow";
 
 import {
   type FidgetArgs,
@@ -57,6 +58,11 @@ import type {
   DirectoryFidgetData,
   DirectoryFidgetSettings,
 } from "./types";
+import {
+  buildDirectoryStoreKey,
+  buildInitialDirectoryData,
+  useDirectoryStore,
+} from "./store";
 
 // Re-export types for backward compatibility
 export type {
@@ -111,6 +117,48 @@ const Directory: React.FC<
   const normalizedAddress = normalizeAddressUtil(contractAddress || "");
   const channelName = (settings.channelName ?? "").trim();
   const [debouncedChannelName, setDebouncedChannelName] = useState(channelName);
+  const directoryStoreKey = useMemo(
+    () =>
+      buildDirectoryStoreKey({
+        source,
+        network,
+        contractAddress: normalizedAddress,
+        assetType,
+        channelName: debouncedChannelName,
+        channelFilter: (settings.channelFilter ?? "members") as DirectoryChannelFilterOption,
+        csvUpload: settings.csvUpload,
+        csvUploadedAt: settings.csvUploadedAt,
+        csvType: settings.csvType,
+        csvSortBy: settings.csvSortBy,
+        refreshToken: settings.refreshToken,
+      }),
+    [
+      source,
+      network,
+      normalizedAddress,
+      assetType,
+      debouncedChannelName,
+      settings.channelFilter,
+      settings.csvUpload,
+      settings.csvUploadedAt,
+      settings.csvType,
+      settings.csvSortBy,
+      settings.refreshToken,
+    ],
+  );
+  const initialDirectoryData = useMemo(
+    () => buildInitialDirectoryData(data),
+    [data],
+  );
+  const { entry: storedEntry, setEntry, hydrateEntry } = useDirectoryStore(
+    (state) => ({
+      entry: state.entries[directoryStoreKey],
+      setEntry: state.setEntry,
+      hydrateEntry: state.hydrateEntry,
+    }),
+    shallow,
+  );
+  const directoryData = storedEntry ?? initialDirectoryData;
   const csvUploadedAt = settings.csvUpload ?? settings.csvUploadedAt ?? "";
   const isConfigured =
     source === "tokenHolders"
@@ -159,13 +207,6 @@ const Directory: React.FC<
     [primaryFontFamily],
   );
 
-  const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>(() => ({
-    members: data?.members ?? [],
-    lastUpdatedTimestamp: data?.lastUpdatedTimestamp ?? null,
-    tokenSymbol: data?.tokenSymbol ?? null,
-    tokenDecimals: data?.tokenDecimals ?? null,
-    lastFetchSettings: data?.lastFetchSettings,
-  }));
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -174,32 +215,26 @@ const Directory: React.FC<
   const lastManualRefreshRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!data) {
+    hydrateEntry(directoryStoreKey, initialDirectoryData);
+    const current = useDirectoryStore.getState().entries[directoryStoreKey];
+    if (!current) {
       return;
     }
-
-    setDirectoryData((prev) => {
-      const next: DirectoryFidgetData = {
-        members: data.members ?? prev.members,
-        lastUpdatedTimestamp: data.lastUpdatedTimestamp ?? prev.lastUpdatedTimestamp ?? null,
-        tokenSymbol: data.tokenSymbol ?? prev.tokenSymbol ?? null,
-        tokenDecimals: data.tokenDecimals ?? prev.tokenDecimals ?? null,
-        lastFetchSettings: data.lastFetchSettings ?? prev.lastFetchSettings,
-      };
-
-      if (
-        isEqual(prev.members, next.members) &&
-        prev.lastUpdatedTimestamp === next.lastUpdatedTimestamp &&
-        prev.tokenSymbol === next.tokenSymbol &&
-        prev.tokenDecimals === next.tokenDecimals &&
-        isEqual(prev.lastFetchSettings, next.lastFetchSettings)
-      ) {
-        return prev;
-      }
-
-      return next;
-    });
-  }, [data]);
+    const incomingTimestamp = initialDirectoryData.lastUpdatedTimestamp
+      ? Date.parse(initialDirectoryData.lastUpdatedTimestamp)
+      : 0;
+    const currentTimestamp = current.lastUpdatedTimestamp
+      ? Date.parse(current.lastUpdatedTimestamp)
+      : 0;
+    if (incomingTimestamp > currentTimestamp) {
+      setEntry(directoryStoreKey, initialDirectoryData);
+    }
+  }, [
+    directoryStoreKey,
+    hydrateEntry,
+    initialDirectoryData,
+    setEntry,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -296,13 +331,13 @@ const Directory: React.FC<
         directoryData.tokenDecimals !== payload.tokenDecimals ||
         !isEqual(directoryData.lastFetchSettings, payload.lastFetchSettings);
 
-      setDirectoryData(payload);
+      setEntry(directoryStoreKey, payload);
 
       if (hasChanged) {
         await saveData(payload);
       }
     },
-    [directoryData, saveData],
+    [directoryData, directoryStoreKey, saveData, setEntry],
   );
 
   const fetchTokenDirectory = useCallback(
