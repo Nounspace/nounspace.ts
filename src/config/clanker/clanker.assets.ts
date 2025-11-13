@@ -1,6 +1,6 @@
 // Source images colocated with config, emitted by bundler
 import logo from './assets/logo.jpg';
-import icon from './assets/favicon.ico';
+import icon from './assets/icon.svg';
 import og from './assets/og.jpg';
 import applePng from './assets/apple.png';
 

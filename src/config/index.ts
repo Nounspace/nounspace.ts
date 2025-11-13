@@ -86,7 +86,7 @@ function resolveCommunity(): CommunityConfig {
 export const createInitialProfileSpaceConfigForFid = (fid: number, username?: string) => {
   switch (resolveCommunity()) {
     case 'clanker':
-      return clankerCreateInitialProfileSpaceConfigForFid(fid);
+      return clankerCreateInitialProfileSpaceConfigForFid(fid, username);
     case 'example':
       return exampleCreateInitialProfileSpaceConfigForFid(fid, username);
     case 'nouns':

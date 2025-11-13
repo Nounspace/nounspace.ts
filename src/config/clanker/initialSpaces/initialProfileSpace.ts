@@ -1,127 +1,83 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
+import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
 import { cloneDeep } from "lodash";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "../../initialSpaceConfig";
 
+// Set default tabNames for profile spaces
+const INITIAL_PROFILE_SPACE_CONFIG = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+INITIAL_PROFILE_SPACE_CONFIG.tabNames = ["Profile"];
+
 const createInitialProfileSpaceConfigForFid = (
-	fid: number,
+  fid: number,
+  username?: string,
 ): Omit<SpaceConfig, "isEditable"> => {
-	const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+  const config = cloneDeep(INITIAL_PROFILE_SPACE_CONFIG);
+  config.fidgetInstanceDatums = {
+    "feed:profile": {
+      config: {
+        editable: false,
+        settings: {
+          feedType: FeedType.Filter,
+          users: fid,
+          filterType: FilterType.Fids,
+        },
+        data: {},
+      },
+      fidgetType: "feed",
+      id: "feed:profile",
+    },
+    "Portfolio:cd627e89-d661-4255-8c4c-2242a950e93e": {
+      config: {
+        editable: false,
+        settings: {
+          trackType: "farcaster",
+          farcasterUsername: username ?? "",
+          walletAddresses: "",
+        },
+        data: {},
+      },
+      fidgetType: "Portfolio",
+      id: "Portfolio:cd627e89-d661-4255-8c4c-2242a950e93e",
+    },
+  };
+  const layoutItems = [
+    {
+      w: 6,
+      h: 8,
+      x: 0,
+      y: 0,
+      i: "feed:profile",
+      minW: 4,
+      maxW: 36,
+      minH: 6,
+      maxH: 36,
+      moved: false,
+      static: false,
+    },
+    {
+      w: 6,
+      h: 8,
+      x: 7,
+      y: 0,
+      i: "Portfolio:cd627e89-d661-4255-8c4c-2242a950e93e",
+      minW: 3,
+      maxW: 36,
+      minH: 3,
+      maxH: 36,
+      moved: false,
+      static: false,
+      }
+  ];
 
-	config.theme = {
-		id: "clanker-profile-theme",
-		name: "Clanker Profile Theme",
-		properties: {
-			font: "Inter, system-ui, sans-serif",
-			fontColor: "#ffffff",
-			headingsFont: "Inter, system-ui, sans-serif",
-			headingsFontColor: "#00d4ff",
-			background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-			backgroundHTML: "",
-			musicURL: "",
-			fidgetBackground: "#00d4ff",
-			fidgetBorderWidth: "1px",
-			fidgetBorderColor: "#00d4ff",
-			fidgetShadow: "0 4px 20px rgba(0, 212, 255, 0.2)",
-			fidgetBorderRadius: "12px",
-			gridSpacing: "16",
-		},
-	};
-
-	config.fidgetInstanceDatums = {
-		profile: {
-			id: "profile",
-			fidgetType: "profile",
-			config: {
-				data: { fid },
-				editable: true,
-				settings: {
-					showAvatar: true,
-					showUsername: true,
-					showStats: true,
-				},
-			},
-		},
-		portfolio: {
-			id: "portfolio",
-			fidgetType: "Portfolio",
-			config: {
-				data: {},
-				editable: true,
-				settings: {
-					showBalance: true,
-					showValue: true,
-					showChange: true,
-				},
-			},
-		},
-		feed: {
-			id: "feed",
-			fidgetType: "feed",
-			config: {
-				data: {},
-				editable: true,
-				settings: {
-					showUserCasts: true,
-					showTokenDiscussions: true,
-					maxCasts: 20,
-				},
-			},
-		},
-		"market-data": {
-			id: "market-data",
-			fidgetType: "Market",
-			config: {
-				data: {},
-				editable: true,
-				settings: {
-					showUserTokens: true,
-					showPriceChanges: true,
-				},
-			},
-		},
-		gallery: {
-			id: "gallery",
-			fidgetType: "gallery",
-			config: {
-				data: {},
-				editable: true,
-				settings: {
-					showUserImages: true,
-					showTokenImages: true,
-					maxImages: 15,
-				},
-			},
-		},
-		links: {
-			id: "links",
-			fidgetType: "links",
-			config: {
-				data: {},
-				editable: true,
-				settings: {
-					showUserLinks: true,
-					showTokenLinks: true,
-				},
-			},
-		},
-	};
-
-	const layoutItems = [
-		{ w: 6, h: 4, x: 0, y: 0, i: "profile" },
-		{ w: 6, h: 4, x: 6, y: 0, i: "portfolio" },
-		{ w: 8, h: 4, x: 0, y: 4, i: "feed" },
-		{ w: 4, h: 4, x: 8, y: 4, i: "market-data" },
-		{ w: 6, h: 3, x: 0, y: 8, i: "gallery" },
-		{ w: 6, h: 3, x: 6, y: 8, i: "links" },
-	];
-
-	const layoutConfig = getLayoutConfig(config.layoutDetails);
-	layoutConfig.layout = layoutItems;
-
-	config.tabNames = ["Profile"];
-
-	return config;
+  // Set the layout configuration
+  const layoutConfig = getLayoutConfig(config.layoutDetails);
+  layoutConfig.layout = layoutItems;
+  
+  // Set default tab names
+  config.tabNames = ["Profile"];
+  
+  return config;
 };
 
 export default createInitialProfileSpaceConfigForFid;
