@@ -68,6 +68,12 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
 }) => {
   const InputComponent = field.inputSelector;
   const isValid = !field.validator || field.validator(value);
+  const errorMessage =
+    !isValid && field.errorMessage
+      ? typeof field.errorMessage === "function"
+        ? field.errorMessage(value)
+        : field.errorMessage
+      : undefined;
 
   return (
     <div
@@ -97,7 +103,7 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
           </TooltipProvider>
         )}
       </div>
-      <div>
+      <div className="flex flex-col gap-1">
         <InputComponent
           id={id}
           value={value}
@@ -109,6 +115,11 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
             !isValid && "border-red-500"
           )}
         />
+        {errorMessage && (
+          <p className="text-xs text-red-500" role="alert">
+            {errorMessage}
+          </p>
+        )}
       </div>
     </div>
   );
