@@ -25,6 +25,7 @@ export const metadata = {
   APP_SUBTITLE: config.brand.tagline,
   APP_BUTTON_TITLE: 'Open Space',
   APP_DESCRIPTION: config.brand.description,
+  APP_TAGS: config.brand.miniAppTags,
   APP_SPLASH_IMAGE: `${WEBSITE_URL}${config.assets.logos.splash}`,
   SPLASH_BACKGROUND_COLOR: '#FFFFFF',
   APP_PRIMARY_CATEGORY: 'social',

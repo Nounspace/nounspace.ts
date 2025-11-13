@@ -25,6 +25,7 @@ import BuilderScore from "./farcaster/BuilderScore";
 import MobileStack from "./layout/tabFullScreen";
 import FramesFidget from "./framesV2/components/FramesFidget";
 import NounsHome from "./nouns-home";
+import Luma from "./ui/luma";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -52,6 +53,7 @@ export const CompleteFidgets = {
   SnapShot: snapShot,
   Swap: Swap,
   Rss: rss,
+  Luma: Luma,
   Video: VideoFidget,
   Market: marketData,
   Portfolio: Portfolio,

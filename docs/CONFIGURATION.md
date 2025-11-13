@@ -15,6 +15,7 @@ NEXT_PUBLIC_COMMUNITY=nouns
 This determines which community configuration to load. Available options:
 - `nouns` (default) - Uses the Nouns community configuration
 - `example` - Uses the example community configuration template
+- `clanker` - Uses the Clanker community configuration
 
 ### Required Environment Variables
 
@@ -73,6 +74,15 @@ src/config/
 │   ├── example.home.ts       # Home page configuration template
 │   ├── example.initialSpaces.ts # Initial space templates
 │   └── index.ts              # Configuration export
+├── clanker/                  # Clanker community configuration
+│   ├── clanker.brand.ts      # Brand identity
+│   ├── clanker.assets.ts     # Visual assets
+│   ├── clanker.theme.ts      # Theme definitions
+│   ├── clanker.community.ts  # Community integration
+│   ├── clanker.fidgets.ts    # Fidget management
+│   ├── clanker.home.ts       # Home page configuration
+│   ├── initialSpaces/        # Initial space templates
+│   └── index.ts              # Configuration export
 ├── systemConfig.ts           # System configuration interface
 ├── initialSpaceConfig.ts     # Base space configuration
 └── index.ts                  # Main configuration loader
@@ -100,6 +110,11 @@ NEXT_PUBLIC_COMMUNITY=nouns npm run build
 NEXT_PUBLIC_COMMUNITY=example npm run build
 ```
 
+**For Clanker community:**
+```bash
+NEXT_PUBLIC_COMMUNITY=clanker npm run build
+```
+
 ### Development
 
 **For Nouns development:**
@@ -116,12 +131,12 @@ NEXT_PUBLIC_COMMUNITY=example npm run dev
 
 ### What Gets Configured
 
-When you set `NEXT_PUBLIC_COMMUNITY=example`, the system will:
+When you set `NEXT_PUBLIC_COMMUNITY=example` (or `clanker`), the system will:
 
-1. **Load example system config** (brand, assets, theme, community settings)
-2. **Use example fidget configurations**
-3. **Use example home page configuration**
-4. **Use example initial space templates** (profile, channel, token, proposal, homebase)
+1. **Load that community's system config** (brand, assets, theme, community settings)
+2. **Use that community's fidget configurations**
+3. **Use that community's home page configuration**
+4. **Use that community's initial space templates** (profile, channel, token, proposal, homebase)
 
 ## Adding New Community Configurations
 
@@ -131,7 +146,7 @@ To add a new community configuration:
 2. Copy the structure from `src/config/example/` as a template
 3. Update all configuration files with your community's specific values
 4. Add the new configuration to the `AVAILABLE_CONFIGURATIONS` array in `src/config/index.ts`
-5. Add a new case to the switch statement in `loadSystemConfig()`
+5. Add a new case to the switch statement in `loadSystemConfig()` and the runtime delegates for space creators
 6. Update this documentation
 
 ## Development vs Production
