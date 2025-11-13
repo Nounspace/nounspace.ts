@@ -58,6 +58,19 @@ type _AlchemyNftOwnersResponse = {
   } | null;
 };
 
+type RawAlchemyOwnerRecord = AlchemyNftOwner & {
+  address?: string | null;
+  balance?: string | null;
+  tokenBalance?: string | null;
+  tokenCount?: string | null;
+  ownershipTokens?: Array<{
+    tokenId?: string | null;
+    balance?: string | null;
+    tokenBalance?: string | null;
+    tokenCount?: string | null;
+  }> | null;
+};
+
 type NeynarBulkUsersResponse = Awaited<
   ReturnType<typeof neynar.fetchBulkUsersByEthOrSolAddress>
 >;
@@ -124,6 +137,85 @@ function getEnsLookupConfig() {
   }
 
   return ensLookupConfig;
+}
+
+function ensureAlchemyApiKey(): string {
+  const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+  if (!apiKey) {
+    throw new Error("NEXT_PUBLIC_ALCHEMY_API_KEY is not configured");
+  }
+  return apiKey;
+}
+
+function getAlchemyNetwork(network: DirectoryNetwork): "eth" | "base" | null {
+  switch (network) {
+    case "mainnet":
+      return "eth";
+    case "base":
+      return "base";
+    default:
+      return null;
+  }
+}
+
+function normalizeAlchemyOwnerRecord(
+  record: RawAlchemyOwnerRecord | null | undefined,
+): AlchemyNftOwner | null {
+  if (!record) {
+    return null;
+  }
+
+  const ownerAddress =
+    typeof record.ownerAddress === "string" && record.ownerAddress
+      ? record.ownerAddress
+      : typeof record.address === "string" && record.address
+        ? record.address
+        : null;
+  if (!ownerAddress) {
+    return null;
+  }
+
+  const tokenBalanceSource =
+    Array.isArray(record.tokenBalances) && record.tokenBalances.length > 0
+      ? record.tokenBalances
+      : Array.isArray(record.ownershipTokens) && record.ownershipTokens.length > 0
+        ? record.ownershipTokens
+        : null;
+
+  const normalizedBalances =
+    tokenBalanceSource && tokenBalanceSource.length > 0
+      ? tokenBalanceSource.map((tokenBalance: Record<string, any> | null) => {
+          if (!tokenBalance) {
+            return { balance: "1" };
+          }
+          const balanceValue =
+            (tokenBalance as { balance?: string | null }).balance ??
+            (tokenBalance as { tokenBalance?: string | null }).tokenBalance ??
+            (tokenBalance as { tokenCount?: string | null }).tokenCount ??
+            "1";
+          const tokenId =
+            (tokenBalance as { tokenId?: string | null }).tokenId ??
+            (tokenBalance as { token_id?: string | null }).token_id ??
+            null;
+          return {
+            tokenId,
+            balance: balanceValue ?? "1",
+          };
+        })
+      : [
+          {
+            balance:
+              record.balance ??
+              record.tokenBalance ??
+              record.tokenCount ??
+              "1",
+          },
+        ];
+
+  return {
+    ownerAddress,
+    tokenBalances: normalizedBalances,
+  };
 }
 
 const defaultDependencies: DirectoryDependencies = {
@@ -305,6 +397,87 @@ function ensureMoralisApiKey(): string {
     throw new Error("MORALIS_API_KEY is not configured");
   }
   return apiKey;
+}
+
+async function fetchAlchemyNftOwners(
+  params: DirectoryQuery,
+  deps: DirectoryDependencies,
+): Promise<{
+  holders: AlchemyNftOwner[];
+  tokenDecimals: number | null;
+  tokenSymbol: string | null;
+  updatedAt: string;
+}> {
+  const apiKey = ensureAlchemyApiKey();
+  const alchemyNetwork = getAlchemyNetwork(params.network);
+  if (!alchemyNetwork) {
+    throw new Error(`Alchemy NFT owners are not supported on ${params.network}`);
+  }
+
+  const baseEndpoint = `${ALCHEMY_API(alchemyNetwork)}nft/v3/${apiKey}/getOwnersForCollection`;
+  const holders: AlchemyNftOwner[] = [];
+  const updatedAt: string = new Date().toISOString();
+  let tokenSymbol: string | null = null;
+  let pageKey: string | undefined;
+
+  while (holders.length < params.pageSize) {
+    const url = new URL(baseEndpoint);
+    url.searchParams.set("contractAddress", params.contractAddress);
+    url.searchParams.set("withTokenBalances", "true");
+    const remaining = params.pageSize - holders.length;
+    if (remaining > 0) {
+      url.searchParams.set("pageSize", String(Math.min(remaining, 100)));
+    }
+    if (pageKey) {
+      url.searchParams.set("pageKey", pageKey);
+    }
+
+    const response = await deps.fetchFn(url.toString(), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(
+        `Failed to fetch NFT owners from Alchemy (status ${response.status}): ${message}`,
+      );
+    }
+
+    const payload = (await response.json()) as _AlchemyNftOwnersResponse;
+    if (tokenSymbol === null) {
+      tokenSymbol = payload.contractMetadata?.symbol ?? null;
+    }
+    const records = Array.isArray(payload.owners)
+      ? payload.owners
+      : Array.isArray(payload.ownerAddresses)
+        ? payload.ownerAddresses
+        : [];
+
+    for (const record of records as RawAlchemyOwnerRecord[]) {
+      const normalized = normalizeAlchemyOwnerRecord(record);
+      if (!normalized) continue;
+      holders.push(normalized);
+      if (holders.length >= params.pageSize) {
+        break;
+      }
+    }
+
+    pageKey = payload.pageKey ?? undefined;
+    if (!pageKey) {
+      break;
+    }
+  }
+
+  return {
+    holders: holders.slice(0, params.pageSize),
+    tokenDecimals: 0,
+    tokenSymbol,
+    updatedAt,
+  };
 }
 
 async function fetchMoralisTokenHolders(
@@ -667,10 +840,29 @@ export async function fetchDirectoryData(
   deps: DirectoryDependencies = defaultDependencies,
 ): Promise<DirectoryApiResponse> {
   const normalizedAddress = normalizeAddress(params.contractAddress);
-  const { holders, tokenDecimals, tokenSymbol, updatedAt } =
-    params.assetType === "nft"
-      ? await fetchMoralisNftOwners(params, deps)
-      : await fetchMoralisTokenHolders(params, deps);
+  let holdersResult:
+    | Awaited<ReturnType<typeof fetchMoralisNftOwners>>
+    | Awaited<ReturnType<typeof fetchMoralisTokenHolders>>
+    | Awaited<ReturnType<typeof fetchAlchemyNftOwners>>;
+  if (params.assetType === "nft") {
+    if (params.network === "base") {
+      try {
+        holdersResult = await fetchAlchemyNftOwners(params, deps);
+      } catch (error) {
+        console.error(
+          "Failed to fetch Base NFT owners from Alchemy, falling back to Moralis",
+          error,
+        );
+        holdersResult = await fetchMoralisNftOwners(params, deps);
+      }
+    } else {
+      holdersResult = await fetchMoralisNftOwners(params, deps);
+    }
+  } else {
+    holdersResult = await fetchMoralisTokenHolders(params, deps);
+  }
+
+  const { holders, tokenDecimals, tokenSymbol, updatedAt } = holdersResult;
 
   const addresses = holders
     .map((holder) => {

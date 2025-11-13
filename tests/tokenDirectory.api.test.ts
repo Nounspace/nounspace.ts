@@ -116,11 +116,6 @@ describe("token directory API", () => {
       ensName: null,
       ensAvatarUrl: null,
     });
-    expect(result.fetchContext).toEqual({
-      network: "base",
-      contractAddress: "0x000000000000000000000000000000000000abcd",
-      assetType: "token",
-    });
     expect(mockedFetchTokenData).not.toHaveBeenCalled();
     expect(getEnsNameMock).toHaveBeenCalledWith(
       "0x000000000000000000000000000000000000abcd",
@@ -261,10 +256,106 @@ describe("token directory API", () => {
     );
     expect(getEnsAvatarMock).toHaveBeenCalledTimes(1);
     expect(getEnsAvatarMock).toHaveBeenCalledWith("example.eth");
-    expect(result.fetchContext).toEqual({
-      network: "mainnet",
-      contractAddress: "0x000000000000000000000000000000000000aaaa",
-      assetType: "nft",
+  });
+
+  it("uses Alchemy for Base NFT owner lookups", async () => {
+    const fetchMock = vi.fn(async (input: any) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("alchemy.com") && url.includes("getOwnersForCollection")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            owners: [
+              {
+                address: "0x0000000000000000000000000000000000001111",
+                tokenBalances: [{ balance: "5" }],
+              },
+              {
+                address: "0x0000000000000000000000000000000000002222",
+                tokenBalances: [{ balance: "1" }],
+              },
+            ],
+            contractMetadata: {
+              symbol: "BASENFT",
+            },
+          }),
+        } as any;
+      }
+      if (url.startsWith("https://enstate.rs")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            response: [
+              {
+                address: "0x0000000000000000000000000000000000001111",
+                name: "basefan.eth",
+              },
+              {
+                address: "0x0000000000000000000000000000000000002222",
+              },
+            ],
+          }),
+        } as any;
+      }
+      throw new Error(`Unexpected fetch call: ${url}`);
+    });
+
+    const neynarMock = {
+      fetchBulkUsersByEthOrSolAddress: vi.fn().mockResolvedValue({}),
+    };
+
+    const getEnsNameMock = vi
+      .fn()
+      .mockResolvedValueOnce("basefan.eth")
+      .mockResolvedValueOnce(null);
+    const getEnsAvatarMock = vi.fn().mockResolvedValue(null);
+
+    const result = await fetchDirectoryData(
+      {
+        network: "base",
+        contractAddress: "0x0000000000000000000000000000000000009999",
+        pageSize: 2,
+        assetType: "nft",
+      },
+      {
+        fetchFn: fetchMock,
+        neynarClient: neynarMock as any,
+        getEnsNameFn: getEnsNameMock,
+        getEnsAvatarFn: getEnsAvatarMock,
+      },
+    );
+
+    const alchemyCalls = fetchMock.mock.calls.filter(([url]) =>
+      (typeof url === "string" ? url : url.toString()).includes("alchemy.com"),
+    );
+    expect(alchemyCalls).toHaveLength(1);
+    const moralisCalls = fetchMock.mock.calls.filter(([url]) =>
+      (typeof url === "string" ? url : url.toString()).includes(
+        "deep-index.moralis.io",
+      ),
+    );
+    expect(moralisCalls).toHaveLength(0);
+    expect(result.tokenSymbol).toBe("BASENFT");
+    expect(result.tokenDecimals).toBe(0);
+    expect(result.members).toHaveLength(2);
+    expect(result.members[0]).toMatchObject({
+      address: "0x0000000000000000000000000000000000001111",
+      balanceRaw: "5",
+      balanceFormatted: "5",
+      ensName: "basefan.eth",
+    });
+    expect(result.members[1]).toMatchObject({
+      address: "0x0000000000000000000000000000000000002222",
+      balanceRaw: "1",
+      balanceFormatted: "1",
+    });
+    expect(neynarMock.fetchBulkUsersByEthOrSolAddress).toHaveBeenCalledWith({
+      addresses: [
+        "0x0000000000000000000000000000000000001111",
+        "0x0000000000000000000000000000000000002222",
+      ],
     });
   });
 });
