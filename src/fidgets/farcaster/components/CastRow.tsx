@@ -128,10 +128,23 @@ const extractUrlsFromText = (text: string): string[] => {
   return text.match(urlRegex) || [];
 };
 
+
+// Helper to remove URLs from the text that are already embeddings (e.g., Spotify)
+const filterTextUrls = (textUrls: string[], embedUrls: any[]): string[] => {
+  return textUrls.filter((url) => {
+    // If it's already in embedUrls, don't show it
+    if (embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url)) return false;
+    // If it's Spotify, don't show it
+    if (url.includes("open.spotify.com/track")) return false;
+    return true;
+  });
+};
+
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
   // Get URLs from embeds and also extract any URLs from the cast text
   const embedUrls = "embeds" in cast && cast.embeds ? cast.embeds : [];
-  const textUrls = extractUrlsFromText(cast.text || "");
+  const textUrlsRaw = extractUrlsFromText(cast.text || "");
+  const textUrls = filterTextUrls(textUrlsRaw, embedUrls);
 
   // If no embeds from API and no URLs in text, return null
   if (!embedUrls.length && !textUrls.length) {
@@ -178,16 +191,8 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
           </div>
         );
       })}
-
-      {/* Render URLs found in text that aren't already in embeds */}
+      {/* Render URLs found in text that are not embeddings or Spotify */}
       {textUrls.map((url, i) => {
-        // Skip if this URL is already in the embeds
-        const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
-
-        if (isAlreadyEmbedded) {
-          return null;
-        }
-
         const embedData: CastEmbed = {
           url: url,
           key: url,
@@ -613,7 +618,20 @@ const EnhancedLinkify: React.FC<{ children: string; style?: React.CSSProperties 
       .filter(Boolean);
   };
 
-  return <span style={style}>{linkifyText(children)}</span>;
+  // Remove links from Spotify in the rendered text
+  const filtered = linkifyText(children).filter((part) => {
+    if (typeof part === "string" && part.includes("open.spotify.com/track")) return false;
+    if (
+      React.isValidElement(part) &&
+      part.props &&
+      typeof (part.props as { href?: unknown }).href === "string" &&
+      ((part.props as { href?: string }).href?.includes("open.spotify.com/track"))
+    ) {
+      return false;
+    }
+    return true;
+  });
+  return <span style={style}>{filtered}</span>;
 };
 
 const CastBodyComponent = ({
