@@ -48,4 +48,5 @@ export const exampleCommunity = {
     space: '0x1234567890123456789012345678901234567890' as Address,
     nogs: '0x1234567890123456789012345678901234567890' as Address,
   },
+  adminFid: 230941,
 } satisfies CommunityConfig;

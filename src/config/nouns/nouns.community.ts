@@ -48,4 +48,5 @@ export const nounsCommunity = {
     space: '0x1234567890123456789012345678901234567890' as Address, // Placeholder
     nogs: '0x1234567890123456789012345678901234567890' as Address, // Placeholder
   },
+  adminFid: 230941,
 } satisfies CommunityConfig;

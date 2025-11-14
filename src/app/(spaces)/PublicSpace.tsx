@@ -372,7 +372,7 @@ export default function PublicSpace({
       tabList={
         currentSpaceId && localSpaces[currentSpaceId]?.order
           ? localSpaces[currentSpaceId].order
-          : [spacePageData.defaultTab]
+          : spacePageData.tabOrder ?? [spacePageData.defaultTab]
       }
       defaultTab={spacePageData.defaultTab}
       contractAddress={isTokenSpace(spacePageData) ? spacePageData.contractAddress as Address : undefined}

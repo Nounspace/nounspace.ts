@@ -44,5 +44,6 @@ export const clankerCommunity = {
     nouns: "0x0000000000000000000000000000000000000000" as Address,
     auctionHouse: "0x0000000000000000000000000000000000000000" as Address,
     nogs: "0x0000000000000000000000000000000000000000" as Address,
-  }
+  },
+  adminFid: 230941,
 } satisfies CommunityConfig;

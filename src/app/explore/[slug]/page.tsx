@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { loadSystemConfig } from "@/config";
 import ExploreTabPage from "../ExploreTabPage";
+import { loadExploreSpacePageData } from "../loadExploreSpacePageData";
 
 export async function generateStaticParams() {
   const config = loadSystemConfig();
@@ -23,5 +24,12 @@ export default async function ExploreEntry({
     notFound();
   }
 
-  return <ExploreTabPage tabName={tabName} explorePage={config.explorePage} />;
+  const spacePageData = await loadExploreSpacePageData({
+    explorePage: config.explorePage,
+    tabName,
+    adminFid: config.community.adminFid,
+    spaceDisplayName: `${config.brand.displayName ?? config.brand.name} Explore`,
+  });
+
+  return <ExploreTabPage tabName={tabName} spacePageData={spacePageData} />;
 }

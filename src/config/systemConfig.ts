@@ -116,6 +116,7 @@ export interface CommunityConfig {
   };
   tokens: CommunityTokensConfig;
   contracts: CommunityContractsConfig;
+  adminFid?: number;
 }
 
 export interface FidgetConfig {

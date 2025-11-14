@@ -24,6 +24,7 @@ export interface SpacePageData {
   defaultTab: string;
   currentTab: string;
   spaceOwnerFid: number | undefined;
+  tabOrder?: string[];
   
   // URL generation function for this space
   spacePageUrl: (tabName: string) => string;
@@ -96,4 +97,3 @@ export function isProposalSpace(space: SpacePageData): space is ProposalSpacePag
 export function isChannelSpace(space: SpacePageData): space is ChannelSpacePageData {
   return space.spaceType === SPACE_TYPES.CHANNEL;
 }
-
