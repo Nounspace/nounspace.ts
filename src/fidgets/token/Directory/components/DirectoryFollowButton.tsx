@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/common/components/atoms/button";
-import type { DirectoryMemberData } from "../types";
+import { useAppStore } from "@/common/data/stores/app";
 import { followUser, unfollowUser } from "@/fidgets/farcaster/utils";
+import type { DirectoryMemberData } from "../types";
 
 export type DirectoryFollowButtonProps = {
   member: DirectoryMemberData;
@@ -16,16 +17,18 @@ export const DirectoryFollowButton: React.FC<DirectoryFollowButtonProps> = ({
   signer,
   className,
 }) => {
-  const canFollow = useMemo(() => {
-    return (
-      Boolean(signer) &&
-      typeof viewerFid === "number" &&
-      viewerFid > 0 &&
-      typeof member.fid === "number" &&
-      member.fid > 0 &&
-      member.fid !== viewerFid
-    );
-  }, [member.fid, signer, viewerFid]);
+  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+    getIsAccountReady: state.getIsAccountReady,
+  }));
+
+  const memberFid = useMemo(() => {
+    return typeof member.fid === "number" && member.fid > 0 ? member.fid : null;
+  }, [member.fid]);
+
+  const canShowFollowButton = useMemo(() => {
+    return memberFid !== null && memberFid !== viewerFid;
+  }, [memberFid, viewerFid]);
 
   const initialFollowing = member.viewerContext?.following ?? false;
   const [isFollowing, setIsFollowing] = useState<boolean>(initialFollowing);
@@ -36,7 +39,7 @@ export const DirectoryFollowButton: React.FC<DirectoryFollowButtonProps> = ({
     setIsFollowing(initialFollowing);
   }, [initialFollowing, member.fid]);
 
-  if (!canFollow) {
+  if (!canShowFollowButton) {
     return null;
   }
 
@@ -44,11 +47,16 @@ export const DirectoryFollowButton: React.FC<DirectoryFollowButtonProps> = ({
     event.preventDefault();
     event.stopPropagation();
 
-    if (!signer || typeof member.fid !== "number" || member.fid <= 0) {
+    if (!getIsAccountReady()) {
+      setModalOpen(true);
       return;
     }
 
-    const targetFid = member.fid;
+    if (!signer || memberFid === null || viewerFid <= 0) {
+      return;
+    }
+
+    const targetFid = memberFid;
     const nextFollowing = !isFollowing;
 
     setStatus("loading");
