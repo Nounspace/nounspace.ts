@@ -88,6 +88,13 @@ export interface ThemeProperties {
 }
 
 
+export type CommunityContractsConfig = {
+  nouns: Address;
+  auctionHouse: Address;
+  space: Address;
+  nogs: Address;
+} & Record<string, Address>;
+
 export interface CommunityConfig {
   type: string;
   urls: {
@@ -108,12 +115,7 @@ export interface CommunityConfig {
     treasury: string;
   };
   tokens: CommunityTokensConfig;
-  contracts: {
-    nouns: Address;
-    auctionHouse: Address;
-    space: Address;
-    nogs: Address;
-  };
+  contracts: CommunityContractsConfig;
 }
 
 export interface FidgetConfig {
