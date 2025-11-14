@@ -14,7 +14,6 @@ import {
 } from "@/common/fidgets";
 import {
   buildEtherscanUrl,
-  getBlockExplorerLink,
   normalizeAddress as normalizeAddressUtil,
   parseSocialRecord,
 } from "@/common/data/api/token/utils";
@@ -28,7 +27,6 @@ import {
 } from "./components";
 import {
   resolveFontFamily,
-  getLastActivityLabel,
   sortMembers,
   sanitizeSortOption,
   parseCsv,
@@ -75,6 +73,7 @@ export type {
 };
 
 import { directoryProperties } from "./properties";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
 
 const Directory: React.FC<
   FidgetArgs<DirectoryFidgetSettings, DirectoryFidgetData>
@@ -158,6 +157,8 @@ const Directory: React.FC<
       }) as React.CSSProperties,
     [primaryFontFamily],
   );
+
+  const { fid: viewerFid, signer } = useFarcasterSigner("Directory");
 
   const [directoryData, setDirectoryData] = useState<DirectoryFidgetData>(() => ({
     members: data?.members ?? [],
@@ -287,10 +288,20 @@ const Directory: React.FC<
     settings.channelFilter,
   ]);
 
+  const stripViewerContext = useCallback(
+    (members: DirectoryMemberData[] | undefined): DirectoryMemberData[] =>
+      ((members ?? []).map(({ viewerContext: _viewerContext, ...rest }) => ({
+        ...rest,
+      })) as DirectoryMemberData[]),
+    [],
+  );
+
   const persistDataIfChanged = useCallback(
     async (payload: DirectoryFidgetData) => {
+      const nextMembersStripped = stripViewerContext(payload.members);
+      const currentMembersStripped = stripViewerContext(directoryData.members);
       const hasChanged =
-        !isEqual(directoryData.members, payload.members) ||
+        !isEqual(currentMembersStripped, nextMembersStripped) ||
         directoryData.lastUpdatedTimestamp !== payload.lastUpdatedTimestamp ||
         directoryData.tokenSymbol !== payload.tokenSymbol ||
         directoryData.tokenDecimals !== payload.tokenDecimals ||
@@ -299,16 +310,20 @@ const Directory: React.FC<
       setDirectoryData(payload);
 
       if (hasChanged) {
-        await saveData(payload);
+        await saveData({
+          ...payload,
+          members: nextMembersStripped,
+        });
       }
     },
-    [directoryData, saveData],
+    [directoryData, saveData, stripViewerContext],
   );
 
   const fetchTokenDirectory = useCallback(
     async (controller: AbortController) => {
+      const viewerParam = viewerFid > 0 ? `&viewerFid=${viewerFid}` : "";
       const response = await fetch(
-        `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}&assetType=${assetType}&pageSize=1000`,
+        `/api/token/directory?network=${network}&contractAddress=${normalizedAddress}&assetType=${assetType}&pageSize=1000${viewerParam}`,
         { signal: controller.signal },
       );
 
@@ -346,16 +361,17 @@ const Directory: React.FC<
         },
       });
     },
-    [assetType, network, normalizedAddress, persistDataIfChanged, settings.sortBy],
+    [assetType, network, normalizedAddress, persistDataIfChanged, settings.sortBy, viewerFid],
   );
 
   const fetchChannelDirectory = useCallback(
     async (controller: AbortController) => {
       const fetchMembers = async () => {
+        const viewerQuery = viewerFid > 0 ? `&viewer_fid=${viewerFid}` : "";
         const res = await fetch(
           `/api/farcaster/neynar/channel/members?id=${encodeURIComponent(
             (settings.channelName ?? "").trim(),
-          )}&limit=100`,
+          )}&limit=100${viewerQuery}`,
           { signal: controller.signal },
         );
         if (!res.ok) throw new Error(await res.text());
@@ -367,10 +383,11 @@ const Directory: React.FC<
       };
 
       const fetchFollowers = async () => {
+        const viewerQuery = viewerFid > 0 ? `&viewer_fid=${viewerFid}` : "";
         const res = await fetch(
           `/api/farcaster/neynar/channel/followers?id=${encodeURIComponent(
             (settings.channelName ?? "").trim(),
-          )}&limit=1000`,
+          )}&limit=1000${viewerQuery}`,
           { signal: controller.signal },
         );
         if (!res.ok) throw new Error(await res.text());
@@ -414,7 +431,7 @@ const Directory: React.FC<
         },
       });
     },
-    [persistDataIfChanged, settings.channelName, settings.channelFilter],
+    [persistDataIfChanged, settings.channelName, settings.channelFilter, viewerFid],
   );
 
 
@@ -474,6 +491,9 @@ const Directory: React.FC<
 
           const query = new URLSearchParams();
           query.set("fids", fids.join(","));
+          if (viewerFid > 0) {
+            query.set("viewer_fid", String(viewerFid));
+          }
           const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
             signal: controller.signal,
           });
@@ -502,6 +522,9 @@ const Directory: React.FC<
           console.log("[Directory] CSV fids batch", chunk.length);
           const query = new URLSearchParams();
           query.set("fids", chunk.join(","));
+          if (viewerFid > 0) {
+            query.set("viewer_fid", String(viewerFid));
+          }
           const res = await fetch(`/api/farcaster/neynar/users?${query.toString()}`, {
             signal: controller.signal,
           });
@@ -524,6 +547,9 @@ const Directory: React.FC<
           try {
             const params = new URLSearchParams();
             ch.forEach((a) => params.append("addresses[]", a));
+            if (viewerFid > 0) {
+              params.set("viewer_fid", String(viewerFid));
+            }
             console.log("[Directory] CSV address batch (Farcaster)", ch.length);
             const resp = await fetch(`/api/farcaster/neynar/bulk-address?${params.toString()}`,
               { signal: controller.signal });
@@ -664,6 +690,7 @@ const Directory: React.FC<
       settings.csvUploadedAt,
       settings.csvType,
       settings.csvSortBy,
+      viewerFid,
     ],
   );
 
@@ -879,6 +906,8 @@ const Directory: React.FC<
             headingTextStyle={headingTextStyle}
             network={network}
             includeFilter={includeFilter}
+            viewerFid={viewerFid}
+            signer={signer}
           />
         ) : (
           <DirectoryCardView
@@ -889,6 +918,8 @@ const Directory: React.FC<
             headingFontFamilyStyle={headingFontFamilyStyle}
             network={network}
             includeFilter={includeFilter}
+            viewerFid={viewerFid}
+            signer={signer}
           />
         )}
         {/* Bottom pagination */}
