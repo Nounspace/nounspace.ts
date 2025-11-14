@@ -10,6 +10,7 @@ export interface SystemConfig {
   community: CommunityConfig;
   fidgets: FidgetConfig;
   homePage: HomePageConfig;
+  explorePage: ExplorePageConfig;
   navigation?: NavigationConfig;
 }
 
@@ -127,6 +128,8 @@ export interface HomePageConfig {
     };
   };
 }
+
+export type ExplorePageConfig = HomePageConfig;
 
 export interface NavigationConfig {
   items: NavigationItem[];

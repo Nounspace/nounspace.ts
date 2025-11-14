@@ -27,7 +27,7 @@ export const clankerCommunity = {
     },
     clankerToken: {
       address: "0x0000000000000000000000000000000000000000", // Placeholder - would need actual token address
-      symbol: "CLANKER",
+      symbol: "$CLANKER",
       decimals: 18
     }
   },
