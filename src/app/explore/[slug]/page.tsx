@@ -13,10 +13,11 @@ export async function generateStaticParams() {
 export default async function ExploreEntry({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   const config = loadSystemConfig();
-  const tabName = decodeURIComponent(params.slug);
+  const { slug } = await params;
+  const tabName = decodeURIComponent(slug);
 
   if (!config.explorePage.tabs[tabName]) {
     notFound();
