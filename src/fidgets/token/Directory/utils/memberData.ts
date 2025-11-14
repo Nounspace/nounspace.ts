@@ -22,7 +22,7 @@ export type NeynarUser = {
   } | null;
 };
 
-function extractViewerContext(
+export function extractViewerContext(
   user: NeynarUser | undefined,
 ): DirectoryMemberViewerContext | null {
   if (!user || typeof user !== "object") {

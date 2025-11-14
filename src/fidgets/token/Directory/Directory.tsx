@@ -34,6 +34,7 @@ import {
   getNestedUser,
   mapNeynarUserToMember,
   createDefaultMemberForCsv,
+  extractViewerContext,
   type NeynarUser,
 } from "./utils";
 import {
@@ -52,6 +53,7 @@ import type {
   CsvTypeOption,
   CsvSortOption,
   DirectoryMemberData,
+  DirectoryMemberViewerContext,
   DirectoryFidgetData,
   DirectoryFidgetSettings,
 } from "./types";
@@ -280,6 +282,117 @@ const Directory: React.FC<
       (member) => typeof member.fid === "number" && member.fid > 0 && member.viewerContext != null,
     );
   }, [directoryData.members, hasFarcasterMembers]);
+
+  useEffect(() => {
+    if (viewerFid <= 0) {
+      return;
+    }
+
+    const members = directoryData.members ?? [];
+    const pendingFids = members
+      .filter(
+        (member): member is DirectoryMemberData & { fid: number } =>
+          typeof member.fid === "number" &&
+          member.fid > 0 &&
+          (member.viewerContext == null || typeof member.viewerContext.following === "undefined"),
+      )
+      .map((member) => member.fid);
+
+    if (pendingFids.length === 0) {
+      return;
+    }
+
+    const uniqueFids = Array.from(new Set(pendingFids));
+    const controller = new AbortController();
+    let cancelled = false;
+
+    const hydrateViewerContext = async () => {
+      try {
+        const updates = new Map<number, DirectoryMemberViewerContext | null>();
+        const batches = chunkArray(uniqueFids, 100);
+        for (const batch of batches) {
+          if (batch.length === 0) {
+            continue;
+          }
+
+          const params = new URLSearchParams();
+          params.set("fids", batch.join(","));
+          params.set("viewer_fid", String(viewerFid));
+
+          const response = await fetch(`/api/farcaster/neynar/users?${params.toString()}`, {
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            console.error(
+              "[Directory] Failed to load viewer follow context",
+              response.status,
+              await response.text(),
+            );
+            continue;
+          }
+
+          const payload = await response.json();
+          const users: any[] = Array.isArray(payload?.users) ? payload.users : [];
+          users.forEach((entry) => {
+            const user = getNestedUser(entry);
+            if (!user || typeof user.fid !== "number" || user.fid <= 0) {
+              return;
+            }
+
+            updates.set(user.fid, extractViewerContext(user));
+          });
+        }
+
+        if (updates.size === 0 || cancelled) {
+          return;
+        }
+
+        setDirectoryData((prev) => {
+          const prevMembers = prev.members ?? [];
+          let mutated = false;
+          const nextMembers = prevMembers.map((member) => {
+            if (typeof member.fid === "number" && member.fid > 0 && updates.has(member.fid)) {
+              const nextContext = updates.get(member.fid) ?? null;
+              const currentFollowing = member.viewerContext?.following ?? null;
+              const nextFollowing = nextContext?.following ?? null;
+              if (currentFollowing !== nextFollowing) {
+                mutated = true;
+                return {
+                  ...member,
+                  viewerContext: nextContext,
+                };
+              }
+            }
+            return member;
+          });
+
+          if (!mutated) {
+            return prev;
+          }
+
+          return {
+            ...prev,
+            members: nextMembers,
+          };
+        });
+
+        setLastViewerContextFid(viewerFid);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          return;
+        }
+        console.error("[Directory] Failed to hydrate viewer follow context", error);
+      }
+    };
+
+    void hydrateViewerContext();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [directoryData.members, viewerFid]);
 
   const shouldRefresh = useMemo(() => {
     if (!isConfigured) {
