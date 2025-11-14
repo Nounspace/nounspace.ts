@@ -20,16 +20,22 @@ export const exampleCommunity = {
     treasury: 'https://governance.example.com/treasury',
   },
   tokens: {
-    noun: {
-      address: '0x1234567890123456789012345678901234567890',
-      symbol: 'EXAMPLE',
-      decimals: 18,
-    },
-    nounsToken: {
-      address: '0x1234567890123456789012345678901234567890',
-      symbol: '$EXAMPLE',
-      decimals: 18,
-    },
+    erc20Tokens: [
+      {
+        address: '0x1234567890123456789012345678901234567890',
+        symbol: '$EXAMPLE',
+        decimals: 18,
+        network: 'mainnet',
+      },
+    ],
+    nftTokens: [
+      {
+        address: '0x1234567890123456789012345678901234567890',
+        symbol: 'Example NFT',
+        type: 'erc721',
+        network: 'eth',
+      },
+    ],
   },
   contracts: {
     nouns: '0x1234567890123456789012345678901234567890' as Address,
