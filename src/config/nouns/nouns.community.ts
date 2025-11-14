@@ -1,4 +1,9 @@
 import { Address } from "viem";
+import type {
+  CommunityConfig,
+  CommunityErc20Token,
+  CommunityNftToken,
+} from "../systemConfig";
 
 export const nounsCommunity = {
   type: 'nouns',
@@ -27,7 +32,7 @@ export const nounsCommunity = {
         decimals: 18,
         network: 'base',
       },
-    ],
+    ] satisfies CommunityErc20Token[],
     nftTokens: [
       {
         address: '0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03',
@@ -35,7 +40,7 @@ export const nounsCommunity = {
         type: 'erc721',
         network: 'eth',
       },
-    ],
+    ] satisfies CommunityNftToken[],
   },
   contracts: {
     nouns: '0x9c8ff314c9bc7f6e59a9d9225fb22946427edc03' as Address,
@@ -43,4 +48,4 @@ export const nounsCommunity = {
     space: '0x1234567890123456789012345678901234567890' as Address, // Placeholder
     nogs: '0x1234567890123456789012345678901234567890' as Address, // Placeholder
   },
-};
+} satisfies CommunityConfig;

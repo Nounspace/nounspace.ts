@@ -1,4 +1,9 @@
 import { Address } from "viem";
+import type {
+  CommunityConfig,
+  CommunityErc20Token,
+  CommunityNftToken,
+} from "../systemConfig";
 
 export const clankerCommunity = {
   type: "token_platform",
@@ -27,8 +32,8 @@ export const clankerCommunity = {
         decimals: 18,
         network: "base",
       },
-    ],
-    nftTokens: [],
+    ] satisfies CommunityErc20Token[],
+    nftTokens: [] satisfies CommunityNftToken[],
   },
   contracts: {
     clanker: "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb" as Address, // Placeholder - would need actual contract
@@ -40,4 +45,4 @@ export const clankerCommunity = {
     auctionHouse: "0x0000000000000000000000000000000000000000" as Address,
     nogs: "0x0000000000000000000000000000000000000000" as Address,
   }
-};
+} satisfies CommunityConfig;
