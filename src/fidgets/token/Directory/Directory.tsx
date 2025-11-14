@@ -167,6 +167,7 @@ const Directory: React.FC<
     tokenDecimals: data?.tokenDecimals ?? null,
     lastFetchSettings: data?.lastFetchSettings,
   }));
+  const [lastViewerContextFid, setLastViewerContextFid] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -203,6 +204,34 @@ const Directory: React.FC<
   }, [data]);
 
   useEffect(() => {
+    if (viewerFid > 0) {
+      return;
+    }
+
+    setLastViewerContextFid(null);
+    setDirectoryData((prev) => {
+      const members = prev.members ?? [];
+      let updated = false;
+      const clearedMembers = members.map((member) => {
+        if (member.viewerContext != null) {
+          updated = true;
+          return { ...member, viewerContext: null } as DirectoryMemberData;
+        }
+        return member;
+      });
+
+      if (!updated) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        members: clearedMembers,
+      };
+    });
+  }, [viewerFid]);
+
+  useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
     };
@@ -236,6 +265,22 @@ const Directory: React.FC<
     setCurrentPage(1);
   }, [includeFilter, currentSort]);
 
+  const hasFarcasterMembers = useMemo(
+    () => (directoryData.members ?? []).some((member) => typeof member.fid === "number" && member.fid > 0),
+    [directoryData.members],
+  );
+
+  const viewerContextHydrated = useMemo(() => {
+    if (!hasFarcasterMembers) {
+      return true;
+    }
+
+    const members = directoryData.members ?? [];
+    return members.some(
+      (member) => typeof member.fid === "number" && member.fid > 0 && member.viewerContext != null,
+    );
+  }, [directoryData.members, hasFarcasterMembers]);
+
   const shouldRefresh = useMemo(() => {
     if (!isConfigured) {
       return false;
@@ -252,6 +297,18 @@ const Directory: React.FC<
 
     // If no previous fetch, need to fetch
     if (!lastFetch || !lastUpdated) {
+      return true;
+    }
+
+    if (viewerFid > 0) {
+      if (lastViewerContextFid !== viewerFid) {
+        return true;
+      }
+
+      if (!viewerContextHydrated) {
+        return true;
+      }
+    } else if (lastViewerContextFid !== null) {
       return true;
     }
 
@@ -286,6 +343,9 @@ const Directory: React.FC<
     assetType,
     debouncedChannelName,
     settings.channelFilter,
+    viewerFid,
+    lastViewerContextFid,
+    viewerContextHydrated,
   ]);
 
   const stripViewerContext = useCallback(
@@ -308,6 +368,7 @@ const Directory: React.FC<
         !isEqual(directoryData.lastFetchSettings, payload.lastFetchSettings);
 
       setDirectoryData(payload);
+      setLastViewerContextFid(viewerFid > 0 ? viewerFid : null);
 
       if (hasChanged) {
         await saveData({
@@ -316,7 +377,7 @@ const Directory: React.FC<
         });
       }
     },
-    [directoryData, saveData, stripViewerContext],
+    [directoryData, saveData, stripViewerContext, viewerFid],
   );
 
   const fetchTokenDirectory = useCallback(
@@ -758,6 +819,7 @@ const Directory: React.FC<
     settings.csvType,
     settings.csvSortBy,
     settings.refreshToken,
+    viewerFid,
   ]);
 
   // Trigger fetch when CSV upload or manual refresh changes
