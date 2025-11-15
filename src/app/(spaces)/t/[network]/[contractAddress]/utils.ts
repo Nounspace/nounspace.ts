@@ -222,7 +222,12 @@ export const loadTokenSpacePageData = async (
   const castHash = tokenData?.clankerData?.cast_hash || "";
   const casterFid = String(tokenData?.clankerData?.requestor_fid || "");
   const isClankerToken = !!tokenData?.clankerData;
-  
+
+  const spaceOwnerAddress =
+    finalOwnerType === 'address' && finalOwnerId
+      ? finalOwnerId as Address
+      : "0x0000000000000000000000000000000000000000" as Address;
+
   // Create space config
   const config = {
     ...createInitialTokenSpaceConfigForAddress(
@@ -231,17 +236,15 @@ export const loadTokenSpacePageData = async (
       casterFid,
       symbol,
       isClankerToken,
-      network as EtherScanChainName
+      network as EtherScanChainName,
+      spaceOwnerAddress
     ),
     timestamp: new Date().toISOString(),
   };
-  
+
   // Convert ownerId to the appropriate type based on ownerIdType
   const spaceOwnerFid = finalOwnerType === 'fid' ? Number(finalOwnerId) : undefined;
-  const spaceOwnerAddress = finalOwnerType === 'address' && finalOwnerId ? 
-    finalOwnerId as Address : 
-    "0x0000000000000000000000000000000000000000" as Address;
-    
+
   return {
     spaceId: internalData.spaceId,
     spaceName,

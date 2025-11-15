@@ -1,6 +1,8 @@
 // This file contains only the SystemConfig interface
 // Individual configurations are imported from their respective folders
 
+import { Address } from "viem";
+
 export interface SystemConfig {
   brand: BrandConfig;
   assets: AssetConfig;
@@ -8,6 +10,7 @@ export interface SystemConfig {
   community: CommunityConfig;
   fidgets: FidgetConfig;
   homePage: HomePageConfig;
+  navigation?: NavigationConfig;
 }
 
 export interface BrandConfig {
@@ -15,6 +18,7 @@ export interface BrandConfig {
   displayName: string;
   tagline: string;
   description: string;
+  miniAppTags: string[];
 }
 
 export interface AssetConfig {
@@ -94,10 +98,10 @@ export interface CommunityConfig {
     };
   };
   contracts: {
-    nouns: string;
-    auctionHouse: string;
-    space: string;
-    nogs: string;
+    nouns: Address;
+    auctionHouse: Address;
+    space: Address;
+    nogs: Address;
   };
 }
 
@@ -122,6 +126,19 @@ export interface HomePageConfig {
       fontColor: string;
     };
   };
+}
+
+export interface NavigationConfig {
+  items: NavigationItem[];
+}
+
+export interface NavigationItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'robot' | 'custom';
+  openInNewTab?: boolean;
+  requiresAuth?: boolean;
 }
 
 export interface TabConfig {

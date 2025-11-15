@@ -28,6 +28,7 @@ import { RiQuillPenLine } from "react-icons/ri";
 import HomeIcon from "../atoms/icons/HomeIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
+import RobotIcon from "../atoms/icons/RobotIcon";
 import SearchIcon from "../atoms/icons/SearchIcon";
 import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
@@ -40,6 +41,8 @@ import {
   CastDiscardPrompt,
 } from "../molecules/CastModalHelpers";
 import SearchModal, { SearchModalHandle } from "./SearchModal";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
+import { loadSystemConfig } from "@/config";
 
 type NavItemProps = {
   label: string;
@@ -92,6 +95,8 @@ const Navigation = React.memo(
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
+  const { community, navigation } = loadSystemConfig();
+  const discordUrl = community?.urls?.discord || "https://discord.gg/eYQeXU2WuH";
 
   const [shrunk, setShrunk] = useState(mobile ? false : true);
 
@@ -209,7 +214,7 @@ const Navigation = React.memo(
       user && user.pfp_url ? (
         <img
           className="aspect-square rounded-full w-6 h-6"
-          src={user.pfp_url}
+          src={toFarcasterCdnUrl(user.pfp_url || "")}
         />
       ) : (
         <CgProfile />
@@ -218,6 +223,32 @@ const Navigation = React.memo(
   );
 
   const router = useRouter();
+
+  const iconFor = useCallback((key?: string): React.FC => {
+    switch (key) {
+      case 'home': return HomeIcon;
+      case 'explore': return ExploreIcon;
+      case 'notifications': return NotificationsIcon;
+      case 'space': return RocketIcon;
+      case 'robot': return RobotIcon;
+      default: return HomeIcon;
+    }
+  }, []);
+
+  const configuredNavItems = navigation?.items || [];
+  
+  // Process nav items: adjust labels and hrefs based on login status when needed
+  const allNavItems = configuredNavItems.map((item) => {
+    // Dynamically adjust home label and href based on login status
+    if (item.id === 'home') {
+      return {
+        ...item,
+        label: isLoggedIn ? 'Homebase' : item.label,
+        href: isLoggedIn ? '/homebase' : item.href,
+      };
+    }
+    return item;
+  });
 
   const NavItem: React.FC<NavItemProps> = ({
     label,
@@ -381,25 +412,27 @@ const Navigation = React.memo(
           >
             <div className="flex-auto">
               <ul className="space-y-2">
-                <NavItem
-                  label={isLoggedIn ? "Homebase" : "Home"}
-                  Icon={HomeIcon}
-                  href={isLoggedIn ? "/homebase" : "/home"}
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
-                  }
-                />
-                {isLoggedIn && (
-                  <NavItem
-                    label="Notifications"
-                    Icon={NotificationsIcon}
-                    href="/notifications"
-                    onClick={() =>
-                      trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS)
-                    }
-                    badgeText={notificationBadgeText}
-                  />
-                )}
+                {allNavItems.map((item) => {
+                  if (item.requiresAuth && !isLoggedIn) return null;
+                  const IconComp = iconFor(item.icon);
+                  const badge = item.id === 'notifications' ? notificationBadgeText : null;
+                  return (
+                    <NavItem
+                      key={item.id}
+                      label={item.label}
+                      Icon={IconComp}
+                      href={item.href}
+                      onClick={() => {
+                        if (item.id === 'explore') trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE);
+                        if (item.id === 'notifications') trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS);
+                        if (item.id === 'home') trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE);
+                        if (item.id === 'space-token') trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH);
+                      }}
+                      openInNewTab={item.openInNewTab}
+                      badgeText={badge}
+                    />
+                  );
+                })}
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
@@ -407,23 +440,6 @@ const Navigation = React.memo(
                     openSearchModal();
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
                   }}
-                />
-                <NavItem
-                  label="Explore"
-                  Icon={ExploreIcon}
-                  href="/explore"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
-                  }
-                />
-                <NavItem
-                  label="$SPACE"
-                  Icon={RocketIcon}
-                  href="https://nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab/Profile"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
-                  }
-                  openInNewTab
                 />
                 {isLoggedIn && (
                   <NavItem
@@ -486,7 +502,7 @@ const Navigation = React.memo(
             {!isLoggedIn && (
               <div className="flex flex-col items-center gap-2">
                 <Link
-                  href="https://discord.gg/eYQeXU2WuH"
+                href={discordUrl}
                   className={mergeClasses(
                     "flex items-center p-2 text-gray-900 rounded-lg dark:text-white group w-full gap-2 text-lg font-medium",
                     shrunk ? "justify-center gap-0" : ""

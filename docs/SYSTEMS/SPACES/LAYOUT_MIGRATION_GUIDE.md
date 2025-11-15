@@ -125,14 +125,10 @@ saveLayoutDetails(migratedLayoutDetails);
 
 ### Support Files
 
-6. **`src/fidgets/layout/tabFullScreen/components/TabNavigation.tsx`**
-   - Added special support for feed tab
-   - Implemented logic to render with single tab in homebase
+6. **`src/common/components/organisms/MobileNavbar.tsx`**
+   - Current component for mobile navigation, replaces the old TabNavigation
 
-7. **`src/common/components/organisms/MobileNavbar.tsx`**
-   - Added fallback for 'feed' label
-
-8. **`src/common/components/organisms/MobileSettings.tsx`**
+7. **`src/common/components/organisms/MobileSettings.tsx`**
    - Updated draggable component key
 
 ## Backward Compatibility
