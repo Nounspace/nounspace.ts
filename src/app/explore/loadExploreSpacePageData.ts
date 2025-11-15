@@ -2,7 +2,7 @@ import type { SpaceConfig } from "@/app/(spaces)/Space";
 import { ExplorePageConfig } from "@/config/systemConfig";
 import { SpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
-import type { UserTheme } from "@/common/lib/theme";
+import type { UserTheme, Color, FontFamily } from "@/common/lib/theme";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { isNil } from "lodash";
 import stringify from "fast-json-stable-stringify";
@@ -144,13 +144,36 @@ export async function loadExploreSpacePageData({
     );
   }
 
+  const mergeThemeProperties = (properties?: Record<string, unknown>): UserTheme["properties"] => {
+    const source = properties || {};
+    const defaults = defaultUserTheme.properties;
+    return {
+      font: (source.font ?? defaults.font) as FontFamily,
+      fontColor: (source.fontColor ?? defaults.fontColor) as Color,
+      headingsFont: (source.headingsFont ?? defaults.headingsFont) as FontFamily,
+      headingsFontColor: (source.headingsFontColor ?? defaults.headingsFontColor) as Color,
+      background: (source.background ?? defaults.background) as Color,
+      backgroundHTML: typeof source.backgroundHTML === "string"
+        ? source.backgroundHTML
+        : defaults.backgroundHTML,
+      musicURL: typeof source.musicURL === "string" ? source.musicURL : defaults.musicURL,
+      fidgetBackground: (source.fidgetBackground ?? defaults.fidgetBackground) as Color,
+      fidgetBorderWidth: typeof source.fidgetBorderWidth === "string"
+        ? source.fidgetBorderWidth
+        : defaults.fidgetBorderWidth,
+      fidgetBorderColor: (source.fidgetBorderColor ?? defaults.fidgetBorderColor) as Color,
+      fidgetShadow: typeof source.fidgetShadow === "string" ? source.fidgetShadow : defaults.fidgetShadow,
+      fidgetBorderRadius: typeof source.fidgetBorderRadius === "string"
+        ? source.fidgetBorderRadius
+        : defaults.fidgetBorderRadius,
+      gridSpacing: typeof source.gridSpacing === "string" ? source.gridSpacing : defaults.gridSpacing,
+    };
+  };
+
   const hydratedTheme: UserTheme = {
     ...defaultUserTheme,
     ...activeConfig.theme,
-    properties: {
-      ...defaultUserTheme.properties,
-      ...activeConfig.theme.properties,
-    },
+    properties: mergeThemeProperties(activeConfig.theme?.properties as Record<string, unknown> | undefined),
   };
 
   const configForSpace: Omit<SpaceConfig, "isEditable"> = {
