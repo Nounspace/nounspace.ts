@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import TextInput from "@/common/components/molecules/TextInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
@@ -273,6 +274,14 @@ function safeBigInt(value: string): bigint | undefined {
   }
 }
 
+function parseChainId(
+  value: number | string | null | undefined,
+): number | undefined {
+  if (value == null) return undefined;
+  const numeric = typeof value === "number" ? value : Number.parseInt(String(value), 10);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined;
+}
+
 function formatTokenAmount(
   amount: string | undefined,
   decimals: number | undefined,
@@ -445,7 +454,10 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       setClaimState(contractAddress, { status: "pending" });
 
       try {
-        const targetChainId = item.token.chain_id ? Number(item.token.chain_id) : undefined;
+        const targetChainId =
+          parseChainId(item.token.chain_id) ??
+          parseChainId(item.uncollectedFees?.token0?.chainId) ??
+          parseChainId(item.uncollectedFees?.token1?.chainId);
         let activeAccount = connectedAddress ? safeGetAddress(connectedAddress) : undefined;
         let activeChainId = chainId;
 
@@ -588,6 +600,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             item.uncollectedFees?.lockerAddress ?? item.token.locker_address,
           );
           const missingLockerAddress = !lockerAddress;
+          const tokenSpaceHref = `/t/base/${item.token.contract_address}`;
           const token0Label = formatTokenAmount(
             item.uncollectedFees?.token0UncollectedRewards,
             item.uncollectedFees?.token0?.decimals,
@@ -614,7 +627,15 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
                 borderColor: `${accent}20`,
               }}
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Link
+                href={tokenSpaceHref}
+                className="group flex flex-col gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:flex-row sm:items-center sm:justify-between"
+                style={{
+                  color: "inherit",
+                  textDecoration: "none",
+                  outlineColor: accent,
+                }}
+              >
                 <div className="flex items-center gap-3">
                   {item.token.img_url ? (
                     <img
@@ -636,7 +657,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
                   )}
                   <div className="flex flex-col">
                     <span
-                      className="text-base font-semibold"
+                      className="text-base font-semibold transition-colors group-hover:underline"
                       style={{ fontFamily: secondaryFont, color: secondaryColor }}
                     >
                       {item.token.name || "Unnamed Token"}
@@ -657,7 +678,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
                     <span>Version: {item.version.toUpperCase()}</span>
                   ) : null}
                 </div>
-              </div>
+              </Link>
 
               <div className="grid gap-2 text-sm sm:grid-cols-2">
                 <div className="flex flex-col gap-1">
