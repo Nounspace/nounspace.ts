@@ -47,7 +47,7 @@ const CLANKER_FEE_LOCKER_ABI = [
 
 const LP_LOCKER_V2_ABI = [
   {
-    inputs: [{ internalType: "address", name: "token", type: "address" }],
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
     name: "claimRewards",
     outputs: [],
     stateMutability: "nonpayable",
@@ -281,6 +281,33 @@ function safeBigInt(value: string): bigint | undefined {
   }
 }
 
+function parseLpTokenId(value: unknown): bigint | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === "bigint") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    if (!Number.isFinite(value) || value < 0) {
+      return undefined;
+    }
+    return BigInt(Math.trunc(value));
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return undefined;
+    }
+    return safeBigInt(trimmed);
+  }
+
+  return undefined;
+}
+
 function parseChainId(
   value: number | string | null | undefined,
 ): number | undefined {
@@ -453,13 +480,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       }
 
       const claimTargets = buildClaimTargets(item);
-      if (!claimTargets.length) {
-        setClaimState(contractAddress, {
-          status: "error",
-          message: "No uncollected fees to claim.",
-        });
-        return;
-      }
+      const lpTokenId = parseLpTokenId(item.uncollectedFees?.lpNftId);
 
       const rewardRecipient = item.version === "v4"
         ? rewardRecipientForClaims
@@ -469,6 +490,22 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
         setClaimState(contractAddress, {
           status: "error",
           message: "Valid reward recipient is required for v4 tokens.",
+        });
+        return;
+      }
+
+      if (item.version === "v4" && !claimTargets.length) {
+        setClaimState(contractAddress, {
+          status: "error",
+          message: "No uncollected fees to claim.",
+        });
+        return;
+      }
+
+      if (item.version === "v3_1" && lpTokenId === undefined) {
+        setClaimState(contractAddress, {
+          status: "error",
+          message: "Unable to determine the LP token for this deployment.",
         });
         return;
       }
@@ -511,6 +548,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
           claimTargets: claimTargets.map((target) => target.address),
           chainId: resolvedChainId,
           providedLockerAddress,
+          lpTokenId: lpTokenId?.toString(),
         });
 
         if (item.version === "v4") {
@@ -539,6 +577,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
           console.info("[ClankerManager] Simulating v3.1 claim", {
             lockerAddress,
             tokenAddress,
+            lpTokenId: lpTokenId?.toString(),
             chainId: resolvedChainId,
           });
 
@@ -548,7 +587,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             functionName: "claimRewards",
             account: activeAccount,
             chainId: resolvedChainId,
-            args: [tokenAddress],
+            args: [lpTokenId as bigint],
           });
 
           const hash = await writeContract(wagmiConfig, simulation.request);
@@ -635,10 +674,13 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       <div className="flex flex-col gap-4">
         {tokens.map((item) => {
           const claimTargets = buildClaimTargets(item);
+          const lpTokenId = parseLpTokenId(item.uncollectedFees?.lpNftId);
           const claimState = claimStates[item.token.contract_address] ?? {
             status: "idle",
           };
-          const hasClaimable = claimTargets.length > 0;
+          const hasClaimable =
+            claimTargets.length > 0 &&
+            (item.version !== "v3_1" || lpTokenId !== undefined);
           const lockerAddress = safeGetAddress(
             item.uncollectedFees?.lockerAddress ?? item.token.locker_address,
           );
@@ -656,10 +698,13 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
           );
           const needsRewardRecipient =
             item.requiresRewardRecipient && !rewardRecipientForClaims;
+          const missingLpTokenId = item.version === "v3_1" && lpTokenId === undefined;
           const helperMessage = needsRewardRecipient
             ? "Provide a reward recipient address in settings to claim v4 fees."
             : missingLockerAddress
               ? "Locker address unavailable for this token."
+              : missingLpTokenId
+                ? "Unable to determine the LP token for this deployment."
               : !connectedAddress
                 ? "Connect a wallet to claim fees."
                 : claimState.message || "";
@@ -761,6 +806,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
                     needsRewardRecipient ||
                     Boolean(item.uncollectedFeesError) ||
                     missingLockerAddress ||
+                    missingLpTokenId ||
                     !connectedAddress
                   }
                   onClick={() => handleClaim(item)}
