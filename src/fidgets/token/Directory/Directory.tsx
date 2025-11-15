@@ -267,22 +267,6 @@ const Directory: React.FC<
     setCurrentPage(1);
   }, [includeFilter, currentSort]);
 
-  const hasFarcasterMembers = useMemo(
-    () => (directoryData.members ?? []).some((member) => typeof member.fid === "number" && member.fid > 0),
-    [directoryData.members],
-  );
-
-  const viewerContextHydrated = useMemo(() => {
-    if (!hasFarcasterMembers) {
-      return true;
-    }
-
-    const members = directoryData.members ?? [];
-    return members.some(
-      (member) => typeof member.fid === "number" && member.fid > 0 && member.viewerContext != null,
-    );
-  }, [directoryData.members, hasFarcasterMembers]);
-
   useEffect(() => {
     if (viewerFid <= 0) {
       return;
@@ -417,10 +401,6 @@ const Directory: React.FC<
       if (lastViewerContextFid !== viewerFid) {
         return true;
       }
-
-      if (!viewerContextHydrated) {
-        return true;
-      }
     } else if (lastViewerContextFid !== null) {
       return true;
     }
@@ -458,7 +438,6 @@ const Directory: React.FC<
     settings.channelFilter,
     viewerFid,
     lastViewerContextFid,
-    viewerContextHydrated,
   ]);
 
   const stripViewerContext = useCallback(
