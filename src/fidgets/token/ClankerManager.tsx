@@ -47,13 +47,21 @@ const CLANKER_FEE_LOCKER_ABI = [
 
 const LP_LOCKER_V2_ABI = [
   {
-    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    inputs: [{ internalType: "address", name: "token", type: "address" }],
     name: "claimRewards",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;
+
+const CLANKER_V4_FEE_LOCKER_ADDRESS = getAddress(
+  "0xF3622742b1E446D92e45E22923Ef11C2fcD55D68",
+);
+
+const CLANKER_V3_FEE_LOCKER_ADDRESS = getAddress(
+  "0x375C15db32D28cEcdcAB5C03Ab889bf15cbD2c5E",
+);
 
 export type ClankerManagerSettings = {
   deployerAddress: string;
@@ -416,9 +424,26 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
   const handleClaim = useCallback(
     async (item: ClankerManagerTokenResult) => {
       const contractAddress = item.token.contract_address;
-      const lockerAddress = safeGetAddress(
+      const tokenAddress = safeGetAddress(contractAddress);
+      if (!tokenAddress) {
+        setClaimState(contractAddress, {
+          status: "error",
+          message: "Invalid token address; cannot claim fees.",
+        });
+        return;
+      }
+
+      const providedLockerAddress = safeGetAddress(
         item.uncollectedFees?.lockerAddress ?? item.token.locker_address,
       );
+
+      const lockerAddress =
+        item.version === "v4"
+          ? CLANKER_V4_FEE_LOCKER_ADDRESS
+          : item.version === "v3_1"
+            ? CLANKER_V3_FEE_LOCKER_ADDRESS
+            : providedLockerAddress;
+
       if (!lockerAddress) {
         setClaimState(contractAddress, {
           status: "error",
@@ -485,6 +510,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
           version: item.version,
           claimTargets: claimTargets.map((target) => target.address),
           chainId: resolvedChainId,
+          providedLockerAddress,
         });
 
         if (item.version === "v4") {
@@ -510,13 +536,9 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             await waitForTransactionReceipt(wagmiConfig, { hash, chainId: resolvedChainId });
           }
         } else if (item.version === "v3_1") {
-          const tokenId = item.uncollectedFees?.lpNftId;
-          if (typeof tokenId !== "number") {
-            throw new Error("Missing liquidity position ID for this token.");
-          }
           console.info("[ClankerManager] Simulating v3.1 claim", {
             lockerAddress,
-            tokenId,
+            tokenAddress,
             chainId: resolvedChainId,
           });
 
@@ -526,7 +548,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             functionName: "claimRewards",
             account: activeAccount,
             chainId: resolvedChainId,
-            args: [BigInt(tokenId)],
+            args: [tokenAddress],
           });
 
           const hash = await writeContract(wagmiConfig, simulation.request);
