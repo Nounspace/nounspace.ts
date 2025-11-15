@@ -23,13 +23,12 @@ import type {
   ClankerManagerTokenResult,
 } from "@/common/data/queries/clankerManager";
 import { formatUnits, getAddress, type Address } from "viem";
+import { useAccount, useSwitchChain } from "wagmi";
 import {
-  useAccount,
-  useConnect,
-  useSwitchChain,
-  useWriteContract,
-} from "wagmi";
-import { waitForTransactionReceipt } from "wagmi/actions";
+  simulateContract,
+  waitForTransactionReceipt,
+  writeContract,
+} from "wagmi/actions";
 import { wagmiConfig } from "@/common/providers/Wagmi";
 import { RiRobot2Line } from "react-icons/ri";
 
@@ -408,9 +407,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
   const [claimStates, setClaimStates] = useState<Record<string, ClaimState>>({});
 
   const { address: connectedAddress, chainId } = useAccount();
-  const { connectAsync, connectors } = useConnect();
   const { switchChainAsync } = useSwitchChain();
-  const { writeContractAsync } = useWriteContract();
 
   const setClaimState = useCallback((contract: string, update: ClaimState) => {
     setClaimStates((prev) => ({ ...prev, [contract]: update }));
@@ -454,61 +451,87 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       setClaimState(contractAddress, { status: "pending" });
 
       try {
-        const targetChainId =
-          parseChainId(item.token.chain_id) ??
-          parseChainId(item.uncollectedFees?.token0?.chainId) ??
-          parseChainId(item.uncollectedFees?.token1?.chainId);
-        let activeAccount = connectedAddress ? safeGetAddress(connectedAddress) : undefined;
-        let activeChainId = chainId;
-
-        if (!activeAccount) {
-          const preferred = connectors?.[0];
-          if (!preferred) {
-            throw new Error("Connect a wallet to claim fees.");
-          }
-          const connection = await connectAsync({
-            connector: preferred,
-            chainId: targetChainId,
-          });
-          activeAccount = safeGetAddress(connection.accounts?.[0]);
-          activeChainId = connection.chainId;
+        if (!connectedAddress) {
+          throw new Error("Connect a wallet to claim fees.");
         }
 
+        const activeAccount = safeGetAddress(connectedAddress);
         if (!activeAccount) {
           throw new Error("Unable to determine a connected wallet address.");
         }
 
+        const targetChainId =
+          parseChainId(item.token.chain_id) ??
+          parseChainId(item.uncollectedFees?.token0?.chainId) ??
+          parseChainId(item.uncollectedFees?.token1?.chainId);
+        let activeChainId = chainId;
+
         if (targetChainId && activeChainId !== targetChainId) {
+          if (!switchChainAsync) {
+            throw new Error("Switching chains is not supported by this wallet.");
+          }
           const switched = await switchChainAsync({ chainId: targetChainId });
           activeChainId = switched.id;
         }
 
+        const resolvedChainId = targetChainId ?? activeChainId;
+        if (!resolvedChainId) {
+          throw new Error("Unable to determine the appropriate chain for this claim.");
+        }
+
+        console.info("[ClankerManager] Preparing claim", {
+          contractAddress,
+          lockerAddress,
+          version: item.version,
+          claimTargets: claimTargets.map((target) => target.address),
+          chainId: resolvedChainId,
+        });
+
         if (item.version === "v4") {
           for (const target of claimTargets) {
-            const hash = await writeContractAsync({
+            console.info("[ClankerManager] Simulating v4 claim", {
+              lockerAddress,
+              feeOwner: rewardRecipient,
+              rewardToken: target.address,
+              chainId: resolvedChainId,
+            });
+
+            const simulation = await simulateContract(wagmiConfig, {
               abi: CLANKER_FEE_LOCKER_ABI,
               address: lockerAddress,
               functionName: "claim",
               account: activeAccount,
-              chainId: targetChainId ?? activeChainId,
+              chainId: resolvedChainId,
               args: [rewardRecipient as Address, target.address],
             });
-            await waitForTransactionReceipt(wagmiConfig, { hash });
+
+            const hash = await writeContract(wagmiConfig, simulation.request);
+            console.info("[ClankerManager] Submitted v4 claim", { hash });
+            await waitForTransactionReceipt(wagmiConfig, { hash, chainId: resolvedChainId });
           }
         } else if (item.version === "v3_1") {
           const tokenId = item.uncollectedFees?.lpNftId;
           if (typeof tokenId !== "number") {
             throw new Error("Missing liquidity position ID for this token.");
           }
-          const hash = await writeContractAsync({
+          console.info("[ClankerManager] Simulating v3.1 claim", {
+            lockerAddress,
+            tokenId,
+            chainId: resolvedChainId,
+          });
+
+          const simulation = await simulateContract(wagmiConfig, {
             abi: LP_LOCKER_V2_ABI,
             address: lockerAddress,
             functionName: "claimRewards",
             account: activeAccount,
-            chainId: targetChainId ?? activeChainId,
+            chainId: resolvedChainId,
             args: [BigInt(tokenId)],
           });
-          await waitForTransactionReceipt(wagmiConfig, { hash });
+
+          const hash = await writeContract(wagmiConfig, simulation.request);
+          console.info("[ClankerManager] Submitted v3.1 claim", { hash });
+          await waitForTransactionReceipt(wagmiConfig, { hash, chainId: resolvedChainId });
         } else {
           throw new Error("Unsupported Clanker version");
         }
@@ -519,6 +542,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
         });
         await refetch();
       } catch (err) {
+        console.error("[ClankerManager] Claim failed", err);
         const message = err instanceof Error ? err.message : String(err);
         setClaimState(contractAddress, {
           status: "error",
@@ -526,17 +550,14 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
         });
       }
     },
-    [
-      chainId,
-      connectedAddress,
-      connectAsync,
-      connectors,
-      rewardRecipientForClaims,
-      refetch,
-      setClaimState,
-      switchChainAsync,
-      writeContractAsync,
-    ],
+      [
+        chainId,
+        connectedAddress,
+        rewardRecipientForClaims,
+        refetch,
+        setClaimState,
+        switchChainAsync,
+      ],
   );
 
   const renderContent = () => {
@@ -617,7 +638,9 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             ? "Provide a reward recipient address in settings to claim v4 fees."
             : missingLockerAddress
               ? "Locker address unavailable for this token."
-              : claimState.message || "";
+              : !connectedAddress
+                ? "Connect a wallet to claim fees."
+                : claimState.message || "";
 
           return (
             <div
@@ -715,7 +738,8 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
                     !hasClaimable ||
                     needsRewardRecipient ||
                     Boolean(item.uncollectedFeesError) ||
-                    missingLockerAddress
+                    missingLockerAddress ||
+                    !connectedAddress
                   }
                   onClick={() => handleClaim(item)}
                   style={{
