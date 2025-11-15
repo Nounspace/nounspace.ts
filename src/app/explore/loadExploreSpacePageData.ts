@@ -1,5 +1,8 @@
+import type { SpaceConfig } from "@/app/(spaces)/Space";
 import { ExplorePageConfig } from "@/config/systemConfig";
 import { SpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
+import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
+import type { UserTheme } from "@/common/lib/theme";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { isNil } from "lodash";
 import stringify from "fast-json-stable-stringify";
@@ -141,6 +144,20 @@ export async function loadExploreSpacePageData({
     );
   }
 
+  const hydratedTheme: UserTheme = {
+    ...defaultUserTheme,
+    ...activeConfig.theme,
+    properties: {
+      ...defaultUserTheme.properties,
+      ...activeConfig.theme.properties,
+    },
+  };
+
+  const configForSpace: Omit<SpaceConfig, "isEditable"> = {
+    ...activeConfig,
+    theme: hydratedTheme,
+  };
+
   return {
     spaceId,
     spaceName: spaceDisplayName,
@@ -151,8 +168,6 @@ export async function loadExploreSpacePageData({
     spaceOwnerFid: adminFid,
     identityPublicKey,
     tabOrder: explorePage.tabOrder,
-    config: {
-      ...activeConfig,
-    },
+    config: configForSpace,
   };
 }
