@@ -32,19 +32,28 @@ export async function loadExploreSpacePageData({
   let spaceId: string | undefined;
   let identityPublicKey: string | undefined;
 
+  const lookupExistingSpace = async () => {
+    if (isNil(adminFid)) {
+      return null;
+    }
+
+    const { data } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId, identityPublicKey, spaceName")
+      .eq("fid", adminFid)
+      .eq("spaceType", SPACE_TYPES.EXPLORE)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+
+    return data && data.length > 0 ? data[0] : null;
+  };
+
   if (!isNil(adminFid)) {
     try {
-      const { data: existing } = await supabase
-        .from("spaceRegistrations")
-        .select("spaceId, identityPublicKey")
-        .eq("fid", adminFid)
-        .eq("spaceName", spaceDisplayName)
-        .order("timestamp", { ascending: true })
-        .limit(1);
-
-      if (existing && existing.length > 0) {
-        spaceId = existing[0]?.spaceId;
-        identityPublicKey = existing[0]?.identityPublicKey;
+      const existing = await lookupExistingSpace();
+      if (existing) {
+        spaceId = existing.spaceId;
+        identityPublicKey = existing.identityPublicKey ?? undefined;
       } else {
         const { data: identityRows, error: identityError } = await supabase
           .from("fidRegistrations")
@@ -57,7 +66,7 @@ export async function loadExploreSpacePageData({
           const adminIdentity = identityRows[0]?.identityPublicKey;
           if (adminIdentity) {
             const insertTimestamp = new Date().toISOString();
-            const { data: inserted, error: insertError } = await supabase
+            const { error: insertError } = await supabase
               .from("spaceRegistrations")
               .insert({
                 fid: adminFid,
@@ -66,13 +75,16 @@ export async function loadExploreSpacePageData({
                 signature: "explore-auto-registration",
                 timestamp: insertTimestamp,
                 spaceType: SPACE_TYPES.EXPLORE,
-              })
-              .select("spaceId, identityPublicKey")
-              .single();
+              });
 
-            if (!insertError && inserted) {
-              spaceId = inserted.spaceId;
-              identityPublicKey = inserted.identityPublicKey;
+            if (insertError) {
+              console.error("Failed to register explore space:", insertError);
+            }
+
+            const refreshed = await lookupExistingSpace();
+            if (refreshed) {
+              spaceId = refreshed.spaceId;
+              identityPublicKey = refreshed.identityPublicKey ?? undefined;
             }
           }
         }
