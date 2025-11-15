@@ -23,7 +23,7 @@ import type {
   ClankerManagerTokenResult,
 } from "@/common/data/queries/clankerManager";
 import { formatUnits, getAddress, type Address } from "viem";
-import { useAccount, useSwitchChain } from "wagmi";
+import { useAccount, useConnect, useSwitchChain } from "wagmi";
 import {
   simulateContract,
   waitForTransactionReceipt,
@@ -442,6 +442,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
   const [claimStates, setClaimStates] = useState<Record<string, ClaimState>>({});
 
   const { address: connectedAddress, chainId } = useAccount();
+  const { connectAsync, connectors } = useConnect();
   const { switchChainAsync } = useSwitchChain();
 
   const setClaimState = useCallback((contract: string, update: ClaimState) => {
@@ -510,28 +511,71 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
         return;
       }
 
-      setClaimState(contractAddress, { status: "pending" });
+      setClaimState(contractAddress, {
+        status: "pending",
+        message: "Preparing claim...",
+      });
 
       try {
-        if (!connectedAddress) {
-          throw new Error("Connect a wallet to claim fees.");
-        }
-
-        const activeAccount = safeGetAddress(connectedAddress);
-        if (!activeAccount) {
-          throw new Error("Unable to determine a connected wallet address.");
-        }
+        let activeAccount = safeGetAddress(connectedAddress);
+        let activeChainId = chainId;
 
         const targetChainId =
           parseChainId(item.token.chain_id) ??
           parseChainId(item.uncollectedFees?.token0?.chainId) ??
           parseChainId(item.uncollectedFees?.token1?.chainId);
-        let activeChainId = chainId;
+
+        if (!activeAccount) {
+          const preferredConnector = connectors?.[0];
+          if (!preferredConnector) {
+            throw new Error("No wallet connectors available. Please connect a wallet manually.");
+          }
+
+          setClaimState(contractAddress, {
+            status: "pending",
+            message: "Connecting wallet...",
+          });
+
+          const connection = await connectAsync({
+            connector: preferredConnector,
+            chainId: targetChainId ?? activeChainId ?? undefined,
+          });
+
+          const connectionData = connection as unknown as {
+            account?: string;
+            accounts?: readonly string[];
+            chainId?: number;
+          };
+
+          activeAccount =
+            safeGetAddress(connectionData.account) ??
+            safeGetAddress(connectionData.accounts?.[0]);
+          activeChainId = connectionData.chainId ?? activeChainId ?? targetChainId ?? undefined;
+
+          if (!activeAccount) {
+            throw new Error("Wallet connection failed. Please try again.");
+          }
+
+          setClaimState(contractAddress, {
+            status: "pending",
+            message: "Preparing claim...",
+          });
+        }
+
+        if (!activeAccount) {
+          throw new Error("Unable to determine a connected wallet address.");
+        }
 
         if (targetChainId && activeChainId !== targetChainId) {
           if (!switchChainAsync) {
             throw new Error("Switching chains is not supported by this wallet.");
           }
+
+          setClaimState(contractAddress, {
+            status: "pending",
+            message: "Switching network...",
+          });
+
           const switched = await switchChainAsync({ chainId: targetChainId });
           activeChainId = switched.id;
         }
@@ -540,6 +584,11 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
         if (!resolvedChainId) {
           throw new Error("Unable to determine the appropriate chain for this claim.");
         }
+
+        setClaimState(contractAddress, {
+          status: "pending",
+          message: "Awaiting wallet confirmation...",
+        });
 
         console.info("[ClankerManager] Preparing claim", {
           contractAddress,
@@ -553,6 +602,10 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
 
         if (item.version === "v4") {
           for (const target of claimTargets) {
+            setClaimState(contractAddress, {
+              status: "pending",
+              message: `Claiming ${target.symbol ?? "fees"}...`,
+            });
             console.info("[ClankerManager] Simulating v4 claim", {
               lockerAddress,
               feeOwner: rewardRecipient,
@@ -574,6 +627,10 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
             await waitForTransactionReceipt(wagmiConfig, { hash, chainId: resolvedChainId });
           }
         } else if (item.version === "v3_1") {
+          setClaimState(contractAddress, {
+            status: "pending",
+            message: "Claiming LP rewards...",
+          });
           console.info("[ClankerManager] Simulating v3.1 claim", {
             lockerAddress,
             tokenAddress,
@@ -614,6 +671,8 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
       [
         chainId,
         connectedAddress,
+        connectAsync,
+        connectors,
         rewardRecipientForClaims,
         refetch,
         setClaimState,
@@ -699,15 +758,17 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
           const needsRewardRecipient =
             item.requiresRewardRecipient && !rewardRecipientForClaims;
           const missingLpTokenId = item.version === "v3_1" && lpTokenId === undefined;
-          const helperMessage = needsRewardRecipient
+          const defaultHelperMessage = needsRewardRecipient
             ? "Provide a reward recipient address in settings to claim v4 fees."
             : missingLockerAddress
               ? "Locker address unavailable for this token."
               : missingLpTokenId
                 ? "Unable to determine the LP token for this deployment."
-              : !connectedAddress
-                ? "Connect a wallet to claim fees."
-                : claimState.message || "";
+                : !connectedAddress
+                  ? "Click \"Claim Fees\" to connect your wallet."
+                  : "";
+
+          const helperMessage = claimState.message ?? defaultHelperMessage;
 
           return (
             <div
@@ -806,8 +867,7 @@ const ClankerManagerFidget: React.FC<FidgetArgs<ClankerManagerSettings>> = ({
                     needsRewardRecipient ||
                     Boolean(item.uncollectedFeesError) ||
                     missingLockerAddress ||
-                    missingLpTokenId ||
-                    !connectedAddress
+                    missingLpTokenId
                   }
                   onClick={() => handleClaim(item)}
                   style={{
