@@ -9,6 +9,7 @@ export const SPACE_TYPES = {
   TOKEN: 'token',
   PROPOSAL: 'proposal',
   CHANNEL: 'channel',
+  EXPLORE: 'explore',
 } as const;
 
 // TypeScript type derived from the constants (for type checking)
@@ -75,12 +76,17 @@ export interface ChannelSpacePageData extends SpacePageData {
   identityPublicKey?: string;
 }
 
+export interface ExploreSpacePageData extends SpacePageData {
+  spaceType: typeof SPACE_TYPES.EXPLORE;
+}
+
 // Union type for all spaces
 export type Space =
   | ProfileSpacePageData
   | TokenSpacePageData
   | ProposalSpacePageData
-  | ChannelSpacePageData;
+  | ChannelSpacePageData
+  | ExploreSpacePageData;
 
 // Type guards (actual TypeScript type guards that narrow types)
 export function isProfileSpace(space: SpacePageData): space is ProfileSpacePageData {
@@ -97,4 +103,8 @@ export function isProposalSpace(space: SpacePageData): space is ProposalSpacePag
 
 export function isChannelSpace(space: SpacePageData): space is ChannelSpacePageData {
   return space.spaceType === SPACE_TYPES.CHANNEL;
+}
+
+export function isExploreSpace(space: SpacePageData): space is ExploreSpacePageData {
+  return space.spaceType === SPACE_TYPES.EXPLORE;
 }

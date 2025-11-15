@@ -315,7 +315,14 @@ export default function PublicSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      if (isNil(currentSpaceId) || isNil(currentTabName)) {
+      const resolvedSpaceId = isNil(currentSpaceId)
+        ? spacePageData.spaceId ?? null
+        : currentSpaceId;
+      const resolvedTabName = isNil(currentTabName)
+        ? providedTabName || spacePageData.defaultTab
+        : currentTabName;
+
+      if (isNil(resolvedSpaceId) || isNil(resolvedTabName)) {
         throw new Error("Cannot save config until space and tab are initialized");
       }
       const saveableConfig = {
@@ -332,9 +339,17 @@ export default function PublicSpace({
           : undefined,
         isPrivate: false,
       };
-      return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
+      return saveLocalSpaceTab(resolvedSpaceId, resolvedTabName, saveableConfig);
     },
-    [currentSpaceId, currentTabName, saveLocalSpaceTab, config?.fidgetInstanceDatums]
+    [
+      currentSpaceId,
+      currentTabName,
+      saveLocalSpaceTab,
+      config?.fidgetInstanceDatums,
+      spacePageData.spaceId,
+      spacePageData.defaultTab,
+      providedTabName,
+    ]
   );
 
   const commitConfig = useCallback(async () => {

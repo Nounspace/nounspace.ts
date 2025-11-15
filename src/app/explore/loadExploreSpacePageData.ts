@@ -65,7 +65,7 @@ export async function loadExploreSpacePageData({
                 identityPublicKey: adminIdentity,
                 signature: "explore-auto-registration",
                 timestamp: insertTimestamp,
-                spaceType: SPACE_TYPES.PROFILE,
+                spaceType: SPACE_TYPES.EXPLORE,
               })
               .select("spaceId, identityPublicKey")
               .single();
@@ -184,7 +184,7 @@ export async function loadExploreSpacePageData({
   return {
     spaceId,
     spaceName: spaceDisplayName,
-    spaceType: SPACE_TYPES.PROFILE,
+    spaceType: SPACE_TYPES.EXPLORE,
     updatedAt: new Date().toISOString(),
     defaultTab: explorePage.defaultTab,
     currentTab: resolvedTabName,
