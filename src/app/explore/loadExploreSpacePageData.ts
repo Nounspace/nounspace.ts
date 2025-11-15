@@ -1,10 +1,10 @@
 import { ExplorePageConfig } from "@/config/systemConfig";
-import { ProfileSpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
+import { SpacePageData, SPACE_TYPES } from "@/common/types/spaceData";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { isNil } from "lodash";
 import stringify from "fast-json-stable-stringify";
 
-export type ExploreSpaceServerData = Omit<ProfileSpacePageData, "isEditable" | "spacePageUrl">;
+export type ExploreSpaceServerData = Omit<SpacePageData, "isEditable" | "spacePageUrl">;
 
 type LoadExploreSpaceArgs = {
   explorePage: ExplorePageConfig;

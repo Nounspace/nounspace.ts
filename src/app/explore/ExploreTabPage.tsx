@@ -4,11 +4,11 @@ import React, { useEffect, useMemo } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 
 import PublicSpace from "@/app/(spaces)/PublicSpace";
-import type { ProfileSpacePageData } from "@/common/types/spaceData";
+import type { SpacePageData } from "@/common/types/spaceData";
 
 type ExploreTabPageProps = {
   tabName: string;
-  spacePageData: Omit<ProfileSpacePageData, "isEditable" | "spacePageUrl">;
+  spacePageData: Omit<SpacePageData, "isEditable" | "spacePageUrl">;
 };
 
 const ExploreTabPage: React.FC<ExploreTabPageProps> = ({ tabName, spacePageData }) => {
