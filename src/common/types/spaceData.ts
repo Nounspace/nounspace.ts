@@ -25,6 +25,7 @@ export interface SpacePageData {
   currentTab: string;
   spaceOwnerFid: number | undefined;
   tabOrder?: string[];
+  identityPublicKey?: string;
   
   // URL generation function for this space
   spacePageUrl: (tabName: string) => string;
