@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { getYouTubeId } from "@/common/lib/utils/youtubeUtils";
 
 interface OpenGraphEmbedProps {
   url: string;
@@ -18,21 +19,26 @@ const OpenGraphEmbed: React.FC<OpenGraphEmbedProps> = ({ url }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Extract YouTube ID once and check if it's a YouTube URL
+  const youtubeId = getYouTubeId(url);
+  const isYouTube = youtubeId !== null;
+
   useEffect(() => {
+    // Skip OpenGraph fetch for YouTube URLs since we render the embed directly
+    if (isYouTube) {
+      setIsLoading(false);
+      return;
+    }
     const fetchOGData = async () => {
       try {
         setIsLoading(true);
-
         const response = await fetch(
           `/api/opengraph?url=${encodeURIComponent(url)}`
         );
-
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.statusText}`);
         }
-
         const data = await response.json();
-
         setOgData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -40,9 +46,21 @@ const OpenGraphEmbed: React.FC<OpenGraphEmbedProps> = ({ url }) => {
         setIsLoading(false);
       }
     };
-
     fetchOGData();
-  }, [url]);
+  }, [url, isYouTube]);
+  if (youtubeId) {
+    return (
+      <div className="w-full max-w-full aspect-video rounded-xl overflow-hidden">
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}`}
+          title="YouTube video player"
+          className="w-full h-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

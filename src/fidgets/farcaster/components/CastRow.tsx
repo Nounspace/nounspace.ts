@@ -31,6 +31,7 @@ import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
+import { isYouTubeUrl } from "@/common/lib/utils/youtubeUtils";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
 import {
@@ -187,18 +188,15 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
-        // Skip if this URL is already in the embeds
+        // Skip if this URL is already embedded or is a YouTube
         const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
-
-        if (isAlreadyEmbedded) {
+        if (isAlreadyEmbedded || isYouTubeUrl(url)) {
           return null;
         }
-
         const embedData: CastEmbed = {
           url: url,
           key: url,
         };
-
         return (
           <div
             key={`text-url-${i}`}
@@ -744,7 +742,8 @@ const CastBodyComponent = ({
       {cast.text && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
           <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
-            {cast.text}
+           {/* Remove only YouTube URLs using this utility, preserving other links and avoiding double spaces */}
+            {cast.text.replace(/https?:\/\/[^\s]+/g, (url) => isYouTubeUrl(url) ? "" : url).replace(/\s{2,}/g, " ").trim()}
           </SafeExpandableText>
         </div>
       )}
