@@ -28,12 +28,14 @@ import { RiQuillPenLine } from "react-icons/ri";
 import HomeIcon from "../atoms/icons/HomeIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
+import RobotIcon from "../atoms/icons/RobotIcon";
 import SearchIcon from "../atoms/icons/SearchIcon";
 import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import SearchModal, { SearchModalHandle } from "./SearchModal";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { loadSystemConfig } from "@/config";
 
 type NavItemProps = {
@@ -120,7 +122,7 @@ const Navigation = React.memo(
       user && user.pfp_url ? (
         <img
           className="aspect-square rounded-full w-6 h-6"
-          src={user.pfp_url}
+          src={toFarcasterCdnUrl(user.pfp_url || "")}
         />
       ) : (
         <CgProfile />
@@ -136,6 +138,7 @@ const Navigation = React.memo(
       case 'explore': return ExploreIcon;
       case 'notifications': return NotificationsIcon;
       case 'space': return RocketIcon;
+      case 'robot': return RobotIcon;
       default: return HomeIcon;
     }
   }, []);

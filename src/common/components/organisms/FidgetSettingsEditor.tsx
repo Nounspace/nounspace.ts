@@ -38,6 +38,7 @@ type FidgetSettingsRowProps = {
   onChange: (value: any) => void;
   hide?: boolean;
   id: string;
+  updateSettings?: (partial: FidgetSettings) => void;
 };
 
 export const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
@@ -63,9 +64,16 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   onChange,
   hide,
   id,
+  updateSettings,
 }) => {
   const InputComponent = field.inputSelector;
   const isValid = !field.validator || field.validator(value);
+  const errorMessage =
+    !isValid && field.errorMessage
+      ? typeof field.errorMessage === "function"
+        ? field.errorMessage(value)
+        : field.errorMessage
+      : undefined;
 
   return (
     <div
@@ -95,16 +103,23 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
           </TooltipProvider>
         )}
       </div>
-      <div>
+      <div className="flex flex-col gap-1">
         <InputComponent
           id={id}
           value={value}
           onChange={onChange}
+          // Provide extended API for custom inputs that need to update multiple settings
+          updateSettings={updateSettings}
           className={mergeClasses(
             "!h-9 !rounded-md font-medium !shadow-none",
             !isValid && "border-red-500"
           )}
         />
+        {errorMessage && (
+          <p className="text-xs text-red-500" role="alert">
+            {errorMessage}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -122,6 +137,11 @@ export const FidgetSettingsGroup: React.FC<{
       {fields.map((field, i) => {
         const value =
           (field.fieldName in state && state[field.fieldName]) || "";
+        const updateSettings = (partial: FidgetSettings) => {
+          const data = { ...state, ...partial };
+          setState(data);
+          onSave(data);
+        };
         return (
           <FidgetSettingsRow
             field={field}
@@ -137,6 +157,7 @@ export const FidgetSettingsGroup: React.FC<{
               setState(data);
               onSave(data);
             }}
+            updateSettings={updateSettings}
             hide={field.disabledIf && field.disabledIf(state)}
           />
         );

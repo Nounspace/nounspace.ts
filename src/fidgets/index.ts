@@ -19,6 +19,7 @@ import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import Portfolio from "./token/Portfolio";
+import Directory from "./token/Directory/Directory";
 import chat from "./ui/chat";
 import BuilderScore from "./farcaster/BuilderScore";
 import MobileStack from "./layout/tabFullScreen";
@@ -56,6 +57,7 @@ export const CompleteFidgets = {
   Video: VideoFidget,
   Market: marketData,
   Portfolio: Portfolio,
+  Directory: Directory,
   Chat: chat,
   Top8: Top8,
   BuilderScore: BuilderScore,

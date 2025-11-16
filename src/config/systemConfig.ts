@@ -136,7 +136,7 @@ export interface NavigationItem {
   id: string;
   label: string;
   href: string;
-  icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'custom';
+  icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'robot' | 'custom';
   openInNewTab?: boolean;
   requiresAuth?: boolean;
 }
