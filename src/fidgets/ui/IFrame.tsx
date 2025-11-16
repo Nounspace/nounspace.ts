@@ -363,6 +363,31 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     setIframelyEmbedAttributes(parseIframeAttributes(embedInfo.iframelyHtml));
   }, [embedInfo?.iframelyHtml]);
 
+  const iframelyMiniAppConfig = useMemo(() => {
+    if (!isMiniAppEnvironment || !iframelyEmbedAttributes?.src) {
+      return undefined;
+    }
+
+    if (!isValidHttpUrl(iframelyEmbedAttributes.src)) {
+      return null;
+    }
+
+    try {
+      const safeSrc = new URL(iframelyEmbedAttributes.src).toString();
+      return {
+        safeSrc,
+        bootstrapDoc: createMiniAppBootstrapSrcDoc(safeSrc),
+        allowFullScreen: "allowfullscreen" in iframelyEmbedAttributes,
+        sandboxRules: ensureSandboxRules(iframelyEmbedAttributes.sandbox),
+        widthAttr: iframelyEmbedAttributes.width,
+        heightAttr: iframelyEmbedAttributes.height,
+      };
+    } catch (error) {
+      console.warn("Rejected unsupported IFramely iframe src", error);
+      return null;
+    }
+  }, [isMiniAppEnvironment, iframelyEmbedAttributes]);
+
   const isValid = isValidHttpUrl(debouncedUrl);
   const sanitizedUrl = useSafeUrl(debouncedUrl);
   const transformedUrl = transformUrl(sanitizedUrl || "");
@@ -719,30 +744,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   const iframelyEmbedSrc = iframelyEmbedAttributes?.src ?? null;
-  const iframelyMiniAppConfig = useMemo(() => {
-    if (!isMiniAppEnvironment || !iframelyEmbedAttributes?.src) {
-      return undefined;
-    }
-
-    if (!isValidHttpUrl(iframelyEmbedAttributes.src)) {
-      return null;
-    }
-
-    try {
-      const safeSrc = new URL(iframelyEmbedAttributes.src).toString();
-      return {
-        safeSrc,
-        bootstrapDoc: createMiniAppBootstrapSrcDoc(safeSrc),
-        allowFullScreen: "allowfullscreen" in iframelyEmbedAttributes,
-        sandboxRules: ensureSandboxRules(iframelyEmbedAttributes.sandbox),
-        widthAttr: iframelyEmbedAttributes.width,
-        heightAttr: iframelyEmbedAttributes.height,
-      };
-    } catch (error) {
-      console.warn("Rejected unsupported IFramely iframe src", error);
-      return null;
-    }
-  }, [isMiniAppEnvironment, iframelyEmbedAttributes]);
 
   if (!embedInfo.directEmbed && embedInfo.iframelyHtml) {
     if (isMiniAppEnvironment && iframelyEmbedSrc && iframelyEmbedAttributes) {
