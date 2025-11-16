@@ -24,7 +24,7 @@ export const ZoraProperties: FidgetProperties = {
     {
       fieldName: "text",
       default:
-        "https://zora.co/collect/zora:0x460779723619a8e25632bce2e74b6b9ce4915c7b/4",
+        "https://zora.co/coin/0x460779723619a8e25632bce2e74b6b9ce4915c7b/4",
       required: true,
       inputSelector: TextInput,
       group: "settings",
