@@ -26,13 +26,19 @@ import { get, includes, isObject, isUndefined, map } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
+import {
+  CastModalPortalBoundary,
+  CastDiscardPrompt,
+} from "@/common/components/molecules/CastModalHelpers";
+import type { DialogContentProps } from "@radix-ui/react-dialog";
+import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -289,6 +295,88 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [replyCastDraft, setReplyCastDraft] = useState<Partial<DraftType>>();
   type ReplyCastType = "reply" | "quote";
   const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
+  // discard confirmation state for modal opened from this CastRow
+  const [shouldConfirmCastClose, setShouldConfirmCastClose] = useState(false);
+  const [showCastDiscardPrompt, setShowCastDiscardPrompt] = useState(false);
+
+  const closeCastModal = useCallback(() => {
+    setShowModal(false);
+    setShowCastDiscardPrompt(false);
+    setShouldConfirmCastClose(false);
+  }, []);
+
+  const handleCastModalChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        if (shouldConfirmCastClose) {
+          setShowCastDiscardPrompt(true);
+          return;
+        }
+
+        closeCastModal();
+        return;
+      }
+
+      setShowCastDiscardPrompt(false);
+      setShowModal(true);
+    },
+    [closeCastModal, shouldConfirmCastClose],
+  );
+
+  useEffect(() => {
+    if (!shouldConfirmCastClose) {
+      setShowCastDiscardPrompt(false);
+    }
+  }, [shouldConfirmCastClose]);
+
+  const handleCastModalInteractOutside = useCallback<
+    NonNullable<DialogContentProps["onInteractOutside"]>
+  >(
+    (event) => {
+      const hasDetailWithOriginalEvent = (
+        e: unknown,
+      ): e is { detail?: { originalEvent?: unknown } } => {
+        return typeof e === "object" && e !== null && "detail" in e;
+      };
+
+      const hasTarget = (e: unknown): e is { target?: unknown } => {
+        return typeof e === "object" && e !== null && "target" in e;
+      };
+
+      const originalEvent = hasDetailWithOriginalEvent(event) &&
+        event.detail?.originalEvent instanceof Event
+        ? event.detail.originalEvent
+        : undefined;
+
+      const eventTarget = originalEvent?.target instanceof EventTarget
+        ? originalEvent.target
+        : hasTarget(event) && event.target instanceof EventTarget
+        ? event.target
+        : null;
+
+      if (originalEvent && eventTarget &&
+          eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
+        event.preventDefault();
+        return;
+      }
+
+      if (!shouldConfirmCastClose) {
+        return;
+      }
+
+      event.preventDefault();
+      setShowCastDiscardPrompt(true);
+    },
+    [shouldConfirmCastClose],
+  );
+
+  const handleDiscardCast = useCallback(() => {
+    closeCastModal();
+  }, [closeCastModal]);
+
+  const handleCancelDiscard = useCallback(() => {
+    setShowCastDiscardPrompt(false);
+  }, []);
 
   const getReactions = () => {
     const repliesCount = cast.replies?.count || 0;
@@ -445,11 +533,23 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
   return (
     <>
-      <Modal open={showModal} setOpen={setShowModal} focusMode showClose={false}>
-        <div className="mb-4">{replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}</div>
-        <div className="flex">
-          <CreateCast initialDraft={replyCastDraft} />
-        </div>
+      <Modal
+        open={showModal}
+        setOpen={handleCastModalChange}
+        focusMode
+        showClose={false}
+        onInteractOutside={handleCastModalInteractOutside}
+        onPointerDownOutside={handleCastModalInteractOutside}
+      >
+        <CastModalPortalBoundary>
+          <div className="mb-4">
+            {replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}
+          </div>
+          <div className="flex">
+            <CreateCast initialDraft={replyCastDraft} onShouldConfirmCloseChange={setShouldConfirmCastClose} />
+          </div>
+          <CastDiscardPrompt open={showCastDiscardPrompt} onClose={handleCancelDiscard} onDiscard={handleDiscardCast} />
+        </CastModalPortalBoundary>
       </Modal>
       <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
@@ -806,3 +906,4 @@ export const CastRow = React.memo(CastRowComponent);
 CastRow.displayName = "CastRow";
 
 export const CastRowExport = CastRow;
+
