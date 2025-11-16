@@ -7,7 +7,7 @@ export const parseZoraUrl = (input: string): { pageUrl: string; contract?: strin
       const contract = parts[0];
       const tokenId = parts[1];
       // Normalize all zoraCoin scheme URLs to use the /coin/ namespace.
-      const contractNormalized = contract ? (contract.includes(":") ? contract : contract) : undefined;
+  const contractNormalized = contract ? contract : undefined;
       const pageUrl = contractNormalized
         ? tokenId
           ? `https://zora.co/coin/${contractNormalized}/${tokenId}`
@@ -56,7 +56,7 @@ export const parseZoraUrl = (input: string): { pageUrl: string; contract?: strin
           tokenId = collectMatch[2];
         }
         // Normalize to coin/<contract>. If the collect path used a namespace (e.g. base:0x...)
-        const contractNormalized = contract ? (contract.includes(":") ? contract : contract) : undefined;
+  const contractNormalized = contract ? contract : undefined;
         const pageUrl = contractNormalized
           ? tokenId
             ? `https://zora.co/coin/${contractNormalized}/${tokenId}`

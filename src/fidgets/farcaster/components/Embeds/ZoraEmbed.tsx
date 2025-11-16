@@ -48,7 +48,7 @@ const ZoraEmbed: React.FC<ZoraEmbedProps> = ({ url }) => {
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [url, parsed?.pageUrl]);
 
   // Build trade link - MVP: point to the page URL discovered
   const tradeUrl = parsed?.pageUrl ?? url;
@@ -77,10 +77,10 @@ const ZoraEmbed: React.FC<ZoraEmbedProps> = ({ url }) => {
           <div className="bg-gradient-to-b from-gray-200 via-gray-100 to-gray-100 p-4">
             <div className="relative mx-auto max-w-3xl">
               {/* Inner rounded preview card (lighter) */}
-              <a href={tradeUrl} target="_blank" rel="noopener noreferrer" className="block">
-                <div className="mx-auto w-full rounded-lg bg-white shadow-inner" style={{maxWidth: 720}}>
+              <a href={tradeUrl} target="_blank" rel="noopener noreferrer" className="block" aria-label={og.title ? `View "${og.title}" on ${siteLabel}` : `View on ${siteLabel}`}>
+                <div className="mx-auto w-full rounded-lg bg-white shadow-inner max-w-[720px]">
                   <div className="p-4">
-                    <div className="relative rounded-md overflow-hidden bg-white" style={{minHeight: 120}}>
+                    <div className="relative rounded-md overflow-hidden bg-white min-h-[120px]">
                       {og.image ? (
                         <img src={og.image!} alt={og.title || "Zora preview"} className="object-cover w-full h-48 md:h-40 lg:h-48" />
                       ) : (
@@ -113,13 +113,13 @@ const ZoraEmbed: React.FC<ZoraEmbedProps> = ({ url }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md"
+                  aria-label={`Trade ${og.title || 'on Zora'}`}
                 >
                   Trade
                 </a>
               </div>
             </div>
-
-            <div className="mt-3 text-xs text-gray-500">{siteLabel}</div>
+            {/* siteLabel already shown in preview header */}
           </div>
         </div>
       </div>
@@ -143,6 +143,7 @@ const ZoraEmbed: React.FC<ZoraEmbedProps> = ({ url }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
+            aria-label={`View ${parsed?.contract ? `contract ${parsed.contract}${parsed?.tokenId ? ` token #${parsed.tokenId}` : ''}` : 'on Zora'}`}
           >
             View
           </a>
