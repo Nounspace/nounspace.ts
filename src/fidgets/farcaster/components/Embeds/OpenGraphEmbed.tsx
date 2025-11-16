@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { getYouTubeId, isYouTubeUrl } from "@/common/lib/utils/youtubeUtils";
+import { getYouTubeId } from "@/common/lib/utils/youtubeUtils";
 
 interface OpenGraphEmbedProps {
   url: string;
@@ -19,8 +19,13 @@ const OpenGraphEmbed: React.FC<OpenGraphEmbedProps> = ({ url }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Extract YouTube ID once and check if it's a YouTube URL
+  const youtubeId = getYouTubeId(url);
+  const isYouTube = youtubeId !== null;
+
   useEffect(() => {
-    if (isYouTubeUrl(url)) {
+    // Skip OpenGraph fetch for YouTube URLs since we render the embed directly
+    if (isYouTube) {
       setIsLoading(false);
       return;
     }
@@ -42,9 +47,7 @@ const OpenGraphEmbed: React.FC<OpenGraphEmbedProps> = ({ url }) => {
       }
     };
     fetchOGData();
-  }, [url]);
-
-  const youtubeId = getYouTubeId(url);
+  }, [url, isYouTube]);
   if (youtubeId) {
     return (
       <div className="w-full max-w-full aspect-video rounded-xl overflow-hidden">
