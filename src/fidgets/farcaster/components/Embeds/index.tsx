@@ -60,7 +60,7 @@ export const renderEmbedForUrl = (
     return tweetId ? <TweetEmbed tweetId={tweetId} key={key} /> : null;
   } else if (url.startsWith("https://nouns.build")) {
     return <NounsBuildEmbed url={url} key={key} />;
-  } else if (url.includes("zora.co") || url.startsWith("zoraCoin:") || url.includes("/coin/")) {
+  } else if (url.includes("zora.co") || url.startsWith("zoraCoin:")) {
     return <ZoraEmbed url={url} key={key} />;
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
