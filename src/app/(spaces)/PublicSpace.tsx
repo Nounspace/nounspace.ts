@@ -10,7 +10,7 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "@/config";
 import Profile from "@/fidgets/ui/profile";
 import Channel from "@/fidgets/ui/channel";
 import { useWallets } from "@privy-io/react-auth";
-import { indexOf, isNil, mapValues, noop} from "lodash";
+import { indexOf, isNil, mapValues, noop, cloneDeep, mergeWith } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
@@ -343,8 +343,36 @@ export default function PublicSpace({
       await saveLocalSpaceTab(resolvedSpaceId, resolvedTabName, saveableConfig);
 
       // Auto-commit explore spaces so fidget data persists to storage when an identity is available
-      if (isExploreSpace(spacePageData) && get().account.getCurrentIdentity()) {
+      const currentIdentity = useAppStore.getState().account.getCurrentIdentity();
+      if (isExploreSpace(spacePageData) && currentIdentity) {
         await commitSpaceTab(resolvedSpaceId, resolvedTabName);
+      } else if (isExploreSpace(spacePageData) && !currentIdentity) {
+        // Fallback: persist explore tab using service-side helper when no identity is loaded
+        if (config) {
+          const mergedConfig = cloneDeep(config);
+          mergeWith(mergedConfig, saveableConfig, (objValue, srcValue) => {
+            if (Array.isArray(srcValue)) return srcValue;
+            if (typeof srcValue === "object" && srcValue !== null) {
+              return srcValue;
+            }
+            return undefined;
+          });
+          mergedConfig.timestamp = saveableConfig.timestamp ?? new Date().toISOString();
+
+          try {
+            await fetch("/api/space/explore/saveTab", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                spaceId: resolvedSpaceId,
+                tabName: resolvedTabName,
+                config: mergedConfig,
+              }),
+            });
+          } catch (error) {
+            console.error("Failed to persist explore tab without identity", error);
+          }
+        }
       }
     },
     [
@@ -357,7 +385,7 @@ export default function PublicSpace({
       providedTabName,
       commitSpaceTab,
       spacePageData,
-      get,
+      config,
     ]
   );
 
