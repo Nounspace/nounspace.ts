@@ -41,6 +41,7 @@ export async function loadExploreSpacePageData({
       .from("spaceRegistrations")
       .select("spaceId, identityPublicKey, spaceName")
       .eq("fid", adminFid)
+      .eq("spaceName", spaceDisplayName)
       .eq("spaceType", SPACE_TYPES.EXPLORE)
       .order("timestamp", { ascending: true })
       .limit(1);
@@ -66,25 +67,35 @@ export async function loadExploreSpacePageData({
           const adminIdentity = identityRows[0]?.identityPublicKey;
           if (adminIdentity) {
             const insertTimestamp = new Date().toISOString();
-            const { error: insertError } = await supabase
+            const { data: upserted, error: insertError } = await supabase
               .from("spaceRegistrations")
-              .insert({
-                fid: adminFid,
-                spaceName: spaceDisplayName,
-                identityPublicKey: adminIdentity,
-                signature: "explore-auto-registration",
-                timestamp: insertTimestamp,
-                spaceType: SPACE_TYPES.EXPLORE,
-              });
+              .upsert(
+                {
+                  fid: adminFid,
+                  spaceName: spaceDisplayName,
+                  identityPublicKey: adminIdentity,
+                  signature: "explore-auto-registration",
+                  timestamp: insertTimestamp,
+                  spaceType: SPACE_TYPES.EXPLORE,
+                },
+                { onConflict: "fid,spaceName" },
+              )
+              .select("spaceId, identityPublicKey")
+              .limit(1);
 
             if (insertError) {
               console.error("Failed to register explore space:", insertError);
             }
 
-            const refreshed = await lookupExistingSpace();
-            if (refreshed) {
-              spaceId = refreshed.spaceId;
-              identityPublicKey = refreshed.identityPublicKey ?? undefined;
+            if (upserted && upserted.length > 0) {
+              spaceId = upserted[0]?.spaceId;
+              identityPublicKey = upserted[0]?.identityPublicKey ?? undefined;
+            } else {
+              const refreshed = await lookupExistingSpace();
+              if (refreshed) {
+                spaceId = refreshed.spaceId;
+                identityPublicKey = refreshed.identityPublicKey ?? undefined;
+              }
             }
           }
         }
