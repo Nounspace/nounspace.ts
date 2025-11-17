@@ -193,7 +193,7 @@ export const createExplorePageConfig = ({
 
   const normalizedChannel = channel?.trim().replace(/^\/+/, "");
   if (normalizedChannel) {
-    const tabName = "channel";
+    const tabName = "Channel";
     if (!seenTabNames.has(tabName)) {
       seenTabNames.add(tabName);
       const idSuffix = slugify(`channel-${normalizedChannel}`, `channel-${tabEntries.length + 1}`);
