@@ -7,7 +7,7 @@ import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import { first } from "lodash";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CgProfile } from "react-icons/cg";
 import {
     FaChevronLeft,
@@ -28,12 +28,20 @@ import { RiQuillPenLine } from "react-icons/ri";
 import HomeIcon from "../atoms/icons/HomeIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
+import RobotIcon from "../atoms/icons/RobotIcon";
 import SearchIcon from "../atoms/icons/SearchIcon";
 import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import type { DialogContentProps } from "@radix-ui/react-dialog";
+import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
+import {
+  CastModalPortalBoundary,
+  CastDiscardPrompt,
+} from "../molecules/CastModalHelpers";
 import SearchModal, { SearchModalHandle } from "./SearchModal";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { loadSystemConfig } from "@/config";
 
 type NavItemProps = {
@@ -105,9 +113,95 @@ const Navigation = React.memo(
   const openModal = () => setModalOpen(true);
 
   const [showCastModal, setShowCastModal] = useState(false);
+  const [shouldConfirmCastClose, setShouldConfirmCastClose] = useState(false);
+  const [showCastDiscardPrompt, setShowCastDiscardPrompt] = useState(false);
+
+  const closeCastModal = useCallback(() => {
+    setShowCastModal(false);
+    setShowCastDiscardPrompt(false);
+    setShouldConfirmCastClose(false);
+  }, []);
+
   function openCastModal() {
     setShowCastModal(true);
   }
+
+  const handleCastModalChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        if (shouldConfirmCastClose) {
+          setShowCastDiscardPrompt(true);
+          return;
+        }
+
+        closeCastModal();
+        return;
+      }
+
+      setShowCastDiscardPrompt(false);
+      setShowCastModal(true);
+    },
+    [closeCastModal, shouldConfirmCastClose],
+  );
+
+  useEffect(() => {
+    if (!shouldConfirmCastClose) {
+      setShowCastDiscardPrompt(false);
+    }
+  }, [shouldConfirmCastClose]);
+
+  const handleCastModalInteractOutside = useCallback<
+    NonNullable<DialogContentProps["onInteractOutside"]>
+  >(
+    (event) => {
+      // Type guard to check if event has the expected structure
+      const hasDetailWithOriginalEvent = (
+        e: unknown
+      ): e is { detail?: { originalEvent?: unknown } } => {
+        return typeof e === "object" && e !== null && "detail" in e;
+      };
+
+      // Type guard to check if target exists on event
+      const hasTarget = (e: unknown): e is { target?: unknown } => {
+        return typeof e === "object" && e !== null && "target" in e;
+      };
+
+      // Safely extract originalEvent if it exists and is an Event
+      const originalEvent = hasDetailWithOriginalEvent(event) && 
+        event.detail?.originalEvent instanceof Event
+        ? event.detail.originalEvent
+        : undefined;
+
+      // Safely extract eventTarget from originalEvent or fallback to event target
+      const eventTarget = originalEvent?.target instanceof EventTarget
+        ? originalEvent.target
+        : hasTarget(event) && event.target instanceof EventTarget
+        ? event.target
+        : null;
+
+      if (originalEvent && eventTarget && 
+          eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
+        event.preventDefault();
+        return;
+      }
+
+      if (!shouldConfirmCastClose) {
+        return;
+      }
+
+      event.preventDefault();
+      setShowCastDiscardPrompt(true);
+    },
+    [shouldConfirmCastClose],
+  );
+
+  const handleDiscardCast = useCallback(() => {
+    closeCastModal();
+  }, [closeCastModal]);
+
+  const handleCancelDiscard = useCallback(() => {
+    setShowCastDiscardPrompt(false);
+  }, []);
   const { fid } = useFarcasterSigner("navigation");
   const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
@@ -120,7 +214,7 @@ const Navigation = React.memo(
       user && user.pfp_url ? (
         <img
           className="aspect-square rounded-full w-6 h-6"
-          src={user.pfp_url}
+          src={toFarcasterCdnUrl(user.pfp_url || "")}
         />
       ) : (
         <CgProfile />
@@ -136,6 +230,7 @@ const Navigation = React.memo(
       case 'explore': return ExploreIcon;
       case 'notifications': return NotificationsIcon;
       case 'space': return RocketIcon;
+      case 'robot': return RobotIcon;
       default: return HomeIcon;
     }
   }, []);
@@ -255,11 +350,25 @@ const Navigation = React.memo(
     >
       <Modal
         open={showCastModal}
-        setOpen={setShowCastModal}
+        setOpen={handleCastModalChange}
         focusMode={false}
         showClose={false}
+        onInteractOutside={handleCastModalInteractOutside}
+        onPointerDownOutside={handleCastModalInteractOutside}
       >
-        <CreateCast afterSubmit={() => setShowCastModal(false)} />
+        <CastModalPortalBoundary>
+          <>
+            <CreateCast
+              afterSubmit={closeCastModal}
+              onShouldConfirmCloseChange={setShouldConfirmCastClose}
+            />
+            <CastDiscardPrompt
+              open={showCastDiscardPrompt}
+              onClose={handleCancelDiscard}
+              onDiscard={handleDiscardCast}
+            />
+          </>
+        </CastModalPortalBoundary>
       </Modal>
       <SearchModal ref={searchRef} onResultSelect={handleSearchResultSelect} />
       <div

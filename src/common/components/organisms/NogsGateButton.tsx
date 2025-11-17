@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import { RECHECK_BACKOFF_FACTOR } from "@/common/data/stores/app/setup";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
@@ -6,7 +6,6 @@ import { ALCHEMY_API } from "@/constants/urls";
 import { AlchemyIsHolderOfContract } from "@/pages/api/signerRequests";
 import { usePrivy } from "@privy-io/react-auth";
 import axios from "axios";
-import { useEffect } from "react";
 import { Button, ButtonProps } from "../atoms/button";
 import NogsChecker from "./NogsChecker";
 import Modal from "../molecules/Modal";
@@ -20,6 +19,7 @@ const MIN_SPACE_TOKENS_FOR_UNLOCK = 1111;
 
 const NogsGateButton = (props: ButtonProps) => {
   const { user } = usePrivy();
+
   const {
     setNogsIsChecking,
     nogsTimeoutTimer,
@@ -52,26 +52,58 @@ const NogsGateButton = (props: ButtonProps) => {
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  // ----- SPACE token gating -----
   const walletAddress = user?.wallet?.address as Address | undefined;
+
   const { data: spaceBalanceData } = useBalance({
     address: walletAddress ?? zeroAddress,
     token: SPACE_CONTRACT_ADDR as Address,
     chainId: base.id,
     query: { enabled: Boolean(walletAddress) },
   });
+
   const userHoldEnoughSpace = spaceBalanceData
-    ? Number(
-        formatUnits(spaceBalanceData.value, spaceBalanceData.decimals),
-      ) >= MIN_SPACE_TOKENS_FOR_UNLOCK
+    ? Number(formatUnits(spaceBalanceData.value, spaceBalanceData.decimals)) >=
+      MIN_SPACE_TOKENS_FOR_UNLOCK
     : false;
 
-  async function isHoldingNogs(address): Promise<boolean> {
+  const gatingSatisfied = hasNogs || userHoldEnoughSpace;
+
+  // Optional debug logs
+  useEffect(() => {
+    if (spaceBalanceData) {
+      console.log(
+        "[DEBUG] SPACE balance:",
+        Number(formatUnits(spaceBalanceData.value, spaceBalanceData.decimals)),
+      );
+      console.log("[DEBUG] SPACE contract address:", SPACE_CONTRACT_ADDR);
+      console.log("[DEBUG] Connected wallet:", walletAddress);
+    }
+  }, [spaceBalanceData, walletAddress]);
+
+  useEffect(() => {
+    console.log("[DEBUG] userHoldEnoughSpace:", userHoldEnoughSpace);
+    console.log("[DEBUG] hasNogs:", hasNogs);
+  }, [userHoldEnoughSpace, hasNogs]);
+
+  // ----- nOGs gating / timers -----
+
+  async function isHoldingNogs(address: string): Promise<boolean> {
     setNogsIsChecking(true);
+
     if (process.env.NODE_ENV === "development") {
       setNogsIsChecking(false);
       return true;
     }
+
     try {
+      console.log("[DEBUG] Checking nOGs for address:", address);
+      console.log(
+        "[DEBUG] Using API:",
+        `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
+      );
+      console.log("[DEBUG] nOGs Contract:", NOGS_CONTRACT_ADDR);
+
       const { data } = await axios.get<AlchemyIsHolderOfContract>(
         `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
         {
@@ -81,8 +113,11 @@ const NogsGateButton = (props: ButtonProps) => {
           },
         },
       );
+
+      console.log("[DEBUG] API response for nOGs:", data);
       return data.isHolderOfContract;
-    } catch {
+    } catch (err) {
+      console.error("[DEBUG] Error checking nOGs:", err);
       return false;
     } finally {
       setNogsIsChecking(false);
@@ -94,13 +129,10 @@ const NogsGateButton = (props: ButtonProps) => {
     clearTimeout(nogsRecheckCountDownTimer);
     setNogsRecheckCountDown(0);
     setNogsShouldRecheck(false);
-    if (userHoldEnoughSpace) {
-      setModalOpen(false);
-      return;
-    }
 
     if (user && user.wallet) {
-      if (await isHoldingNogs(user.wallet.address)) {
+      const isHolder = await isHoldingNogs(user.wallet.address);
+      if (isHolder) {
         setHasNogs(true);
         setModalOpen(false);
       } else {
@@ -108,25 +140,27 @@ const NogsGateButton = (props: ButtonProps) => {
           nogsRecheckTimerLength * RECHECK_BACKOFF_FACTOR,
         );
         setNogsTimeoutTimer(
-          setTimeout(() => setNogsShouldRecheck(true), nogsRecheckTimerLength),
+          setTimeout(
+            () => setNogsShouldRecheck(true),
+            nogsRecheckTimerLength,
+          ),
         );
         setNogsRecheckCountDown(nogsRecheckTimerLength / 1000);
       }
     }
   }, [
     user,
-    userHoldEnoughSpace,
-    setModalOpen,
-    nogsRecheckTimerLength,
-    setNogsRecheckTimerLength,
-    setNogsTimeoutTimer,
-    setNogsRecheckCountDown,
-    setNogsShouldRecheck,
-    setHasNogs,
     nogsTimeoutTimer,
     nogsRecheckCountDownTimer,
+    nogsRecheckTimerLength,
+    setNogsRecheckCountDown,
+    setNogsRecheckTimerLength,
+    setNogsShouldRecheck,
+    setNogsTimeoutTimer,
+    setHasNogs,
   ]);
 
+  // Recheck countdown tick
   useEffect(() => {
     if (nogsRecheckCountDown > 0) {
       const timer = setTimeout(
@@ -134,51 +168,87 @@ const NogsGateButton = (props: ButtonProps) => {
         1000,
       );
       setNogsRecheckCountDownTimer(timer);
-      
-      // Cleanup function to clear timer when component unmounts or effect re-runs
+
       return () => {
         clearTimeout(timer);
       };
     }
-  }, [nogsRecheckCountDown]);
+  }, [
+    nogsRecheckCountDown,
+    setNogsRecheckCountDown,
+    setNogsRecheckCountDownTimer,
+  ]);
 
+  // Trigger recheck when nogsShouldRecheck flips to true
   useEffect(() => {
-    nogsShouldRecheck && checkForNogs();
+    if (nogsShouldRecheck) {
+      void checkForNogs();
+    }
   }, [nogsShouldRecheck, checkForNogs]);
 
-  // Cleanup effect to clear all timers when component unmounts
+  // Cleanup all timers on unmount
   useEffect(() => {
     return () => {
       clearTimeout(nogsTimeoutTimer);
       clearTimeout(nogsRecheckCountDownTimer);
     };
-  }, []);
+  }, [nogsTimeoutTimer, nogsRecheckCountDownTimer]);
 
-  const gatingSatisfied = hasNogs || userHoldEnoughSpace;
+  // NFT nOGs debug status (optional)
+  const [nogsCheckResult, setNogsCheckResult] = useState<string>("?");
 
+  // Automatically check nOGs on load
   useEffect(() => {
-    if (modalOpen && gatingSatisfied) {
-      setModalOpen(false);
+    async function checkNogsAuto() {
+      if (!walletAddress) return;
+
+      try {
+        const { data } = await axios.get<AlchemyIsHolderOfContract>(
+          `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
+          {
+            params: {
+              wallet: walletAddress,
+              contractAddress: NOGS_CONTRACT_ADDR,
+            },
+          },
+        );
+
+        setNogsCheckResult(data.isHolderOfContract ? "YES" : "NO");
+        if (data.isHolderOfContract) {
+          setHasNogs(true);
+        }
+      } catch {
+        setNogsCheckResult("ERROR");
+      }
     }
-  }, [modalOpen, gatingSatisfied]);
+
+    void checkNogsAuto();
+  }, [walletAddress, setHasNogs]);
+
+  // ----- Button wrapper (this is what ThemeSettingsEditor uses) -----
+
+  const { onClick, children, ...rest } = props;
+
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    if (gatingSatisfied) {
+      if (!isUndefined(onClick)) {
+        onClick(e);
+      }
+      return;
+    }
+
+    setModalOpen(true);
+    void checkForNogs();
+  };
 
   return (
     <>
       <Modal setOpen={setModalOpen} open={modalOpen} showClose>
-        <NogsChecker></NogsChecker>
+        <NogsChecker />
       </Modal>
-      <Button
-        {...props}
-        onClick={(e) => {
-          if (gatingSatisfied) {
-            return isUndefined(props.onClick) ? undefined : props.onClick(e);
-          }
-
-          setModalOpen(true);
-          checkForNogs();
-          return undefined;
-        }}
-      ></Button>
+      <Button {...rest} onClick={handleClick}>
+        {children}
+      </Button>
     </>
   );
 };

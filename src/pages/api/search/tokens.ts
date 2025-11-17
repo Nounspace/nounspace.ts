@@ -13,7 +13,7 @@ interface TokenResult {
 
 const QuerySchema = z.object({
   q: z.string().min(1),
-  limit: z.coerce.number().int().positive().max(10).default(5),
+  limit: z.coerce.number().int().positive().max(5).default(5),
 });
 
 type TokenSearchResult = {
@@ -36,6 +36,13 @@ const _validateQueryParams = <T extends ZodSchema>(
 };
 
 const COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3";
+const CLANKER_BASE_URL = "https://www.clanker.world/api";
+
+const CLANKER_CHAIN_ID_TO_NETWORK: Record<number, TokenResult["network"]> = {
+  1: "mainnet",
+  8453: "base",
+  137: "polygon",
+};
 
 async function fetchTokenByAddress(address: string): Promise<TokenResult | null> {
   const url = `${COINGECKO_BASE_URL}/coins/ethereum/contract/${address}`;
@@ -108,6 +115,58 @@ async function fetchTokensByQuery(query: string, limit: number): Promise<TokenRe
   return results;
 }
 
+type ClankerTokenResponse = {
+  data?: Array<{
+    contract_address?: string;
+    name?: string;
+    symbol?: string;
+    img_url?: string | null;
+    chain_id?: number;
+  }>;
+};
+
+async function fetchClankerTokens(query: string, limit: number): Promise<TokenResult[]> {
+  if (!query.trim() || limit <= 0) return [];
+
+  const params = new URLSearchParams({
+    q: query,
+    sort: "asc",
+    limit: String(limit),
+  });
+
+  try {
+    const response = await fetch(`${CLANKER_BASE_URL}/tokens?${params.toString()}`);
+    if (!response.ok) return [];
+
+    const json = (await response.json()) as ClankerTokenResponse;
+    if (!Array.isArray(json.data)) return [];
+
+    const clankerTokens: TokenResult[] = [];
+    for (const token of json.data) {
+      if (!token?.contract_address || !token?.name || !token?.symbol) continue;
+
+      const network = token.chain_id ? CLANKER_CHAIN_ID_TO_NETWORK[token.chain_id] : undefined;
+      if (!network) continue;
+
+      clankerTokens.push({
+        id: `${token.contract_address.toLowerCase()}-${network}`,
+        name: token.name,
+        symbol: token.symbol,
+        image: token.img_url || null,
+        contractAddress: token.contract_address.toLowerCase(),
+        network,
+      });
+
+      if (clankerTokens.length >= limit) break;
+    }
+
+    return clankerTokens;
+  } catch (error) {
+    console.error("Error fetching Clanker tokens:", error);
+    return [];
+  }
+}
+
 const get = async (
   req: NextApiRequest,
   res: NextApiResponse<NounspaceResponse<TokenSearchResult>>,
@@ -120,13 +179,31 @@ const get = async (
 
   try {
     const { q, limit } = params!;
-    let tokens: TokenResult[] = [];
-    if (/^0x[a-fA-F0-9]{40}$/.test(q)) {
-      const token = await fetchTokenByAddress(q);
-      if (token) tokens = [token];
-    } else {
-      tokens = await fetchTokensByQuery(q, limit);
+    const maxResults = Math.min(limit, 5);
+
+    const coingeckoTokens = /^0x[a-fA-F0-9]{40}$/.test(q)
+      ? await (async () => {
+          const token = await fetchTokenByAddress(q);
+          return token ? [token] : [];
+        })()
+      : await fetchTokensByQuery(q, maxResults);
+
+    const clankerTokens = await fetchClankerTokens(q, maxResults);
+
+    const combinedTokens = [...coingeckoTokens, ...clankerTokens];
+    const uniqueTokens: TokenResult[] = [];
+    const seen = new Set<string>();
+
+    for (const token of combinedTokens) {
+      const key = `${token.network}:${token.contractAddress.toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      uniqueTokens.push(token);
+      if (uniqueTokens.length >= maxResults) break;
     }
+
+    const tokens = uniqueTokens.slice(0, maxResults);
+
     return res.status(200).json({ result: "success", value: { tokens } });
   } catch (err) {
     return res.status(500).json({

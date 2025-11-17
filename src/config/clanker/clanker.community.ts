@@ -1,3 +1,5 @@
+import { Address } from "viem";
+
 export const clankerCommunity = {
   type: "token_platform",
   urls: {
@@ -30,9 +32,13 @@ export const clankerCommunity = {
     }
   },
   contracts: {
-    clanker: "0x0000000000000000000000000000000000000000", // Placeholder - would need actual contract
-    tokenFactory: "0x0000000000000000000000000000000000000000", // Placeholder - would need actual contract
-    space: "0x0000000000000000000000000000000000000000", // Placeholder - would need actual contract
-    trading: "0x0000000000000000000000000000000000000000" // Placeholder - would need actual contract
+    clanker: "0x0000000000000000000000000000000000000000" as Address, // Placeholder - would need actual contract
+    tokenFactory: "0x0000000000000000000000000000000000000000" as Address, // Placeholder - would need actual contract
+    space: "0x0000000000000000000000000000000000000000" as Address, // Placeholder - would need actual contract
+    trading: "0x0000000000000000000000000000000000000000" as Address, // Placeholder - would need actual contract
+    // For compatibility with CommunityConfig interface
+    nouns: "0x0000000000000000000000000000000000000000" as Address,
+    auctionHouse: "0x0000000000000000000000000000000000000000" as Address,
+    nogs: "0x0000000000000000000000000000000000000000" as Address,
   }
 };

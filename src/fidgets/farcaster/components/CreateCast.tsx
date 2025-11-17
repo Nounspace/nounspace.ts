@@ -29,6 +29,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
+import {
+  CastModalInteractiveBranch,
+  useCastModalPortalContainer,
+} from "@/common/lib/utils/castModalInteractivity";
+import { CAST_MODAL_INTERACTIVE_ATTR } from "@/common/components/molecules/CastModalHelpers";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/common/stores/bannerStore";
@@ -135,14 +140,17 @@ export type DraftType = {
 type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
   afterSubmit?: () => void;
+  onShouldConfirmCloseChange?: (shouldConfirm: boolean) => void;
 };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
+  onShouldConfirmCloseChange,
 }) => {
+  const castModalPortalContainer = useCastModalPortalContainer();
   const isMobile = useIsMobile();
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -159,12 +167,105 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const isReply = draft?.parentCastId !== undefined;
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
   const [initialChannels, setInitialChannels] = useState() as any;
-  const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
-  const parentRef = useRef<HTMLDivElement>(null);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const emojiTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const emojiContentRef = useRef<HTMLDivElement | null>(null);
+
+  const isTargetInsideEmojiPicker = useCallback(
+    (event?: Event | CustomEvent<{ originalEvent?: Event }>, fallbackTarget?: EventTarget | null) => {
+      const isInside = (node?: EventTarget | null) => {
+        if (!(node instanceof Node)) {
+          return false;
+        }
+
+        if (emojiContentRef.current?.contains(node)) {
+          return true;
+        }
+
+        if (emojiTriggerRef.current?.contains(node)) {
+          return true;
+        }
+
+        return false;
+      };
+
+      if (isInside(fallbackTarget)) {
+        return true;
+      }
+
+      if (!event) {
+        return false;
+      }
+
+      const relatedEvents: Event[] = [];
+
+      const originalEvent = (event as CustomEvent<{ originalEvent?: Event }>)
+        ?.detail?.originalEvent;
+
+      if (originalEvent) {
+        relatedEvents.push(originalEvent);
+      }
+
+      if (!relatedEvents.includes(event)) {
+        relatedEvents.push(event);
+      }
+
+      return relatedEvents.some((currentEvent) => {
+        if (isInside(currentEvent.target)) {
+          return true;
+        }
+
+        const composedPath =
+          typeof (currentEvent as any)?.composedPath === "function"
+            ? (currentEvent as any).composedPath()
+            : [];
+
+        return composedPath.some((node: EventTarget) => isInside(node));
+      });
+    },
+    [],
+  );
+
+  const handleEmojiPickerOpenChange = useCallback((nextOpen: boolean) => {
+    setIsEmojiPickerOpen(nextOpen);
+  }, []);
+
+  const handleEmojiPickerInteraction = useCallback((event: CustomEvent<{ originalEvent?: Event }> | Event) => {
+    const originalEvent =
+      (event as CustomEvent<{ originalEvent?: Event }>)
+        ?.detail?.originalEvent;
+    const fallbackTarget =
+      originalEvent?.target ??
+      ((event as unknown as Event)?.target ?? null);
+
+    if (
+      isTargetInsideEmojiPicker(
+        event as unknown as Event,
+        fallbackTarget,
+      )
+    ) {
+      event.preventDefault();
+      return;
+    }
+
+    setIsEmojiPickerOpen(false);
+  }, []);
+
+  const shouldConfirmClose = useMemo(() => {
+    const hasText = (draft.text ?? "").trim().length > 0;
+    const hasEmbeds = (draft.embeds?.length ?? 0) > 0;
+    const hasMentions = (Object.keys(draft.mentionsToFids ?? {}).length > 0) || 
+                       ((draft.mentionsPositions?.length ?? 0) > 0);
+    return (hasText || hasEmbeds || hasMentions) && draft.status !== DraftStatus.published;
+  }, [draft.text, draft.embeds, draft.mentionsToFids, draft.mentionsPositions, draft.status]);
+
+  useEffect(() => {
+    onShouldConfirmCloseChange?.(shouldConfirmClose);
+  }, [onShouldConfirmCloseChange, shouldConfirmClose]);
 
 
   // Real image upload function for imgBB
@@ -626,7 +727,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   ) => {
     event.stopPropagation();
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
-    setIsPickingEmoji(false);
+    setIsEmojiPickerOpen(false);
   };
 
   const handleEnhanceCast = async (text: string) => {
@@ -794,18 +895,43 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 )}
               </Button>
 
-              <Button
-                className="h-10"
-                type="button"
-                variant="ghost"
-                disabled={isPublishing}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsPickingEmoji(!isPickingEmoji);
-                }}
+              <Popover
+                open={isEmojiPickerOpen}
+                onOpenChange={handleEmojiPickerOpenChange}
               >
-                <GoSmiley size={20} />
-              </Button>
+                <PopoverTrigger asChild>
+                  <Button
+                    ref={emojiTriggerRef}
+                    className="h-10"
+                    type="button"
+                    variant="ghost"
+                    disabled={isPublishing}
+                    aria-expanded={isEmojiPickerOpen}
+                  >
+                    <GoSmiley size={20} />
+                  </Button>
+                </PopoverTrigger>
+                <CastModalInteractiveBranch asChild>
+                  <PopoverContent
+                    ref={emojiContentRef}
+                    container={castModalPortalContainer ?? undefined}
+                    side="top"
+                    align="end"
+                    sideOffset={8}
+                    className="z-[60] w-auto border-none bg-transparent p-0 shadow-none"
+                    {...{ [CAST_MODAL_INTERACTIVE_ATTR]: "true" }}
+                    onInteractOutside={handleEmojiPickerInteraction}
+                    onPointerDownOutside={handleEmojiPickerInteraction}
+                    onEscapeKeyDown={() => setIsEmojiPickerOpen(false)}
+                  >
+                    <EmojiPicker
+                      theme={"light" as Theme}
+                      onEmojiClick={handleEmojiClick}
+                      open={isEmojiPickerOpen}
+                    />
+                  </PopoverContent>
+                </CastModalInteractiveBranch>
+              </Popover>
             </div>
           </div>
 
@@ -823,23 +949,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
             </div>
           )}
 
-          <div
-            ref={parentRef}
-            className="z-50"
-            style={{
-              opacity: isPickingEmoji ? 1 : 0,
-              pointerEvents: isPickingEmoji ? "auto" : "none",
-              marginTop: 50,
-              transition: "opacity 1s ease",
-              position: "absolute",
-            }}
-          >
-            <EmojiPicker
-              theme={"light" as Theme}
-              onEmojiClick={handleEmojiClick}
-              open={isPickingEmoji}
-            />
-          </div>
           <Popover
             open={!!currentMod}
             onOpenChange={(op: boolean) => {
@@ -847,7 +956,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }}
           >
             <PopoverTrigger></PopoverTrigger>
-            <PopoverContent className="w-[300px]">
+            <PopoverContent
+              container={castModalPortalContainer ?? undefined}
+              className="w-[300px]"
+            >
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">{currentMod?.name}</h4>
                 <hr />

@@ -2,8 +2,8 @@ import { Card, CardContent } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
-import { reduce } from "lodash";
-import React from "react";
+import { reduce, isEqual } from "lodash";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
@@ -86,16 +86,95 @@ export function FidgetWrapper({
 
   const Fidget = fidget;
 
-  const saveData = (data: FidgetData) => {
-    return saveConfig({
-      ...bundle.config,
-      data,
-    });
-  };
+  // Generic settings backfill: any fidget can use lastFetchSettings in config.data
+  // to automatically backfill empty settings. This is useful when fidgets are created
+  // from external sources (e.g., URL parameters) and need to populate settings.
+  const lastFetchSettings = (bundle.config?.data as {
+    lastFetchSettings?: Partial<FidgetSettings>;
+  } | undefined)?.lastFetchSettings;
 
-  const settingsWithDefaults = getSettingsWithDefaults(
-    bundle.config.settings,
-    bundle.properties,
+  const derivedSettings = useMemo<FidgetSettings>(() => {
+    const baseSettings = (bundle.config.settings ?? {}) as FidgetSettings;
+    if (!lastFetchSettings || typeof lastFetchSettings !== "object") {
+      return baseSettings;
+    }
+
+    const nextSettings: FidgetSettings = { ...baseSettings };
+    let changed = false;
+
+    // Helper to only fill empty settings
+    const setValue = (key: string, value: unknown) => {
+      const current = nextSettings[key];
+      // Don't overwrite existing non-empty values
+      if (current !== undefined && current !== null && current !== "") {
+        return;
+      }
+
+      if (value !== undefined && value !== null) {
+        if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (trimmed) {
+            nextSettings[key] = trimmed;
+            changed = true;
+          }
+        } else {
+          nextSettings[key] = value;
+          changed = true;
+        }
+      }
+    };
+
+    // Backfill from lastFetchSettings (any fidget can use this pattern)
+    Object.entries(lastFetchSettings).forEach(([key, value]) => {
+      setValue(key, value);
+    });
+
+    return changed ? nextSettings : baseSettings;
+  }, [bundle.config.settings, lastFetchSettings]);
+
+  const settingsWithDefaults = useMemo(
+    () => getSettingsWithDefaults(derivedSettings, bundle.properties),
+    [derivedSettings, bundle.properties],
+  );
+
+  const shouldAttemptBackfill =
+    !!lastFetchSettings &&
+    !isEqual(derivedSettings, bundle.config.settings ?? {});
+
+  const lastBackfillAttemptRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!shouldAttemptBackfill) {
+      lastBackfillAttemptRef.current = null;
+      return;
+    }
+
+    const serialized = JSON.stringify(derivedSettings);
+    if (lastBackfillAttemptRef.current === serialized) {
+      return;
+    }
+    lastBackfillAttemptRef.current = serialized;
+
+    (async () => {
+      try {
+        await saveConfig({
+          ...bundle.config,
+          settings: derivedSettings,
+        });
+      } catch (error) {
+        console.error("Failed to backfill settings from lastFetchSettings", error);
+        lastBackfillAttemptRef.current = null;
+      }
+    })();
+  }, [shouldAttemptBackfill, derivedSettings, bundle.config, saveConfig]);
+
+  const saveData = useCallback(
+    (data: FidgetData) =>
+      saveConfig({
+        ...bundle.config,
+        data,
+      }),
+    [bundle.config, saveConfig],
   );
 
   const onSave = async (
