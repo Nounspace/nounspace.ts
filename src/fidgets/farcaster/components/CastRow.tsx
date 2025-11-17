@@ -8,7 +8,6 @@ import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
-import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
 import { ReactionType } from "@farcaster/core";
 import {
@@ -26,20 +25,13 @@ import { get, includes, isObject, isUndefined, map } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
-import { isYouTubeUrl } from "@/common/lib/utils/youtubeUtils";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
-import {
-  CastModalPortalBoundary,
-  CastDiscardPrompt,
-} from "@/common/components/molecules/CastModalHelpers";
-import type { DialogContentProps } from "@radix-ui/react-dialog";
-import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -114,11 +106,7 @@ export const CastAvatar = ({ user, className }: { user: User; className?: string
           className
         )}
       >
-        <AvatarImage
-          src={toFarcasterCdnUrl(user.pfp_url || "")}
-          alt={user?.display_name}
-          className="object-cover"
-        />
+        <AvatarImage src={`${user.pfp_url}`} alt={user?.display_name} className="object-cover" />
       </Avatar>
     </PriorityLink>
   );
@@ -135,9 +123,59 @@ const extractUrlsFromText = (text: string): string[] => {
   return text.match(urlRegex) || [];
 };
 
+// Helper: try to extract a tweet id from a URL
+const getTweetIdFromUrl = (u: string) => {
+  try {
+    const cleaned = u.split(/[?#]/)[0];
+    const parts = cleaned.split("/").filter(Boolean);
+    const statusIndex = parts.findIndex((p) => p === "status");
+    if (statusIndex >= 0 && parts.length > statusIndex + 1) return parts[statusIndex + 1];
+    for (let j = parts.length - 1; j >= 0; j--) {
+      if (/^\d{5,}$/.test(parts[j])) return parts[j];
+    }
+  } catch (e) {
+    // ignore parsing errors but keep debug info
+    console.debug("getTweetIdFromUrl error", e);
+  }
+  return null;
+};
+
+// Helper: check if a URL is already in the embed list
+const isUrlAlreadyEmbedded = (
+  url: string,
+  embedUrls: Array<EmbedUrl | { cast_id?: { hash?: string | Uint8Array } }>
+): boolean => {
+  const urlTweetId = getTweetIdFromUrl(url);
+  
+  return embedUrls.some((embed) => {
+    if (isEmbedUrl(embed)) {
+      if (embed.url === url) return true;
+      const embedTweetId = getTweetIdFromUrl(embed.url as string);
+      if (embedTweetId && urlTweetId && embedTweetId === urlTweetId) return true;
+    }
+    return false;
+  });
+};
+
+// Helper: extract embed URLs from cast
+const getEmbedUrls = (cast: CastWithInteractions): Array<EmbedUrl | { cast_id?: { hash?: string | Uint8Array } }> => {
+  return "embeds" in cast && cast.embeds ? cast.embeds : [];
+};
+
+// Helper: check if a URL is a Twitter/X URL
+const isTwitterUrl = (url: string | undefined | null): boolean => {
+  if (!url || typeof url !== "string") return false;
+  return url.includes("twitter.com") || url.startsWith("https://x.com");
+};
+
+// Helper: convert cast hash to string (handles both string and Uint8Array)
+const castHashToString = (hash: string | Uint8Array): string => {
+  return typeof hash === "string" ? hash : bytesToHex(hash);
+};
+
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
   // Get URLs from embeds and also extract any URLs from the cast text
-  const embedUrls = "embeds" in cast && cast.embeds ? cast.embeds : [];
+  const embedUrls = getEmbedUrls(cast);
   const textUrls = extractUrlsFromText(cast.text || "");
 
   // If no embeds from API and no URLs in text, return null
@@ -155,28 +193,25 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
               key: embed.url,
             }
           : {
-              castId: embed.cast_id,
-              key: embed.cast_id?.hash 
-                ? (typeof embed.cast_id.hash === "string" 
-                    ? embed.cast_id.hash 
-                    : bytesToHex(embed.cast_id.hash))
-                : "",
+              castId: embed.cast_id as { fid: number; hash: string | Uint8Array } | undefined,
+              key: embed.cast_id?.hash ? castHashToString(embed.cast_id.hash) : "",
             };
+
+        const isTwitterEmbed = isTwitterUrl(isEmbedUrl(embed) ? embed.url : embedData.url);
 
         return (
           <div
             key={`embed-${i}`}
             className={classNames(
-              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center w-full bg-background/50",
+              // only apply clipping for non-twitter embeds
+              !isTwitterEmbed ? "overflow-hidden max-h-[500px]" : "",
               embedData.castId ? "max-w-[100%]" : "max-w-max"
             )}
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                const hashString =
-                  typeof embedData.castId.hash === "string"
-                    ? embedData.castId.hash
-                    : bytesToHex(embedData.castId.hash);
+                const hashString = castHashToString(embedData.castId.hash);
                 onSelectCast(hashString, cast.author.username);
               }
             }}
@@ -188,20 +223,24 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
-        // Skip if this URL is already embedded or is a YouTube
-        const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
-        if (isAlreadyEmbedded || isYouTubeUrl(url)) {
+        // Skip if this URL is already in the embeds
+        if (isUrlAlreadyEmbedded(url, embedUrls)) {
           return null;
         }
+
         const embedData: CastEmbed = {
           url: url,
           key: url,
         };
+
+        const isTwitterTextUrl = isTwitterUrl(url);
+
         return (
           <div
             key={`text-url-${i}`}
             className={classNames(
-              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center w-full bg-background/50",
+              !isTwitterTextUrl ? "overflow-hidden max-h-[500px]" : "",
               "max-w-max"
             )}
           >
@@ -293,88 +332,6 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [replyCastDraft, setReplyCastDraft] = useState<Partial<DraftType>>();
   type ReplyCastType = "reply" | "quote";
   const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
-  // discard confirmation state for modal opened from this CastRow
-  const [shouldConfirmCastClose, setShouldConfirmCastClose] = useState(false);
-  const [showCastDiscardPrompt, setShowCastDiscardPrompt] = useState(false);
-
-  const closeCastModal = useCallback(() => {
-    setShowModal(false);
-    setShowCastDiscardPrompt(false);
-    setShouldConfirmCastClose(false);
-  }, []);
-
-  const handleCastModalChange = useCallback(
-    (open: boolean) => {
-      if (!open) {
-        if (shouldConfirmCastClose) {
-          setShowCastDiscardPrompt(true);
-          return;
-        }
-
-        closeCastModal();
-        return;
-      }
-
-      setShowCastDiscardPrompt(false);
-      setShowModal(true);
-    },
-    [closeCastModal, shouldConfirmCastClose],
-  );
-
-  useEffect(() => {
-    if (!shouldConfirmCastClose) {
-      setShowCastDiscardPrompt(false);
-    }
-  }, [shouldConfirmCastClose]);
-
-  const handleCastModalInteractOutside = useCallback<
-    NonNullable<DialogContentProps["onInteractOutside"]>
-  >(
-    (event) => {
-      const hasDetailWithOriginalEvent = (
-        e: unknown,
-      ): e is { detail?: { originalEvent?: unknown } } => {
-        return typeof e === "object" && e !== null && "detail" in e;
-      };
-
-      const hasTarget = (e: unknown): e is { target?: unknown } => {
-        return typeof e === "object" && e !== null && "target" in e;
-      };
-
-      const originalEvent = hasDetailWithOriginalEvent(event) &&
-        event.detail?.originalEvent instanceof Event
-        ? event.detail.originalEvent
-        : undefined;
-
-      const eventTarget = originalEvent?.target instanceof EventTarget
-        ? originalEvent.target
-        : hasTarget(event) && event.target instanceof EventTarget
-        ? event.target
-        : null;
-
-      if (originalEvent && eventTarget &&
-          eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
-        event.preventDefault();
-        return;
-      }
-
-      if (!shouldConfirmCastClose) {
-        return;
-      }
-
-      event.preventDefault();
-      setShowCastDiscardPrompt(true);
-    },
-    [shouldConfirmCastClose],
-  );
-
-  const handleDiscardCast = useCallback(() => {
-    closeCastModal();
-  }, [closeCastModal]);
-
-  const handleCancelDiscard = useCallback(() => {
-    setShowCastDiscardPrompt(false);
-  }, []);
 
   const getReactions = () => {
     const repliesCount = cast.replies?.count || 0;
@@ -531,23 +488,11 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
   return (
     <>
-      <Modal
-        open={showModal}
-        setOpen={handleCastModalChange}
-        focusMode
-        showClose={false}
-        onInteractOutside={handleCastModalInteractOutside}
-        onPointerDownOutside={handleCastModalInteractOutside}
-      >
-        <CastModalPortalBoundary>
-          <div className="mb-4">
-            {replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}
-          </div>
-          <div className="flex">
-            <CreateCast initialDraft={replyCastDraft} onShouldConfirmCloseChange={setShouldConfirmCastClose} />
-          </div>
-          <CastDiscardPrompt open={showCastDiscardPrompt} onClose={handleCancelDiscard} onDiscard={handleDiscardCast} />
-        </CastModalPortalBoundary>
+      <Modal open={showModal} setOpen={setShowModal} focusMode showClose={false}>
+        <div className="mb-4">{replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}</div>
+        <div className="flex">
+          <CreateCast initialDraft={replyCastDraft} />
+        </div>
       </Modal>
       <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
@@ -737,13 +682,33 @@ const CastBodyComponent = ({
     [onSelectCast]
   );
 
+  // Removes duplicate links from text if an embed already exists
+  const embedUrls = getEmbedUrls(cast);
+  let filteredText = cast.text || "";
+  try {
+    const textUrls = extractUrlsFromText(filteredText);
+    const textUrlsToRemove = new Set<string>();
+    textUrls.forEach((u) => {
+      if (isUrlAlreadyEmbedded(u, embedUrls)) {
+        textUrlsToRemove.add(u);
+      }
+    });
+
+    textUrlsToRemove.forEach((u) => {
+      filteredText = filteredText.replace(u, "");
+    });
+  // Normalizes whitespace after removing URLs
+    filteredText = filteredText.replace(/\n{3,}/g, "\n\n").trim();
+  } catch (e) {
+  // Error filtering URLs
+  }
+
   return (
     <div className="flex flex-col grow">
-      {cast.text && (
+      {filteredText && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
           <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
-           {/* Remove only YouTube URLs using this utility, preserving other links and avoiding double spaces */}
-            {cast.text.replace(/https?:\/\/[^\s]+/g, (url) => isYouTubeUrl(url) ? "" : url).replace(/\s{2,}/g, " ").trim()}
+            {filteredText}
           </SafeExpandableText>
         </div>
       )}
@@ -905,4 +870,3 @@ export const CastRow = React.memo(CastRowComponent);
 CastRow.displayName = "CastRow";
 
 export const CastRowExport = CastRow;
-
