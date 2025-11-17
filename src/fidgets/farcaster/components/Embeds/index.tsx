@@ -7,6 +7,7 @@ import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import VideoEmbed from "./VideoEmbed";
 import ImageEmbed from "./ImageEmbed";
 import SmartFrameEmbed from "./SmartFrameEmbed";
+import ZoraEmbed from "./ZoraEmbed";
 import { isImageUrl, isVideoUrl } from "@/common/lib/utils/urls";
 import CreateCastImage from "./createCastImage";
 
@@ -59,6 +60,8 @@ export const renderEmbedForUrl = (
     return tweetId ? <TweetEmbed tweetId={tweetId} key={key} /> : null;
   } else if (url.startsWith("https://nouns.build")) {
     return <NounsBuildEmbed url={url} key={key} />;
+  } else if (url.includes("zora.co") || url.startsWith("zoraCoin:")) {
+    return <ZoraEmbed url={url} key={key} />;
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
   } else if (!isImageUrl(url)) {

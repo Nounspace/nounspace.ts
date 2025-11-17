@@ -9,6 +9,7 @@ import { FarcasterMention } from "@mod-protocol/farcaster";
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { debounce } from "lodash";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -105,7 +106,7 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
                   borderRadius: "100%",
                   width: "48px",
                   height: "48px",
-                  backgroundImage: `url(${item.avatar_url})`,
+                  backgroundImage: `url(${toFarcasterCdnUrl(item.avatar_url || '')})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}

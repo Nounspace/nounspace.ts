@@ -12,11 +12,13 @@ import {
 } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
 import {getMediaFidgetIds, getPinnedCastIds, getValidFidgetIds, processTabFidgetIds } from "@/common/utils/layoutUtils";
-import TabNavigation from "./components/TabNavigation";
 import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent";
 import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent";
 import FidgetContent from "./components/FidgetContent";
 import { createFidgetBundle } from "./utils";
+import MobileNavbar from "@/common/components/organisms/MobileNavbar";
+import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
+import { UserTheme } from "@/common/lib/theme";
 
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
   layout: string[];
@@ -265,13 +267,19 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
               className="fixed bottom-0 left-0 right-0 z-level-3 bg-white border-t"
               style={{ height: `${TAB_HEIGHT}px` }}
             >
-          <TabNavigation
-            processedFidgetIds={orderedFidgetIds}
-            selectedTab={selectedTab}
-            fidgetInstanceDatums={fidgetInstanceDatums}
-            isMobile={isMobile}
-            tabNames={tabNames}
-          />
+              <MobileNavbar
+                tabs={orderedFidgetIds.map((id) => ({
+                  id,
+                  label: "",
+                  fidgetType: fidgetInstanceDatums[id]?.fidgetType,
+                }))}
+                selected={selectedTab}
+                onSelect={setSelectedTab}
+                theme={theme && (theme as any).properties && 
+                  (theme as any).font ? theme as UserTheme : defaultUserTheme}
+                fidgetInstanceDatums={fidgetInstanceDatums}
+                tabNames={tabNames}
+              />
             </div>
           )}
         </Tabs>

@@ -1,6 +1,29 @@
 // This file contains only the SystemConfig interface
 // Individual configurations are imported from their respective folders
 
+import { Address } from "viem";
+
+export type CommunityTokenNetwork = "mainnet" | "base" | "polygon" | "eth";
+
+export interface CommunityErc20Token {
+  address: string;
+  symbol: string;
+  decimals: number;
+  network?: CommunityTokenNetwork;
+}
+
+export interface CommunityNftToken {
+  address: string;
+  symbol: string;
+  type: "erc721" | "erc1155" | string;
+  network?: CommunityTokenNetwork;
+}
+
+export interface CommunityTokensConfig {
+  erc20Tokens?: CommunityErc20Token[];
+  nftTokens?: CommunityNftToken[];
+}
+
 export interface SystemConfig {
   brand: BrandConfig;
   assets: AssetConfig;
@@ -8,6 +31,7 @@ export interface SystemConfig {
   community: CommunityConfig;
   fidgets: FidgetConfig;
   homePage: HomePageConfig;
+  explorePage: ExplorePageConfig;
   navigation?: NavigationConfig;
 }
 
@@ -16,6 +40,7 @@ export interface BrandConfig {
   displayName: string;
   tagline: string;
   description: string;
+  miniAppTags: string[];
 }
 
 export interface AssetConfig {
@@ -63,6 +88,13 @@ export interface ThemeProperties {
 }
 
 
+export type CommunityContractsConfig = {
+  nouns: Address;
+  auctionHouse: Address;
+  space: Address;
+  nogs: Address;
+} & Record<string, Address>;
+
 export interface CommunityConfig {
   type: string;
   urls: {
@@ -82,24 +114,8 @@ export interface CommunityConfig {
     delegates: string;
     treasury: string;
   };
-  tokens: {
-    noun: {
-      address: string;
-      symbol: string;
-      decimals: number;
-    };
-    nounsToken: {
-      address: string;
-      symbol: string;
-      decimals: number;
-    };
-  };
-  contracts: {
-    nouns: string;
-    auctionHouse: string;
-    space: string;
-    nogs: string;
-  };
+  tokens: CommunityTokensConfig;
+  contracts: CommunityContractsConfig;
 }
 
 export interface FidgetConfig {
@@ -125,15 +141,23 @@ export interface HomePageConfig {
   };
 }
 
+export type ExplorePageConfig = HomePageConfig;
+
 export interface NavigationConfig {
   items: NavigationItem[];
+  logoTooltip?: LogoTooltipConfig;
+}
+
+export interface LogoTooltipConfig {
+  text: string;
+  href?: string;
 }
 
 export interface NavigationItem {
   id: string;
   label: string;
   href: string;
-  icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'custom';
+  icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'robot' | 'custom';
   openInNewTab?: boolean;
   requiresAuth?: boolean;
 }

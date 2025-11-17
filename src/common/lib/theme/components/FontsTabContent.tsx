@@ -3,7 +3,7 @@ import { Color } from "@/common/lib/theme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import ThemeSettingsTooltip from "./ThemeSettingsTooltip";
-import BackgroundGenerator from "../BackgroundGenerator";
+import { BackgroundGenerator } from "../BackgroundGenerator";
 
 interface FontsTabContentProps {
   headingsFontColor: Color | string;

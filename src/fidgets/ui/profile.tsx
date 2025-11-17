@@ -1,4 +1,5 @@
 import { Button } from "@/common/components/atoms/button";
+import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import TextInput from "@/common/components/molecules/TextInput";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
@@ -138,7 +139,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           {user.pfp_url ? (
             <img
               className="aspect-square rounded-full max-h-full object-cover"
-              src={user.pfp_url}
+              src={toFarcasterCdnUrl(user.pfp_url || '')}
             />
           ) : (
             <CgProfile className="text-gray-200 dark:text-gray-700 me-4 aspect-square rounded-full max-h-full h-full w-full"></CgProfile>

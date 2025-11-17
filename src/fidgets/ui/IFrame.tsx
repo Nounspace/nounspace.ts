@@ -335,6 +335,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     return clean.trim() ? clean : null;
   }, [embedScript]);
 
+  const sanitizedEmbedMarkup = useMemo(
+    () =>
+      sanitizedEmbedScript
+        ? ({ __html: sanitizedEmbedScript } as { __html: string })
+        : undefined,
+    [sanitizedEmbedScript],
+  );
+
   useEffect(() => {
     debouncedSetUrl(url);
     return () => {
@@ -360,11 +368,45 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     setIframelyEmbedAttributes(parseIframeAttributes(embedInfo.iframelyHtml));
   }, [embedInfo?.iframelyHtml]);
 
+  const iframelyMiniAppConfig = useMemo(() => {
+    if (!isMiniAppEnvironment || !iframelyEmbedAttributes?.src) {
+      return undefined;
+    }
+
+    if (!isValidHttpUrl(iframelyEmbedAttributes.src)) {
+      return null;
+    }
+
+    try {
+      const safeSrc = new URL(iframelyEmbedAttributes.src).toString();
+      return {
+        safeSrc,
+        bootstrapDoc: createMiniAppBootstrapSrcDoc(safeSrc),
+        allowFullScreen: "allowfullscreen" in iframelyEmbedAttributes,
+        sandboxRules: ensureSandboxRules(iframelyEmbedAttributes.sandbox),
+        widthAttr: iframelyEmbedAttributes.width,
+        heightAttr: iframelyEmbedAttributes.height,
+      };
+    } catch (error) {
+      console.warn("Rejected unsupported IFramely iframe src", error);
+      return null;
+    }
+  }, [isMiniAppEnvironment, iframelyEmbedAttributes]);
+
   const isValid = isValidHttpUrl(debouncedUrl);
   const sanitizedUrl = useSafeUrl(debouncedUrl);
   const transformedUrl = transformUrl(sanitizedUrl || "");
   // Scale value is set from size prop
   const _scaleValue = size;
+
+  const iframelyEmbedMarkup = useMemo(
+    () =>
+      embedInfo?.iframelyHtml
+        ? ({ __html: embedInfo.iframelyHtml } as { __html: string })
+        : undefined,
+    [embedInfo?.iframelyHtml],
+  );
+
 
   useEffect(() => {
     if (sanitizedEmbedScript) return;
@@ -417,24 +459,48 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     checkEmbedInfo();
   }, [sanitizedUrl, isValid, sanitizedEmbedScript]);
 
+  const sanitizedEmbedSrc = sanitizedEmbedAttributes?.src ?? null;
+  const resolvedSanitizedMiniAppSrc = useMemo(() => {
+    if (!isMiniAppEnvironment || !sanitizedEmbedSrc) {
+      return undefined;
+    }
+
+    return resolveAllowedEmbedSrc(sanitizedEmbedSrc);
+  }, [isMiniAppEnvironment, sanitizedEmbedSrc]);
+
+  const sanitizedMiniAppBootstrapDoc = useMemo(() => {
+    if (!resolvedSanitizedMiniAppSrc) {
+      return null;
+    }
+
+    return createMiniAppBootstrapSrcDoc(resolvedSanitizedMiniAppSrc);
+  }, [resolvedSanitizedMiniAppSrc]);
+
   if (sanitizedEmbedScript) {
-    if (isMiniAppEnvironment && sanitizedEmbedAttributes?.src) {
-      const allowedSrc = resolveAllowedEmbedSrc(sanitizedEmbedAttributes.src);
+    if (
+      isMiniAppEnvironment &&
+      sanitizedEmbedSrc &&
+      resolvedSanitizedMiniAppSrc === null
+    ) {
+      return (
+        <ErrorWrapper
+          icon="🔒"
+          message="This embed source is not allowed in the mini app."
+        />
+      );
+    }
 
-      if (!allowedSrc) {
-        return (
-          <ErrorWrapper
-            icon="🔒"
-            message="This embed source is not allowed in the mini app."
-          />
-        );
-      }
-
+    if (
+      isMiniAppEnvironment &&
+      sanitizedEmbedSrc &&
+      resolvedSanitizedMiniAppSrc &&
+      sanitizedMiniAppBootstrapDoc &&
+      sanitizedEmbedAttributes
+    ) {
       const allowFullScreen = "allowfullscreen" in sanitizedEmbedAttributes;
       const sandboxRules = ensureSandboxRules(
         sanitizedEmbedAttributes.sandbox,
       );
-      const bootstrapDoc = createMiniAppBootstrapSrcDoc(allowedSrc);
 
       const widthAttr = sanitizedEmbedAttributes.width;
       const heightAttr = sanitizedEmbedAttributes.height;
@@ -442,8 +508,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       return (
         <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
           <iframe
-            key={`miniapp-sanitized-${allowedSrc}`}
-            srcDoc={bootstrapDoc}
+            key={`miniapp-sanitized-${resolvedSanitizedMiniAppSrc}`}
+            srcDoc={sanitizedMiniAppBootstrapDoc}
             title={sanitizedEmbedAttributes.title || "IFrame Fidget"}
             sandbox={sandboxRules}
             allow={sanitizedEmbedAttributes.allow}
@@ -471,8 +537,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
     return (
       <div
+        dangerouslySetInnerHTML={sanitizedEmbedMarkup}
         style={{ overflow: "hidden", width: "100%", height: "100%" }}
-        dangerouslySetInnerHTML={{ __html: sanitizedEmbedScript }}
       />
     );
   }
@@ -663,72 +729,64 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     );
   }
 
+  const iframelyEmbedSrc = iframelyEmbedAttributes?.src ?? null;
+
   if (!embedInfo.directEmbed && embedInfo.iframelyHtml) {
-    if (isMiniAppEnvironment && iframelyEmbedAttributes?.src) {
-      if (!isValidHttpUrl(iframelyEmbedAttributes.src)) {
+    if (isMiniAppEnvironment && iframelyEmbedSrc && iframelyEmbedAttributes) {
+      if (iframelyMiniAppConfig === null) {
         return (
           <div
+            dangerouslySetInnerHTML={iframelyEmbedMarkup}
             style={{ overflow: "hidden", width: "100%", height: "100%" }}
-            dangerouslySetInnerHTML={{ __html: embedInfo.iframelyHtml }}
           />
         );
       }
 
-      let safeSrc: string;
+      if (iframelyMiniAppConfig) {
+        const {
+          safeSrc,
+          bootstrapDoc,
+          allowFullScreen,
+          sandboxRules,
+          widthAttr,
+          heightAttr,
+        } = iframelyMiniAppConfig;
 
-      try {
-        safeSrc = new URL(iframelyEmbedAttributes.src).toString();
-      } catch (error) {
-        console.warn("Rejected unsupported IFramely iframe src", error);
         return (
-          <div
-            style={{ overflow: "hidden", width: "100%", height: "100%" }}
-            dangerouslySetInnerHTML={{ __html: embedInfo.iframelyHtml }}
-          />
+          <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+            <iframe
+              key={`miniapp-iframely-${safeSrc}`}
+              srcDoc={bootstrapDoc}
+              title={iframelyEmbedAttributes.title || "IFrame Fidget"}
+              sandbox={sandboxRules}
+              allow={iframelyEmbedAttributes.allow}
+              referrerPolicy={
+                iframelyEmbedAttributes.referrerpolicy as React.IframeHTMLAttributes<HTMLIFrameElement>["referrerPolicy"]
+              }
+              loading={
+                iframelyEmbedAttributes.loading as React.IframeHTMLAttributes<HTMLIFrameElement>["loading"]
+              }
+              frameBorder={iframelyEmbedAttributes.frameborder}
+              allowFullScreen={allowFullScreen}
+              width={widthAttr}
+              height={heightAttr}
+              style={{
+                border: "0",
+                width: widthAttr ? undefined : "100%",
+                height: heightAttr ? undefined : "100%",
+                overflow: isScrollable ? "auto" : "hidden",
+              }}
+              className="size-full"
+            />
+          </div>
         );
       }
-
-      const allowFullScreen = "allowfullscreen" in iframelyEmbedAttributes;
-      const sandboxRules = ensureSandboxRules(iframelyEmbedAttributes.sandbox);
-      const bootstrapDoc = createMiniAppBootstrapSrcDoc(safeSrc);
-
-      const widthAttr = iframelyEmbedAttributes.width;
-      const heightAttr = iframelyEmbedAttributes.height;
-
-      return (
-        <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
-          <iframe
-            key={`miniapp-iframely-${safeSrc}`}
-            srcDoc={bootstrapDoc}
-            title={iframelyEmbedAttributes.title || "IFrame Fidget"}
-            sandbox={sandboxRules}
-            allow={iframelyEmbedAttributes.allow}
-            referrerPolicy={
-              iframelyEmbedAttributes.referrerpolicy as React.IframeHTMLAttributes<HTMLIFrameElement>["referrerPolicy"]
-            }
-            loading={
-              iframelyEmbedAttributes.loading as React.IframeHTMLAttributes<HTMLIFrameElement>["loading"]
-            }
-            frameBorder={iframelyEmbedAttributes.frameborder}
-            allowFullScreen={allowFullScreen}
-            width={widthAttr}
-            height={heightAttr}
-            style={{
-              border: "0",
-              width: widthAttr ? undefined : "100%",
-              height: heightAttr ? undefined : "100%",
-              overflow: isScrollable ? "auto" : "hidden",
-            }}
-            className="size-full"
-          />
-        </div>
-      );
     }
 
     return (
       <div
+        dangerouslySetInnerHTML={iframelyEmbedMarkup}
         style={{ overflow: "hidden", width: "100%", height: "100%" }}
-        dangerouslySetInnerHTML={{ __html: embedInfo.iframelyHtml }}
       />
     );
   }
