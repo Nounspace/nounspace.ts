@@ -199,24 +199,6 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
-        // Helper: try to extract a tweet id from a URL
-        const getTweetIdFromUrl = (u: string) => {
-          try {
-            const cleaned = u.split(/[?#]/)[0];
-            const parts = cleaned.split("/").filter(Boolean);
-            const statusIndex = parts.findIndex((p) => p === "status");
-            if (statusIndex >= 0 && parts.length > statusIndex + 1) return parts[statusIndex + 1];
-            for (let j = parts.length - 1; j >= 0; j--) {
-              if (/^\d{5,}$/.test(parts[j])) return parts[j];
-            }
-          } catch (e) {
-            // ignore parsing errors but keep debug info
-            // eslint-disable-next-line no-console
-            console.debug("getTweetIdFromUrl error", e);
-          }
-          return null;
-        };
-
         // Skip if this URL is already in the embeds
         const urlTweetId = getTweetIdFromUrl(url);
 
