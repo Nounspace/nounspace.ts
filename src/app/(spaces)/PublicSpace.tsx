@@ -343,10 +343,9 @@ export default function PublicSpace({
       await saveLocalSpaceTab(resolvedSpaceId, resolvedTabName, saveableConfig);
 
       // Auto-commit explore spaces so fidget data persists to storage when an identity is available
-      const currentIdentity = useAppStore.getState().account.getCurrentIdentity();
-      if (isExploreSpace(spacePageData) && currentIdentity) {
+      if (isExploreSpace(spacePageData) && account?.getCurrentIdentity()) {
         await commitSpaceTab(resolvedSpaceId, resolvedTabName);
-      } else if (isExploreSpace(spacePageData) && !currentIdentity) {
+      } else if (isExploreSpace(spacePageData) && !account?.getCurrentIdentity()) {
         // Fallback: persist explore tab using service-side helper when no identity is loaded
         if (config) {
           const mergedConfig = cloneDeep(config);
@@ -386,6 +385,7 @@ export default function PublicSpace({
       commitSpaceTab,
       spacePageData,
       config,
+      account,
     ]
   );
 
