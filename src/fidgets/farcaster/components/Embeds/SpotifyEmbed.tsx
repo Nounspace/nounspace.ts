@@ -16,11 +16,12 @@ const SpotifyEmbed: React.FC<SpotifyEmbedProps> = ({ url }) => {
       data-testid="embed-iframe"
       style={{ borderRadius: "12px" }}
       src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`}
+      width="100%"
       height="352"
       allowFullScreen
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       loading="lazy"
-      title="Spotify Player"
+      title={`Spotify Player - Track ${trackId}`}
     />
   );
 };

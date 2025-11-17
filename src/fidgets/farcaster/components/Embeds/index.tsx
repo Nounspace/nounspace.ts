@@ -62,7 +62,7 @@ export const renderEmbedForUrl = (
     return <NounsBuildEmbed url={url} key={key} />;
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
-  } else if (url.includes("open.spotify.com/track")) {
+  } else if (url.startsWith("https://open.spotify.com/track")) {
     return <SpotifyEmbed url={url} key={key} />;
   } else if (!isImageUrl(url)) {
     // Use smart frame detection to render Frame v2 when possible
