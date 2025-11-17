@@ -193,10 +193,13 @@ export const createExplorePageConfig = ({
 
   const normalizedChannel = channel?.trim().replace(/^\/+/, "");
   if (normalizedChannel) {
-    const tabName = `/${normalizedChannel}`;
-    const idSuffix = slugify(`channel-${normalizedChannel}`, `channel-${tabEntries.length + 1}`);
-    const settings = buildChannelDirectorySettings(normalizedChannel, channelNetwork);
-    tabEntries.push({ key: tabName, config: buildTabConfig(tabName, idSuffix, settings) });
+    const tabName = "channel";
+    if (!seenTabNames.has(tabName)) {
+      seenTabNames.add(tabName);
+      const idSuffix = slugify(`channel-${normalizedChannel}`, `channel-${tabEntries.length + 1}`);
+      const settings = buildChannelDirectorySettings(normalizedChannel, channelNetwork);
+      tabEntries.push({ key: tabName, config: buildTabConfig(tabName, idSuffix, settings) });
+    }
   }
 
   if (tabEntries.length === 0) {
