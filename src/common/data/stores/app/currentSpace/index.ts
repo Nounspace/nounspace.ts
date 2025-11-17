@@ -71,7 +71,7 @@ export const createCurrentSpaceStoreFunc = (
                     config: {
                       settings: datum.config.settings,
                       editable: datum.config.editable,
-                      data: {}, // TO DO: Inject fidget data here
+                      data: datum.config.data ?? {},
                     },
                   }),
                 ),

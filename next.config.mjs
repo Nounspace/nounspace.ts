@@ -10,10 +10,10 @@ const withBundleAnalyzer = bundlerAnalyzer({
 
 const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com https://cdn.segment.com;
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com https://cdn.segment.com https://edge.fullstory.com https://rs.fullstory.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
     media-src 'self' blob: data: https://stream.warpcast.com https://stream.farcaster.xyz https://res.cloudinary.com/ https://*.cloudflarestream.com https://*.b-cdn.net;
-    img-src 'self' blob: data: https:;
+    img-src 'self' blob: data: https: https://rs.fullstory.com;
     font-src 'self' https: data: blob: https://fonts.googleapis.com https://fonts.gstatic.com;
     object-src 'none';
     base-uri 'self';
@@ -40,6 +40,8 @@ const cspHeader = `
       https://auth.privy.io/api/v1/analytics_events
       https://cdn.segment.com
       https://api.segment.io
+      https://edge.fullstory.com
+      https://rs.fullstory.com
       https://api.imgbb.com
       https://api.goldsky.com
       https://api.reservoir.tools

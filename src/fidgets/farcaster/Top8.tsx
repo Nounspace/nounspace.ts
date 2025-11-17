@@ -38,15 +38,15 @@ const top8Properties: FidgetProperties = {
       fieldName: "size",
       displayName: "Scale",
       required: false,
-      default: 1,
+      default: 0.6,
       inputSelector: IFrameWidthSlider,
       group: "style",
     },
   ],
   size: {
-    minHeight: 2,
+    minHeight: 5,
     maxHeight: 36,
-    minWidth: 2,
+    minWidth: 4,
     maxWidth: 36,
   },
 };
@@ -56,7 +56,7 @@ const Top8: React.FC<FidgetArgs<Top8FidgetSettings>> = ({
 }) => {
   const {
     username = "nounspacetom",
-    size = 1,
+    size = 0.6,
     background,
     fidgetBorderColor,
     fidgetBorderWidth,

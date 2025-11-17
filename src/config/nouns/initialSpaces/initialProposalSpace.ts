@@ -61,22 +61,23 @@ export const createInitalProposalSpaceConfigForProposalId = (
       fidgetType: "iframe",
       id: "iframe:1afc071b-ce6b-4527-9419-f2e057a9fb0a",
     },
-    "iframe:ffb3cd56-3203-4b94-b842-adab9a7eabc9": {
+    "Chat:ffb3cd56-3203-4b94-b842-adab9a7eabc9": {
       config: {
         editable: true,
         data: {},
         settings: {
-          url: `https://chat-fidget.vercel.app/?room=prop%20${proposalId}%20chat&owner=${proposerAddress}`,
-          showOnMobile: true,
-          customMobileDisplayName: "Chat",
           background: "var(--user-theme-fidget-background)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+          customMobileDisplayName: "Chat",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
+          roomName: `prop ${proposalId} chat`,
+          roomOwnerAddress: proposerAddress,
+          showOnMobile: true,
         },
       },
-      fidgetType: "iframe",
-      id: "iframe:ffb3cd56-3203-4b94-b842-adab9a7eabc9",
+      fidgetType: "Chat",
+      id: "Chat:ffb3cd56-3203-4b94-b842-adab9a7eabc9",
     },
   };
 
@@ -132,7 +133,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
           h: 4,
           x: 4,
           y: 6,
-          i: "iframe:ffb3cd56-3203-4b94-b842-adab9a7eabc9",
+          i: "Chat:ffb3cd56-3203-4b94-b842-adab9a7eabc9",
           minW: 2,
           maxW: 36,
           minH: 2,
