@@ -15,7 +15,14 @@ import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
 import Navigation from "./Navigation";
 import { useSidebarContext } from "./Sidebar";
+import type { DialogContentProps } from "@radix-ui/react-dialog";
+import { eventIsFromCastModalInteractiveRegion } from "@/common/lib/utils/castModalInteractivity";
+import {
+  CastModalPortalBoundary,
+  CastDiscardPrompt,
+} from "../molecules/CastModalHelpers";
 import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
+
 
 const MobileHeader = () => {
   const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
@@ -26,6 +33,14 @@ const MobileHeader = () => {
 
   const [navOpen, setNavOpen] = useState(false);
   const [castOpen, setCastOpen] = useState(false);
+  const [shouldConfirmCastClose, setShouldConfirmCastClose] = useState(false);
+  const [showCastDiscardPrompt, setShowCastDiscardPrompt] = useState(false);
+
+  const closeCastModal = useCallback(() => {
+    setCastOpen(false);
+    setShowCastDiscardPrompt(false);
+    setShouldConfirmCastClose(false);
+  }, []);
 
   const { fid } = useFarcasterSigner("mobile-header");
   const { data } = useLoadFarcasterUser(fid);
@@ -136,6 +151,62 @@ const MobileHeader = () => {
     }
   }, []);
 
+  const handleCastModalChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        if (shouldConfirmCastClose) {
+          setShowCastDiscardPrompt(true);
+          return;
+        }
+
+        closeCastModal();
+        return;
+      }
+
+      setShowCastDiscardPrompt(false);
+      setCastOpen(true);
+    },
+    [closeCastModal, shouldConfirmCastClose],
+  );
+
+  const handleCastModalInteractOutside = useCallback<
+    NonNullable<DialogContentProps["onInteractOutside"]>
+  >(
+    (event) => {
+      const originalEvent = (event as any)?.detail?.originalEvent as Event | undefined;
+      const eventTarget =
+        (originalEvent?.target as EventTarget | null) ??
+        ((event as any)?.target as EventTarget | null);
+
+      if (eventIsFromCastModalInteractiveRegion(originalEvent, eventTarget)) {
+        event.preventDefault();
+        return;
+      }
+
+      if (!shouldConfirmCastClose) {
+        return;
+      }
+
+      event.preventDefault();
+      setShowCastDiscardPrompt(true);
+    },
+    [shouldConfirmCastClose],
+  );
+
+  const handleCancelDiscard = useCallback(() => {
+    setShowCastDiscardPrompt(false);
+  }, []);
+
+  const handleDiscardCast = useCallback(() => {
+    closeCastModal();
+  }, [closeCastModal]);
+
+  useEffect(() => {
+    if (!shouldConfirmCastClose) {
+      setShowCastDiscardPrompt(false);
+    }
+  }, [shouldConfirmCastClose]);
+
   return (
     <header className="z-30 flex items-center justify-between h-14 px-4 bg-white overflow-hidden sticky top-0">
       <div className="flex items-center gap-2">{isLoggedIn ? userAvatar : menuButton}</div>
@@ -156,8 +227,27 @@ const MobileHeader = () => {
           />
         </DrawerContent>
       </Drawer>
-      <Modal open={castOpen} setOpen={setCastOpen} focusMode={false} showClose={false}>
-        <CreateCast afterSubmit={() => setCastOpen(false)} />
+      <Modal
+        open={castOpen}
+        setOpen={handleCastModalChange}
+        focusMode={false}
+        showClose={false}
+        onInteractOutside={handleCastModalInteractOutside}
+        onPointerDownOutside={handleCastModalInteractOutside}
+      >
+        <CastModalPortalBoundary>
+          <>
+            <CreateCast
+              afterSubmit={closeCastModal}
+              onShouldConfirmCloseChange={setShouldConfirmCastClose}
+            />
+            <CastDiscardPrompt
+              open={showCastDiscardPrompt}
+              onClose={handleCancelDiscard}
+              onDiscard={handleDiscardCast}
+            />
+          </>
+        </CastModalPortalBoundary>
       </Modal>
     </header>
   );
