@@ -22,6 +22,7 @@ import {
   isTokenSpace,
   isProposalSpace,
   isChannelSpace,
+  isExploreSpace,
 } from "@/common/types/spaceData";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -339,7 +340,12 @@ export default function PublicSpace({
           : undefined,
         isPrivate: false,
       };
-      return saveLocalSpaceTab(resolvedSpaceId, resolvedTabName, saveableConfig);
+      await saveLocalSpaceTab(resolvedSpaceId, resolvedTabName, saveableConfig);
+
+      // Auto-commit explore spaces so fidget data persists to storage
+      if (isExploreSpace(spacePageData)) {
+        await commitSpaceTab(resolvedSpaceId, resolvedTabName);
+      }
     },
     [
       currentSpaceId,
@@ -349,6 +355,8 @@ export default function PublicSpace({
       spacePageData.spaceId,
       spacePageData.defaultTab,
       providedTabName,
+      commitSpaceTab,
+      spacePageData,
     ]
   );
 
