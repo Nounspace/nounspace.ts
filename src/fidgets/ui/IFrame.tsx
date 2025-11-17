@@ -8,7 +8,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 import { useMiniApp } from "@/common/utils/useMiniApp";
@@ -317,9 +317,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const [iframelyEmbedAttributes, setIframelyEmbedAttributes] =
     useState<IframeAttributeMap | null>(null);
 
-  const sanitizedEmbedContainerRef = useRef<HTMLDivElement | null>(null);
-  const iframelyEmbedContainerRef = useRef<HTMLDivElement | null>(null);
-
   const sanitizedEmbedScript = useMemo(() => {
     if (!embedScript) return null;
     const clean = DOMPurify.sanitize(embedScript, {
@@ -337,6 +334,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     });
     return clean.trim() ? clean : null;
   }, [embedScript]);
+
+  const sanitizedEmbedMarkup = useMemo(
+    () =>
+      sanitizedEmbedScript
+        ? ({ __html: sanitizedEmbedScript } as { __html: string })
+        : undefined,
+    [sanitizedEmbedScript],
+  );
 
   useEffect(() => {
     debouncedSetUrl(url);
@@ -394,32 +399,13 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   // Scale value is set from size prop
   const _scaleValue = size;
 
-  useEffect(() => {
-    if (!sanitizedEmbedContainerRef.current) {
-      return;
-    }
-
-    if (!sanitizedEmbedScript) {
-      sanitizedEmbedContainerRef.current.innerHTML = "";
-      return;
-    }
-
-    sanitizedEmbedContainerRef.current.innerHTML = sanitizedEmbedScript;
-  }, [sanitizedEmbedScript]);
-
-  useEffect(() => {
-    if (!iframelyEmbedContainerRef.current) {
-      return;
-    }
-
-    const html = embedInfo?.iframelyHtml;
-    if (!html) {
-      iframelyEmbedContainerRef.current.innerHTML = "";
-      return;
-    }
-
-    iframelyEmbedContainerRef.current.innerHTML = html;
-  }, [embedInfo?.iframelyHtml]);
+  const iframelyEmbedMarkup = useMemo(
+    () =>
+      embedInfo?.iframelyHtml
+        ? ({ __html: embedInfo.iframelyHtml } as { __html: string })
+        : undefined,
+    [embedInfo?.iframelyHtml],
+  );
 
 
   useEffect(() => {
@@ -551,7 +537,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
     return (
       <div
-        ref={sanitizedEmbedContainerRef}
+        dangerouslySetInnerHTML={sanitizedEmbedMarkup}
         style={{ overflow: "hidden", width: "100%", height: "100%" }}
       />
     );
@@ -750,7 +736,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       if (iframelyMiniAppConfig === null) {
         return (
           <div
-            ref={iframelyEmbedContainerRef}
+            dangerouslySetInnerHTML={iframelyEmbedMarkup}
             style={{ overflow: "hidden", width: "100%", height: "100%" }}
           />
         );
@@ -799,7 +785,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
     return (
       <div
-        ref={iframelyEmbedContainerRef}
+        dangerouslySetInnerHTML={iframelyEmbedMarkup}
         style={{ overflow: "hidden", width: "100%", height: "100%" }}
       />
     );
