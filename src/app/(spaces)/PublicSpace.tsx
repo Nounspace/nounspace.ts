@@ -342,8 +342,8 @@ export default function PublicSpace({
       };
       await saveLocalSpaceTab(resolvedSpaceId, resolvedTabName, saveableConfig);
 
-      // Auto-commit explore spaces so fidget data persists to storage
-      if (isExploreSpace(spacePageData)) {
+      // Auto-commit explore spaces so fidget data persists to storage when an identity is available
+      if (isExploreSpace(spacePageData) && get().account.getCurrentIdentity()) {
         await commitSpaceTab(resolvedSpaceId, resolvedTabName);
       }
     },
@@ -357,6 +357,7 @@ export default function PublicSpace({
       providedTabName,
       commitSpaceTab,
       spacePageData,
+      get,
     ]
   );
 

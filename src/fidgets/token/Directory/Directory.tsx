@@ -299,7 +299,11 @@ const Directory: React.FC<
       setDirectoryData(payload);
 
       if (hasChanged) {
-        await saveData(payload);
+        try {
+          await saveData(payload);
+        } catch (error) {
+          console.error("Failed to persist directory data", error);
+        }
       }
     },
     [directoryData, saveData],
