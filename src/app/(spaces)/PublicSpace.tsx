@@ -37,6 +37,7 @@ export default function PublicSpace({
 }: PublicSpaceProps) {
 
   const {
+    account,
     setCurrentSpaceId,
     setCurrentTabName,
     currentSpaceId,
@@ -83,6 +84,7 @@ export default function PublicSpace({
     registerSpaceContract: state.space.registerSpaceContract,
     registerProposalSpace: state.space.registerProposalSpace,
     registerChannelSpace: state.space.registerChannelSpace,
+    account: state.account,
   }));
 
   const router = useRouter();
