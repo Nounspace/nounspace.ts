@@ -3,6 +3,27 @@
 
 import { Address } from "viem";
 
+export type CommunityTokenNetwork = "mainnet" | "base" | "polygon" | "eth";
+
+export interface CommunityErc20Token {
+  address: string;
+  symbol: string;
+  decimals: number;
+  network?: CommunityTokenNetwork;
+}
+
+export interface CommunityNftToken {
+  address: string;
+  symbol: string;
+  type: "erc721" | "erc1155" | string;
+  network?: CommunityTokenNetwork;
+}
+
+export interface CommunityTokensConfig {
+  erc20Tokens?: CommunityErc20Token[];
+  nftTokens?: CommunityNftToken[];
+}
+
 export interface SystemConfig {
   brand: BrandConfig;
   assets: AssetConfig;
@@ -67,6 +88,13 @@ export interface ThemeProperties {
 }
 
 
+export type CommunityContractsConfig = {
+  nouns: Address;
+  auctionHouse: Address;
+  space: Address;
+  nogs: Address;
+} & Record<string, Address>;
+
 export interface CommunityConfig {
   type: string;
   urls: {
@@ -86,24 +114,8 @@ export interface CommunityConfig {
     delegates: string;
     treasury: string;
   };
-  tokens: {
-    noun: {
-      address: string;
-      symbol: string;
-      decimals: number;
-    };
-    nounsToken: {
-      address: string;
-      symbol: string;
-      decimals: number;
-    };
-  };
-  contracts: {
-    nouns: Address;
-    auctionHouse: Address;
-    space: Address;
-    nogs: Address;
-  };
+  tokens: CommunityTokensConfig;
+  contracts: CommunityContractsConfig;
 }
 
 export interface FidgetConfig {

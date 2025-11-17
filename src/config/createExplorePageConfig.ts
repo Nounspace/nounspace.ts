@@ -7,6 +7,7 @@ import type {
   DirectoryFidgetSettings,
   DirectoryNetwork,
   DirectoryChannelFilterOption,
+  DirectoryAssetType,
 } from "@/fidgets/token/Directory/types";
 
 const FULL_WIDTH = 12;
@@ -23,10 +24,13 @@ const createTabTheme = (idSuffix: string) => ({
   },
 });
 
+type TokenNetworkInput = DirectoryNetwork | "eth";
+
 type TokenInput = {
   address: string;
   symbol: string;
-  network?: DirectoryNetwork;
+  network?: TokenNetworkInput;
+  assetType?: DirectoryAssetType;
 };
 
 type CreateExplorePageConfigOptions = {
@@ -121,15 +125,30 @@ const buildTabConfig = (
   };
 };
 
+const normalizeTokenNetwork = (
+  network: TokenNetworkInput | undefined,
+  defaultNetwork: DirectoryNetwork,
+): DirectoryNetwork => {
+  if (!network) {
+    return defaultNetwork;
+  }
+
+  if (network === "eth") {
+    return "mainnet";
+  }
+
+  return network;
+};
+
 const buildTokenDirectorySettings = (
   token: TokenInput,
   defaultNetwork: DirectoryNetwork,
 ): DirectoryFidgetSettings => ({
   ...BASE_DIRECTORY_SETTINGS,
   source: "tokenHolders",
-  network: token.network ?? defaultNetwork,
+  network: normalizeTokenNetwork(token.network, defaultNetwork),
   contractAddress: token.address,
-  assetType: "token",
+  assetType: token.assetType ?? "token",
   sortBy: "tokenHoldings",
 });
 
