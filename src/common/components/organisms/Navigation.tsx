@@ -95,8 +95,15 @@ const Navigation = React.memo(
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
-  const { community, navigation } = loadSystemConfig();
+  const { community, navigation, ui } = loadSystemConfig();
   const discordUrl = community?.urls?.discord || "https://discord.gg/eYQeXU2WuH";
+  
+  // Get cast button colors from config, with fallback to blue
+  const castButtonColors = ui?.castButton || {
+    backgroundColor: "rgb(37, 99, 235)",
+    hoverColor: "rgb(29, 78, 216)",
+    activeColor: "rgb(30, 64, 175)",
+  };
 
   const [shrunk, setShrunk] = useState(mobile ? false : true);
 
@@ -486,9 +493,26 @@ const Navigation = React.memo(
               >
                 <Button
                   onClick={openCastModal}
+                  id="open-cast-modal-button"
                   variant="primary"
                   width="auto"
                   className="flex items-center justify-center w-12 h-12"
+                  style={{
+                    backgroundColor: castButtonColors.backgroundColor,
+                    color: "white",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = castButtonColors.hoverColor;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = castButtonColors.backgroundColor;
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.backgroundColor = castButtonColors.activeColor;
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.backgroundColor = castButtonColors.hoverColor;
+                  }}
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
                   {shrunk && (
