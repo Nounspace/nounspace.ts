@@ -12,13 +12,21 @@ type RawTabData = {
   >;
 } | null;
 
+const isDirectoryData = (value: unknown): value is DirectoryFidgetData =>
+  !!value && typeof value === "object" && Array.isArray((value as DirectoryFidgetData).members);
+
 /**
  * Extract the persisted Directory fidget data from a serialized Tab JSON object.
- * We only care about the data payload; other layout/theme properties are ignored.
+ * We support both the legacy saved-tab shape (with fidgetInstanceDatums) and the
+ * simplified shape that stores DirectoryFidgetData at the root.
  */
 export const getDirectoryDataFromTabJson = (
-  raw: RawTabData,
+  raw: RawTabData | DirectoryFidgetData | null,
 ): DirectoryFidgetData | undefined => {
+  if (isDirectoryData(raw)) {
+    return raw;
+  }
+
   if (!raw?.fidgetInstanceDatums) {
     return undefined;
   }
@@ -27,5 +35,6 @@ export const getDirectoryDataFromTabJson = (
     (value) => value?.fidgetType === "Directory" && value.config?.data,
   );
 
-  return directoryEntry?.config?.data;
+  const data = directoryEntry?.config?.data;
+  return isDirectoryData(data) ? data : undefined;
 };
