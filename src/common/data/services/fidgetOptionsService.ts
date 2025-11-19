@@ -111,7 +111,9 @@ export class FidgetOptionsService {
           case 'swap':
           case 'market':
           case 'portfolio':
+          case 'Levr':
             primaryCategory = 'defi';
+            specificTags.push('token');
             break;
             
           // Content
