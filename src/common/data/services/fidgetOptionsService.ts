@@ -315,23 +315,29 @@ export class FidgetOptionsService {
       }
       
       // Check for duplicate URL (for curated sites and mini-apps)
-      if (option.type === 'curated' && option.url) {
-        const normalizedUrl = option.url.toLowerCase().trim();
-        if (seenUrls.has(normalizedUrl)) {
-          duplicates.push(option.name);
-          return false;
+      if (option.type === 'curated') {
+        const curatedOption = option as CuratedFidgetOption;
+        if (curatedOption.url) {
+          const normalizedUrl = curatedOption.url.toLowerCase().trim();
+          if (seenUrls.has(normalizedUrl)) {
+            duplicates.push(option.name);
+            return false;
+          }
+          seenUrls.add(normalizedUrl);
         }
-        seenUrls.add(normalizedUrl);
       }
       
       // Also check frameUrl for mini-apps
-      if (option.type === 'miniapp' && option.frameUrl) {
-        const normalizedFrameUrl = option.frameUrl.toLowerCase().trim();
-        if (seenUrls.has(normalizedFrameUrl)) {
-          duplicates.push(option.name);
-          return false;
+      if (option.type === 'miniapp') {
+        const miniAppOption = option as MiniAppFidgetOption;
+        if (miniAppOption.frameUrl) {
+          const normalizedFrameUrl = miniAppOption.frameUrl.toLowerCase().trim();
+          if (seenUrls.has(normalizedFrameUrl)) {
+            duplicates.push(option.name);
+            return false;
+          }
+          seenUrls.add(normalizedFrameUrl);
         }
-        seenUrls.add(normalizedFrameUrl);
       }
       
       seenNames.add(normalizedName);
@@ -410,21 +416,27 @@ export class FidgetOptionsService {
         }
         
         // Check for duplicate URL (for curated sites and mini-apps)
-        if (option.type === 'curated' && option.url) {
-          const normalizedUrl = option.url.toLowerCase().trim();
-          if (seenUrls.has(normalizedUrl)) {
-            return false;
+        if (option.type === 'curated') {
+          const curatedOption = option as CuratedFidgetOption;
+          if (curatedOption.url) {
+            const normalizedUrl = curatedOption.url.toLowerCase().trim();
+            if (seenUrls.has(normalizedUrl)) {
+              return false;
+            }
+            seenUrls.add(normalizedUrl);
           }
-          seenUrls.add(normalizedUrl);
         }
         
         // Also check frameUrl for mini-apps
-        if (option.type === 'miniapp' && option.frameUrl) {
-          const normalizedFrameUrl = option.frameUrl.toLowerCase().trim();
-          if (seenUrls.has(normalizedFrameUrl)) {
-            return false;
+        if (option.type === 'miniapp') {
+          const miniAppOption = option as MiniAppFidgetOption;
+          if (miniAppOption.frameUrl) {
+            const normalizedFrameUrl = miniAppOption.frameUrl.toLowerCase().trim();
+            if (seenUrls.has(normalizedFrameUrl)) {
+              return false;
+            }
+            seenUrls.add(normalizedFrameUrl);
           }
-          seenUrls.add(normalizedFrameUrl);
         }
         
         seenNames.add(normalizedName);
