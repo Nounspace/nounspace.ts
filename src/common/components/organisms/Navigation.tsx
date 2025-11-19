@@ -43,6 +43,7 @@ import {
 import SearchModal, { SearchModalHandle } from "./SearchModal";
 import { toFarcasterCdnUrl } from "@/common/lib/utils/farcasterCdn";
 import { loadSystemConfig } from "@/config";
+import { useUIColors } from "@/common/lib/hooks/useUIColors";
 
 type NavItemProps = {
   label: string;
@@ -64,11 +65,12 @@ type NavProps = {
   onNavigate?: () => void;
 };
 
-const NavIconBadge = ({ children }) => {
+const NavIconBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const uiColors = useUIColors();
   return (
     <Badge
-      variant="primary"
-      className="justify-center text-[11px]/[12px] min-w-[18px] min-h-[18px] font-medium shadow-md px-[3px] rounded-full absolute left-[19px] top-[4px]"
+      className="justify-center text-[11px]/[12px] min-w-[18px] min-h-[18px] font-medium shadow-md px-[3px] rounded-full absolute left-[19px] top-[4px] border-white text-white"
+      style={{ backgroundColor: uiColors.primaryColor }}
     >
       {children}
     </Badge>
