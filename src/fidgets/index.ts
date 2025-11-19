@@ -20,7 +20,9 @@ import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import Portfolio from "./token/Portfolio";
 import ClankerManager from "./token/ClankerManager";
+import Levr from "./token/Levr";
 import Directory from "./token/Directory/Directory";
+import EmpireBuilder from "./token/EmpireBuilder";
 import chat from "./ui/chat";
 import BuilderScore from "./farcaster/BuilderScore";
 import MobileStack from "./layout/tabFullScreen";
@@ -59,7 +61,9 @@ export const CompleteFidgets = {
   Market: marketData,
   Portfolio: Portfolio,
   ClankerManager: ClankerManager,
+  Levr: Levr,
   Directory: Directory,
+  EmpireBuilder: EmpireBuilder,
   Chat: chat,
   Top8: Top8,
   BuilderScore: BuilderScore,
