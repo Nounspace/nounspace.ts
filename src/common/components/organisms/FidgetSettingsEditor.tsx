@@ -271,7 +271,15 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
             <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
           </Button>
 
-          <Button type="submit" variant="primary" width="auto">
+          <Button type="submit" width="auto" className="text-white font-medium transition-colors"
+            style={{ backgroundColor: uiColors.primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = uiColors.primaryHoverColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = uiColors.primaryColor;
+            }}
+          >
             <div className="flex items-center">Done</div>
           </Button>
         </div>

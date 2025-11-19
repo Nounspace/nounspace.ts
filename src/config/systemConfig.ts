@@ -37,6 +37,9 @@ export interface SystemConfig {
 }
 
 export interface UIConfig {
+  primaryColor: string;
+  primaryHoverColor: string;
+  primaryActiveColor: string;
   castButton: {
     backgroundColor: string;
     hoverColor: string;

@@ -111,7 +111,18 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
           );
         })}
         <div className="flex justify-center items-center w-full">
-          <Button onClick={openFidgetPicker} withIcon variant="primary">
+          <Button 
+            onClick={openFidgetPicker} 
+            withIcon
+            className="text-white font-medium transition-colors"
+            style={{ backgroundColor: uiColors.primaryColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = uiColors.primaryHoverColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = uiColors.primaryColor;
+            }}
+          >
             <div className="text-white [&_svg_path]:stroke-white">
               <AddFidgetIcon />
             </div>
