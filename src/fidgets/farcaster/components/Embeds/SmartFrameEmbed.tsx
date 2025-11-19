@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FrameV2Embed from "./FrameV2Embed";
 import FrameEmbed from "./FrameEmbed";
 import OpenGraphEmbed from "./OpenGraphEmbed";
+import ArticleEmbed from "./ArticleEmbed";
 import {
   isFrameV2Url,
   isLikelyFrameUrl,
@@ -108,8 +109,8 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
     return <FrameEmbed url={url} showError={false} />;
   }
 
-  // If it's neither Frame V1 nor V2, render as OpenGraph metadata card
-  return <OpenGraphEmbed url={url} />;
+  // If it's not a Frame, render the article using the API.
+  return <ArticleEmbed url={url} />;
 };
 
 export default SmartFrameEmbed;
