@@ -29,8 +29,6 @@ export type FidgetSettingsEditorProps = {
   readonly properties: FidgetProperties;
   settings: FidgetSettings;
   onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
-  onClose: () => void;
-  onRemove: () => void;
   unselect: () => void;
   removeFidget: (fidgetId: string) => void;
 };
