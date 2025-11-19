@@ -26,7 +26,7 @@ const empireBuilderProperties: FidgetProperties = {
       fieldName: "contractAddress",
       displayName: "Contract address",
       displayNameHint: "Ethereum contract address to load in Empire Builder",
-      default: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
+      default: "",
       required: true,
       inputSelector: (props) => (
         <WithMargin>
