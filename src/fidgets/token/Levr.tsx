@@ -25,7 +25,7 @@ const frameConfig: FidgetProperties = {
       displayName: "Contract Address",
       displayNameHint: "Enter the contract address for the Levr project",
       required: true,
-      default: "0xE3b708C2b23b168365eE43Ff70fbA80809dB2b07",
+      default: "",
       inputSelector: (props) => (
         <WithMargin>
           <TextInput {...props} />
