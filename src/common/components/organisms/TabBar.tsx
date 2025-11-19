@@ -14,6 +14,7 @@ import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import { useSidebarContext } from "./Sidebar";
 import TokenDataHeader from "./TokenDataHeader";
 import { validateTabName } from "@/common/utils/tabUtils";
+import { useUIColors } from "@/common/lib/hooks/useUIColors";
 
 interface TabBarProps {
   inHomebase: boolean;
@@ -55,6 +56,7 @@ function TabBar({
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
+  const uiColors = useUIColors();
 
   const { getIsLoggedIn, getIsInitializing, homebaseLoadTab, setCurrentTabName } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
@@ -291,7 +293,16 @@ function TabBar({
               {!inEditMode && (
                 <Button
                   onClick={() => setEditMode(true)}
-                  className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                  className="flex items-center rounded-xl p-2 bg-[#F3F4F6] font-semibold shadow-md"
+                  style={{ 
+                    color: uiColors.primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#E0F2FE';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F3F4F6';
+                  }}
                 >
                   <FaPaintbrush />
                   {!isMobile && <span className="ml-2">Customize</span>}
@@ -300,7 +311,16 @@ function TabBar({
               {(inEditMode) && (
                 <Button
                   onClick={() => debouncedCreateTab(generateNewTabName())}
-                  className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                  className="flex items-center rounded-xl p-2 bg-[#F3F4F6] font-semibold shadow-md"
+                  style={{ 
+                    color: uiColors.primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#E0F2FE';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F3F4F6';
+                  }}
                 >
                   <FaPlus />
                   <span className="ml-1">Tab</span>
