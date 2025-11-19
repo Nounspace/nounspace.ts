@@ -9,6 +9,7 @@ import {
 } from "../atoms/tooltip";
 import { useToken } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
+import { useUIColors } from "@/common/lib/hooks/useUIColors";
 
 interface ClaimButtonWithModalProps {
   contractAddress?: Address;
@@ -20,6 +21,7 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   tokenSymbol,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
+  const uiColors = useUIColors();
   let tokenData: ReturnType<typeof useToken>["tokenData"] | null = null;
   try {
     // Attempt to read token data if a TokenProvider is present

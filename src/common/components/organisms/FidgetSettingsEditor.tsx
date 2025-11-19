@@ -22,12 +22,15 @@ import { FaCircleInfo, FaTrashCan } from "react-icons/fa6";
 import BackArrowIcon from "../atoms/icons/BackArrow";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { analytics } from "@/common/providers/AnalyticsProvider";
+import { useUIColors } from "@/common/lib/hooks/useUIColors";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
   readonly properties: FidgetProperties;
   settings: FidgetSettings;
   onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
+  onClose: () => void;
+  onRemove: () => void;
   unselect: () => void;
   removeFidget: (fidgetId: string) => void;
 };
@@ -175,6 +178,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   removeFidget,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
+  const uiColors = useUIColors();
 
   useEffect(() => {
     setState(settings);

@@ -2,6 +2,7 @@ import React from "react";
 import Modal from "../molecules/Modal";
 import { Button } from "../atoms/button";
 import { useAppStore } from "@/common/data/stores/app";
+import { useUIColors } from "@/common/lib/hooks/useUIColors";
 
 interface ClaimModalProps {
   isModalOpen: boolean;
@@ -19,6 +20,7 @@ const ClaimModal: React.FC<ClaimModalProps> = ({
       setModalOpen: state.setup.setModalOpen,
     }),
   );
+  const uiColors = useUIColors();
 
   const handleSignInClick = () => {
     setModalOpen(true);
