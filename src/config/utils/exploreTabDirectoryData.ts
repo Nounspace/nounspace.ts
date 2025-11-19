@@ -6,36 +6,38 @@ type RawTabData = {
     {
       fidgetType?: string;
       config?: {
-        data?: DirectoryFidgetData;
+        data?: unknown;
       };
     }
   >;
 } | null;
 
-const isDirectoryData = (value: unknown): value is DirectoryFidgetData =>
-  !!value && typeof value === "object" && Array.isArray((value as DirectoryFidgetData).members);
+type DirectoryPayloadLike = DirectoryFidgetData & { lastFetchSettings?: unknown };
+
+const isDirectoryData = (value: unknown): value is DirectoryPayloadLike =>
+  !!value && typeof value === "object" && Array.isArray((value as DirectoryPayloadLike).members);
 
 const sanitizeLastFetchSettings = (
-  lastFetchSettings: DirectoryFidgetData["lastFetchSettings"],
+  lastFetchSettings: DirectoryPayloadLike["lastFetchSettings"],
 ): DirectoryFidgetData["lastFetchSettings"] => {
   if (!lastFetchSettings) {
     return undefined;
   }
 
-  const source = lastFetchSettings.source;
+  const source = (lastFetchSettings as { source?: unknown }).source;
   const normalizedSource =
     source === "tokenHolders" || source === "farcasterChannel" || source === "csv"
       ? source
       : undefined;
 
   return {
-    ...lastFetchSettings,
+    ...(lastFetchSettings as Record<string, unknown>),
     ...(normalizedSource ? { source: normalizedSource } : { source: undefined }),
   };
 };
 
-const sanitizeDirectoryData = (data: DirectoryFidgetData): DirectoryFidgetData => ({
-  members: data.members ?? [],
+const sanitizeDirectoryData = (data: DirectoryPayloadLike): DirectoryFidgetData => ({
+  members: Array.isArray(data.members) ? data.members : [],
   lastUpdatedTimestamp: data.lastUpdatedTimestamp ?? null,
   tokenSymbol: data.tokenSymbol ?? null,
   tokenDecimals: data.tokenDecimals ?? null,
@@ -48,17 +50,18 @@ const sanitizeDirectoryData = (data: DirectoryFidgetData): DirectoryFidgetData =
  * simplified shape that stores DirectoryFidgetData at the root.
  */
 export const getDirectoryDataFromTabJson = (
-  raw: RawTabData | DirectoryFidgetData | null,
+  raw: unknown,
 ): DirectoryFidgetData | undefined => {
   if (isDirectoryData(raw)) {
     return sanitizeDirectoryData(raw);
   }
 
-  if (!raw?.fidgetInstanceDatums) {
+  const tabData = raw as RawTabData;
+  if (!tabData?.fidgetInstanceDatums) {
     return undefined;
   }
 
-  const directoryEntry = Object.values(raw.fidgetInstanceDatums).find(
+  const directoryEntry = Object.values(tabData.fidgetInstanceDatums).find(
     (value) => value?.fidgetType === "Directory" && value.config?.data,
   );
 
