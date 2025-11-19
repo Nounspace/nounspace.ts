@@ -60,6 +60,14 @@ const DEFAULT_CATEGORIES: FidgetCategory[] = [
     description: 'Mini apps from Farcaster',
 
     order: 99
+  },
+  {
+    id: 'clanker',
+    name: 'Clanker',
+    icon: '📊',
+    description: 'Clanker ecosystem tools and integrations',
+
+    order: 6
   }
 ];
 
@@ -107,12 +115,18 @@ export class FidgetOptionsService {
             }
             break;
             
+          // Clanker
+          case 'ClankerManager':
+          case 'EmpireBuilder':
+          case 'Levr':
+            primaryCategory = 'clanker';
+            specificTags.push('token');
+            break;
+            
           // DeFi
           case 'swap':
           case 'market':
           case 'portfolio':
-          case 'Levr':
-          case 'EmpireBuilder':
             primaryCategory = 'defi';
             specificTags.push('token');
             break;

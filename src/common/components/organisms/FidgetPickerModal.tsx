@@ -58,7 +58,7 @@ const TAG_CONFIG: Record<string, { color: string; icon: string; displayName?: st
   'tiktok': { color: 'bg-black text-white', icon: '🎵' },
   'skateboarding': { color: 'bg-orange-100 text-orange-800', icon: '🛹' },
   'aerodrome': { color: 'bg-blue-100 text-blue-800', icon: '✈️' },
-  'clanker': { color: 'bg-purple-100 text-purple-800', icon: '📊' },
+  'clanker': { color: 'bg-purple-100 text-purple-800', icon: '📊', displayName: 'Clanker' },
   'scheduling': { color: 'bg-blue-100 text-blue-800', icon: '📅' },
   'presentations': { color: 'bg-gray-100 text-gray-800', icon: '📊' },
   'networking': { color: 'bg-blue-100 text-blue-800', icon: '👥' },
@@ -118,7 +118,7 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
 
   // Get only the main category tags for filtering
   const mainCategoryTags = useMemo(() => {
-    const mainCategories = ['social', 'defi', 'tools', 'content', 'games', 'governance', 'mini-apps', 'social-impact'];
+    const mainCategories = ['social', 'defi', 'tools', 'content', 'games', 'governance', 'mini-apps', 'social-impact', 'clanker'];
     return mainCategories.filter(category => 
       fidgetOptions.some(option => option.tags.includes(category))
     );
