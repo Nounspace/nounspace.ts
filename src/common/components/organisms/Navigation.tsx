@@ -494,12 +494,10 @@ const Navigation = React.memo(
                 <Button
                   onClick={openCastModal}
                   id="open-cast-modal-button"
-                  variant="primary"
                   width="auto"
-                  className="flex items-center justify-center w-12 h-12"
+                  className="flex items-center justify-center w-12 h-12 text-white font-medium rounded-md transition-colors"
                   style={{
                     backgroundColor: castButtonColors.backgroundColor,
-                    color: "white",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = castButtonColors.hoverColor;
