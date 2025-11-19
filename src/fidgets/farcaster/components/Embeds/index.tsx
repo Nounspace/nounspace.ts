@@ -1,4 +1,5 @@
 import React from "react";
+const BaseAppEmbed = React.lazy(() => import("./BaseAppEmbed"));
 import EmbededCast from "./EmbededCast";
 import OnchainEmbed from "./OnchainEmbed";
 import TweetEmbed from "./TweetEmbed";
@@ -28,6 +29,15 @@ export const renderEmbedForUrl = (
     return <EmbededCast castId={castId} key={key} />;
   }
   if (!url) return null;
+
+  // Custom embed for base.app
+  if (url.includes("base.app")) {
+    return (
+      <React.Suspense fallback={null}>
+        <BaseAppEmbed url={url} />
+      </React.Suspense>
+    );
+  }
 
   if (isImageUrl(url)) {
     return !isCreateCast ? (
