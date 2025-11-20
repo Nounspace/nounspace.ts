@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff07a"/>
+      <stop offset="50%" stop-color="#ffd142"/>
+      <stop offset="100%" stop-color="#ff8a3d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g transform="translate(150 110)">
+    <rect x="0" y="0" width="250" height="250" fill="#fff2a3" rx="24"/>
+    <rect x="40" y="20" width="80" height="80" fill="#050505"/>
+    <rect x="120" y="120" width="120" height="60" fill="#ff9335"/>
+    <rect x="120" y="180" width="80" height="70" fill="#ff9335"/>
+  </g>
+  <text x="420" y="220" fill="#050505" font-family="\"Space Grotesk\", 'Inter', sans-serif" font-size="120" font-weight="700">
+    Gnars DAO
+  </text>
+  <text x="420" y="320" fill="#050505" font-family="'Inter', sans-serif" font-size="48">
+    Funding extreme athletes every day.
+  </text>
+  <text x="420" y="380" fill="#050505" font-family="'Inter', sans-serif" font-size="36">
+    Explore the shred-ready Nounish ecosystem.
+  </text>
+  <text x="420" y="470" fill="#050505" font-family="'Inter', sans-serif" font-size="30">
+    gnars.com  •  /gnars on Farcaster
+  </text>
+</svg>

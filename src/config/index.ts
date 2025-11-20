@@ -1,10 +1,11 @@
 import { nounsSystemConfig } from './nouns/index';
 import { exampleSystemConfig } from './example/index';
 import { clankerSystemConfig } from './clanker/index';
+import { gnarsSystemConfig } from './gnars/index';
 import { SystemConfig } from './systemConfig';
 
 // Available community configurations
-const AVAILABLE_CONFIGURATIONS = ['nouns', 'example', 'clanker'] as const;
+const AVAILABLE_CONFIGURATIONS = ['nouns', 'example', 'clanker', 'gnars'] as const;
 type CommunityConfig = typeof AVAILABLE_CONFIGURATIONS[number];
 
 // Configuration loader
@@ -29,6 +30,8 @@ export const loadSystemConfig = (): SystemConfig => {
       return exampleSystemConfig;
     case 'clanker':
       return clankerSystemConfig as unknown as SystemConfig;
+    case 'gnars':
+      return gnarsSystemConfig as unknown as SystemConfig;
     // Add more community configurations here as they are created
     default:
       return nounsSystemConfig;
@@ -47,6 +50,7 @@ export { AVAILABLE_CONFIGURATIONS };
 export { nounsSystemConfig } from './nouns/index';
 export { exampleSystemConfig } from './example/index';
 export { clankerSystemConfig } from './clanker/index';
+export { gnarsSystemConfig } from './gnars/index';
 export type { SystemConfig };
 
 // Export individual configuration modules from nouns
@@ -57,6 +61,9 @@ export * from './example/index';
 
 // Export individual configuration modules from clanker
 export * from './clanker/index';
+
+// Export individual configuration modules from gnars
+export * from './gnars/index';
 
 // Space creators - delegate to the active community at runtime
 // Import creators for all communities under unique aliases
@@ -78,6 +85,12 @@ import { default as clankerCreateInitialTokenSpaceConfigForAddress } from './cla
 import { default as clankerCreateInitialProposalSpaceConfigForProposalId } from './clanker/initialSpaces/initialProposalSpace';
 import { default as clankerINITIAL_HOMEBASE_CONFIG, createInitialHomebaseConfig as clankerCreateInitialHomebaseConfig } from './clanker/initialSpaces/initialHomebase';
 
+import { default as gnarsCreateInitialProfileSpaceConfigForFid } from './gnars/initialSpaces/profile';
+import { default as gnarsCreateInitialChannelSpaceConfig } from './gnars/initialSpaces/channel';
+import { default as gnarsCreateInitialTokenSpaceConfigForAddress } from './gnars/initialSpaces/token';
+import { default as gnarsCreateInitialProposalSpaceConfigForProposalId } from './gnars/initialSpaces/proposal';
+import { default as gnarsINITIAL_HOMEBASE_CONFIG } from './gnars/initialSpaces/homebase';
+
 function resolveCommunity(): CommunityConfig {
   const c = (process.env.NEXT_PUBLIC_COMMUNITY || 'nouns').toLowerCase();
   return isValidCommunityConfig(c) ? (c as CommunityConfig) : 'nouns';
@@ -87,6 +100,8 @@ export const createInitialProfileSpaceConfigForFid = (fid: number, username?: st
   switch (resolveCommunity()) {
     case 'clanker':
       return clankerCreateInitialProfileSpaceConfigForFid(fid, username, walletAddress);
+    case 'gnars':
+      return gnarsCreateInitialProfileSpaceConfigForFid(fid, username);
     case 'example':
       return exampleCreateInitialProfileSpaceConfigForFid(fid, username);
     case 'nouns':
@@ -99,6 +114,8 @@ export const createInitialChannelSpaceConfig = (channelId: string) => {
   switch (resolveCommunity()) {
     case 'clanker':
       return clankerCreateInitialChannelSpaceConfig(channelId);
+    case 'gnars':
+      return gnarsCreateInitialChannelSpaceConfig(channelId);
     case 'example':
       return exampleCreateInitialChannelSpaceConfig(channelId);
     case 'nouns':
@@ -113,6 +130,8 @@ export const createInitialTokenSpaceConfigForAddress = (
   switch (resolveCommunity()) {
     case 'clanker':
       return (clankerCreateInitialTokenSpaceConfigForAddress as any)(...args);
+    case 'gnars':
+      return (gnarsCreateInitialTokenSpaceConfigForAddress as any)(...args);
     case 'example':
       return (exampleCreateInitialTokenSpaceConfigForAddress as any)(...args);
     case 'nouns':
@@ -129,6 +148,8 @@ export const createInitalProposalSpaceConfigForProposalId = (
     case 'clanker':
       // clanker uses the corrected spelling under the hood
       return (clankerCreateInitialProposalSpaceConfigForProposalId as any)(...args);
+    case 'gnars':
+      return (gnarsCreateInitialProposalSpaceConfigForProposalId as any)(...args);
     case 'example':
       return (exampleCreateInitalProposalSpaceConfigForProposalId as any)(...args);
     case 'nouns':
@@ -142,6 +163,8 @@ export const INITIAL_HOMEBASE_CONFIG = (() => {
   switch (resolveCommunity()) {
     case 'clanker':
       return clankerINITIAL_HOMEBASE_CONFIG;
+    case 'gnars':
+      return gnarsINITIAL_HOMEBASE_CONFIG;
     case 'example':
       return exampleINITIAL_HOMEBASE_CONFIG;
     case 'nouns':
@@ -155,6 +178,8 @@ export const createInitialHomebaseConfig = (userAddress?: string) => {
   switch (resolveCommunity()) {
     case 'clanker':
       return clankerCreateInitialHomebaseConfig(userAddress);
+    case 'gnars':
+      return gnarsINITIAL_HOMEBASE_CONFIG;
     case 'example':
       return exampleINITIAL_HOMEBASE_CONFIG;
     case 'nouns':
