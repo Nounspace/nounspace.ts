@@ -60,10 +60,26 @@ export * from './nouns/index';
 export * from './example/index';
 
 // Export individual configuration modules from clanker
-export * from './clanker/index';
+export {
+  clankerBrand,
+  clankerAssets,
+  clankerTheme,
+  clankerCommunity,
+  clankerFidgets,
+  clankerHomePage,
+  clankerExplorePage,
+} from './clanker/index';
 
 // Export individual configuration modules from gnars
-export * from './gnars/index';
+export {
+  gnarsBrand,
+  gnarsAssets,
+  gnarsTheme,
+  gnarsCommunity,
+  gnarsFidgets,
+  gnarsHomePage,
+  gnarsExplorePage,
+} from './gnars/index';
 
 // Space creators - delegate to the active community at runtime
 // Import creators for all communities under unique aliases
