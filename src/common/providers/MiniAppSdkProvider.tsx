@@ -143,14 +143,21 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
     // Forwarding EIP-6963 events between parent and iframe
     const isInIframe = window.parent !== window;
 
-    // originId used to prevent message echo/loopback
-    const originId =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? (crypto as any).randomUUID()
-        : `nounspace-miniapp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Stable originId using useRef
+    const originIdRef = React.useRef<string | null>(null);
+    if (!originIdRef.current) {
+      originIdRef.current =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? (crypto as any).randomUUID()
+          : `nounspace-miniapp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+    const originId = originIdRef.current;
 
-    // Determine allowed parent origin from document.referrer when available.
-    // If referrer is not available fallback to '*'.
+    // Allowlist of trusted origins (can be expanded via config)
+    const allowedIframeOrigins = new Set<string>([
+      window.location.origin,
+      // Add other trusted domains here
+    ]);
     let allowedParentOrigin: string = "*";
     try {
       if (document.referrer) {
@@ -226,11 +233,28 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
         console.debug("MiniAppSdkProvider.handleChildMessage: got message from child", { origin: event.origin, data: event.data });
         if (!event.data || typeof event.data !== "object") return;
 
+        // Origin validation
+        if (!allowedIframeOrigins.has(event.origin)) {
+          console.warn("Rejected RPC request from unauthorized origin:", event.origin);
+          return;
+        }
+
+        // Source validation: optional, you can keep a Set of known contentWindows
+
         const { type, id, method, params } = event.data as any;
 
-        // Basic origin validation could be added here if desired. We default to allowing '*'.
-
         if (type === "rpcRequest") {
+          // Restrict sensitive methods
+          const sensitiveMethods = ["eth_requestAccounts", "personal_sign", "eth_sendTransaction"];
+          if (sensitiveMethods.includes(method)) {
+            console.warn("Blocked sensitive RPC method from iframe:", method);
+            const target = event.source as Window | null;
+            if (target) {
+              target.postMessage({ type: "rpcResponse", id, error: "Method not allowed from iframe" }, event.origin);
+            }
+            return;
+          }
+
           // event.source is the child window
           const target = event.source as Window | null;
           if (!target) return;
@@ -239,21 +263,25 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
             console.debug("MiniAppSdkProvider.handleChildMessage: rpcRequest executing", { method, params });
             const result = await (ethProvider as any).request({ method, params });
             console.debug("MiniAppSdkProvider.handleChildMessage: rpcRequest result", { id, result });
-            target.postMessage({ type: "rpcResponse", id, result }, event.origin || "*");
+            target.postMessage({ type: "rpcResponse", id, result }, event.origin);
           } catch (err) {
-            console.debug("MiniAppSdkProvider.handleChildMessage: rpcRequest error", String(err));
-            target.postMessage({ type: "rpcResponse", id, error: String(err) }, event.origin || "*");
+            const errorDetails =
+              err instanceof Error
+                ? { message: err.message, stack: err.stack, name: err.name }
+                : { message: String(err) };
+            console.debug("MiniAppSdkProvider.handleChildMessage: rpcRequest error", errorDetails);
+            target.postMessage({ type: "rpcResponse", id, error: errorDetails }, event.origin);
           }
         }
 
         if (type === "eip6963:requestProvider") {
-          // reply with announce info (without sending provider object across origins)
+          // reply with announce info (without provider object)
           const target = event.source as Window | null;
           if (!target) return;
           const detail = { info: providerInfo } as any;
           try {
             console.debug("MiniAppSdkProvider.handleChildMessage: sending announce to child", { detail });
-            target.postMessage({ type: "eip6963:announceProvider", detail }, event.origin || "*");
+            target.postMessage({ type: "eip6963:announceProvider", detail }, event.origin);
           } catch (err) {
             console.debug("MiniAppSdkProvider.handleChildMessage: failed to post announceProvider to child", err);
             // ignore
