@@ -24,8 +24,8 @@ import {
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
-import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
@@ -417,6 +417,56 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
 
   const { push, pop, clear, last } = threadStack;
 
+  // Banner visibility: show when feed loads, hide when user scrolls down
+  const [showBanner, setShowBanner] = useState(true);
+
+  // Threshold (in pixels) for showing/hiding the banner
+  const BANNER_HIDE_THRESHOLD = 20;
+
+  // Reset banner when settings that affect the summary change
+  useEffect(() => {
+    setShowBanner(true);
+  }, [feedType, filterType, users, username, channel, keyword, selectPlatform?.name]);
+
+  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    setShowBanner(scrollTop <= BANNER_HIDE_THRESHOLD);
+  }, []);
+
+  // Helper for banner text
+  const getBannerText = (
+    selectPlatform: Platform,
+    feedType: FeedType | "for_you" | "trending",
+    filterType: FilterType,
+    settings: {
+      Xhandle?: string;
+      channel?: string;
+      username?: string;
+      users?: string;
+      keyword?: string;
+    }
+  ): string => {
+    if (selectPlatform?.name === "X") {
+      return settings.Xhandle ? `Showing X feed: ${settings.Xhandle}` : `Showing X feed`;
+    }
+    if (feedType === FeedType.Filter) {
+      if (filterType === FilterType.Channel && settings.channel) {
+        return `Showing channel: ${settings.channel}`;
+      }
+      if (filterType === FilterType.Users) {
+        if (settings.username) return `Showing user: ${settings.username}`;
+        if (settings.users) return `Showing FID: ${settings.users}`;
+      }
+      if (filterType === FilterType.Keyword && settings.keyword) {
+        return `Filtering by: ${settings.keyword}`;
+      }
+    }
+    if (feedType === FeedType.Following) return `Following feed`;
+    if (feedType === "for_you") return `For you`;
+    if (feedType === "trending") return `Trending`;
+    return "";
+  };
+
   useEffect(() => {
     if (prevFeedType !== feedType) {
       setIsTransitioning(true);
@@ -607,6 +657,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
   return (
     <div
       className="h-full overflow-y-auto"
+      onScroll={onScroll}
       style={{
         fontFamily: settings.useDefaultColors
           ? "var(--user-theme-font)"
@@ -619,6 +670,32 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
           : settings.background,
       }}
     >
+      {/* Feed settings banner: shows a short summary of active filter/feed and hides on scroll */}
+      {!isThreadView && !isTransitioning && (
+        (() => {
+          const text = getBannerText(selectPlatform, feedType as FeedType | "for_you" | "trending", filterType, {
+            Xhandle,
+            channel,
+            username,
+            users,
+            keyword,
+          });
+          if (!text) return null;
+          return (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`sticky top-0 z-10 transform transition-transform duration-200 ease-in-out ${
+                showBanner ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+              }`}
+            >
+              <div className="w-full px-4 py-2 bg-white/90 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-200">
+                {text}
+              </div>
+            </div>
+          );
+        })()
+      )}
       {isTransitioning ? (
         <div className="h-full w-full flex justify-center items-center">
           <Loading />
