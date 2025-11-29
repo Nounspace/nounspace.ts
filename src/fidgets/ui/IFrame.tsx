@@ -110,29 +110,215 @@ const createMiniAppBootstrapSrcDoc = (targetUrl: string) => {
         }
       `;
 
+  // New bootstrap: try direct access to parent provider, otherwise install a proxy
   return `<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body><script>(function(){
       try {
         var parentWindow = window.parent;
         if (!parentWindow) {
           return;
         }
-        var provider = parentWindow.__nounspaceMiniAppEthProvider;
-        if (provider) {
-          window.ethereum = provider;
-          ${providerInfoScript}
-          var announce = function() {
-            var detail = {
-              info: providerInfo,
-              provider: provider
+
+        ${providerInfoScript}
+
+        var safeAssignProvider = function(p) {
+          try {
+            window.ethereum = p;
+          } catch (err) {
+            // ignore
+          }
+        };
+
+        // Direct provider available (same-origin host)
+        try {
+          var provider = parentWindow.__nounspaceMiniAppEthProvider;
+          if (provider) {
+            safeAssignProvider(provider);
+            var announce = function() {
+              var detail = { info: providerInfo, provider: provider };
+              window.dispatchEvent(new CustomEvent('eip6963:announceProvider', { detail: detail }));
             };
-            window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: detail }));
-          };
-          window.dispatchEvent(new Event("ethereum#initialized"));
-          announce();
-          window.addEventListener("eip6963:requestProvider", announce);
+            window.dispatchEvent(new Event('ethereum#initialized'));
+            announce();
+            window.addEventListener('eip6963:requestProvider', announce);
+          } else {
+            // No direct provider: install a proxy EIP-1193 provider that uses postMessage to parent
+            (function(){
+              var originId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'nounspace-miniapp-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
+
+              var rpcCallbacks = Object.create(null);
+              var nextId = 1;
+
+              // send rpc request to parent
+              function sendRpcRequest(method, params) {
+                return new Promise(function(resolve, reject){
+                  var id = String(nextId++);
+                  rpcCallbacks[id] = { resolve: resolve, reject: reject };
+                  try {
+                    console.debug('miniapp-iframe: sending rpcRequest to parent', { id: id, method: method, params: params });
+                    var targetOrigin = parentWindow.location && parentWindow.location.origin ? parentWindow.location.origin : '*';
+                    parentWindow.postMessage({ type: 'rpcRequest', id: id, method: method, params: params, source: originId }, targetOrigin);
+                  } catch (err) {
+                    delete rpcCallbacks[id];
+                    reject(err);
+                  }
+                });
+              }
+
+              // receive rpc response
+              function handleMessage(event) {
+                try {
+                  if (!event.data || typeof event.data !== 'object') return;
+                  if (event.data.source && event.data.source === originId) return; // ignore our own
+                  // Origin validation: only accept from parent
+                  var expectedParentOrigin = parentWindow.location && parentWindow.location.origin ? parentWindow.location.origin : null;
+                  if (expectedParentOrigin && event.origin !== expectedParentOrigin) return;
+                  var type = event.data.type;
+                  if (type === 'rpcResponse') {
+                    var id = String(event.data.id);
+                    var cb = rpcCallbacks[id];
+                    if (!cb) return;
+                    delete rpcCallbacks[id];
+                    console.debug('miniapp-iframe: received rpcResponse', { id: id, payload: event.data });
+                    if ('error' in event.data) {
+                      var errorMsg = event.data.error;
+                      cb.reject(errorMsg instanceof Error ? errorMsg : new Error(typeof errorMsg === 'object' && errorMsg.message ? errorMsg.message : String(errorMsg)));
+                    } else cb.resolve(event.data.result);
+                  }
+
+                  if (type === 'eip6963:announceProvider') {
+                    // re-dispatch locally
+                    console.debug('miniapp-iframe: received announceProvider from parent', { detail: event.data.detail });
+                    window.dispatchEvent(new CustomEvent('eip6963:announceProvider', { detail: event.data.detail }));
+                  }
+
+                } catch (err) {
+                  // ignore
+                }
+              }
+
+              window.addEventListener('message', handleMessage);
+
+              // install a minimal EIP-1193 provider
+              var proxy = {
+                isProxy: true,
+                request: function(req) {
+                  if (!req || typeof req !== 'object') return Promise.reject(new Error('Invalid request'));
+                  if (typeof req.method !== 'string') return Promise.reject(new Error('Invalid method'));
+                  if (
+                    req.params !== undefined &&
+                    !(Array.isArray(req.params) || (typeof req.params === 'object' && req.params !== null))
+                  ) return Promise.reject(new Error('Invalid params'));
+                  return sendRpcRequest(req.method, req.params);
+                },
+                on: function(event, listener) {
+                  // Events not supported in proxy mode
+                  console.warn("window.ethereum.on: events not supported in proxy mode", event);
+                },
+                removeListener: function(event, listener) {
+                  console.warn("window.ethereum.removeListener: events not supported in proxy mode", event);
+                },
+                removeAllListeners: function(event) {
+                  console.warn("window.ethereum.removeAllListeners: events not supported in proxy mode", event);
+                }
+              };
+
+              try { window.ethereum = proxy; } catch (err) {}
+
+              // announceLocal removed (not used)
+
+              // when host requests provider, notify parent so it can reply with announce
+              window.addEventListener('eip6963:requestProvider', function(){
+                  try { 
+                    var targetOrigin = parentWindow.location && parentWindow.location.origin ? parentWindow.location.origin : '*';
+                    console.debug('miniapp-iframe: proactively requesting provider from parent'); 
+                    parentWindow.postMessage({ type: 'eip6963:requestProvider', source: originId }, targetOrigin); 
+                  } catch (err) {}
+              });
+
+              // proactively ask parent for provider info
+              try { parentWindow.postMessage({ type: 'eip6963:requestProvider', source: originId }, '*'); } catch (err) {}
+
+              // small timeout to redirect to target
+            })();
+          }
+        } catch (err) {
+          // cross-origin access will throw; fall back to proxy logic
+          try {
+            // install proxy provider as above
+            (function(){
+              var originId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'nounspace-miniapp-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
+
+              var rpcCallbacks = Object.create(null);
+              var nextId = 1;
+
+              function sendRpcRequest(method, params) {
+                return new Promise(function(resolve, reject){
+                  var id = String(nextId++);
+                  rpcCallbacks[id] = { resolve: resolve, reject: reject };
+                  try {
+                    console.debug('miniapp-iframe (fallback): sending rpcRequest to parent', { id: id, method: method, params: params });
+                    var targetOrigin = parentWindow.location && parentWindow.location.origin ? parentWindow.location.origin : '*';
+                    parentWindow.postMessage({ type: 'rpcRequest', id: id, method: method, params: params, source: originId }, targetOrigin);
+                  } catch (err) {
+                    delete rpcCallbacks[id];
+                    reject(err);
+                  }
+                });
+              }
+
+              function handleMessage(event) {
+                try {
+                  if (!event.data || typeof event.data !== 'object') return;
+                  if (event.data.source && event.data.source === originId) return;
+                  var type = event.data.type;
+                  if (type === 'rpcResponse') {
+                    var id = String(event.data.id);
+                    var cb = rpcCallbacks[id];
+                    if (!cb) return;
+                    delete rpcCallbacks[id];
+                    console.debug('miniapp-iframe (fallback): received rpcResponse', { id: id, payload: event.data });
+                    if ('error' in event.data) cb.reject(new Error(String(event.data.error)));
+                    else cb.resolve(event.data.result);
+                  }
+                  if (type === 'eip6963:announceProvider') {
+                    console.debug('miniapp-iframe (fallback): received announceProvider from parent', { detail: event.data.detail });
+                    window.dispatchEvent(new CustomEvent('eip6963:announceProvider', { detail: event.data.detail }));
+                  }
+                } catch (err) {}
+              }
+
+              window.addEventListener('message', handleMessage);
+
+              var proxy = {
+                isProxy: true,
+                request: function(req) {
+                  if (!req || typeof req.method !== 'string') return Promise.reject(new Error('Invalid request'));
+                  return sendRpcRequest(req.method, req.params);
+                }
+              };
+
+              try { window.ethereum = proxy; } catch (err) {}
+
+              window.addEventListener('eip6963:requestProvider', function(){
+                try { 
+                  var targetOrigin = parentWindow.location && parentWindow.location.origin ? parentWindow.location.origin : '*';
+                  console.debug('miniapp-iframe (fallback): forwarding local requestProvider to parent'); 
+                  parentWindow.postMessage({ type: 'eip6963:requestProvider', source: originId }, targetOrigin); 
+                } catch (err) {}
+              });
+
+              try { 
+                var targetOrigin = parentWindow.location && parentWindow.location.origin ? parentWindow.location.origin : '*';
+                console.debug('miniapp-iframe (fallback): proactively requesting provider from parent'); 
+                parentWindow.postMessage({ type: 'eip6963:requestProvider', source: originId }, targetOrigin); 
+              } catch (err) {}
+            })();
+          } catch (err2) {
+            // last resort ignore
+          }
         }
       } catch (err) {
-        console.error("Mini app provider bootstrap failed", err);
+        console.error('Mini app provider bootstrap failed', err);
       }
       setTimeout(function(){
         var target = ${JSON.stringify(safeTargetUrl)};
