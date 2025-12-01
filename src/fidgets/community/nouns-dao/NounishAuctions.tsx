@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/atoms/select";
-import { Separator } from "@/common/components/atoms/separator";
 import { DAO_OPTIONS } from "@/constants/basedDaos";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
@@ -223,9 +222,13 @@ const shortenAddress = (address?: string | null): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-const AuctionArt: React.FC<{ imageUrl?: string; tokenId?: string }> = ({ imageUrl, tokenId }) => {
+const AuctionArt: React.FC<{ imageUrl?: string; tokenId?: string; className?: string }> = ({
+  imageUrl,
+  tokenId,
+  className,
+}) => {
   return (
-    <div className="aspect-square w-full overflow-hidden rounded-xl bg-muted">
+    <div className={mergeClasses("aspect-square w-full overflow-hidden rounded-xl bg-muted", className)}>
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={imageUrl} alt={`Token ${tokenId}`} className="h-full w-full object-cover" />
@@ -312,54 +315,65 @@ const ActiveAuctionCard: React.FC<{
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <AuctionArt imageUrl={auction.imageUrl} tokenId={auction.tokenId} />
-
-        <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-          <div>
-            <div className="text-muted-foreground">Current bid</div>
-            <div className="text-lg font-semibold">{formatEth(currentBid)} ETH</div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Highest bidder</div>
-            <div className="font-mono text-sm">{shortenAddress(auction.highestBidder ?? auction.winningBidder)}</div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Ends</div>
-            <div>{new Date(auction.endTime * 1000).toLocaleString()}</div>
-          </div>
-          <div>
-            <div className="text-muted-foreground">Countdown</div>
-            <div className="font-mono">{endsInFuture ? <Countdown endTime={auction.endTime} /> : "Ended"}</div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="w-full sm:max-w-xs">
-            <label className="text-sm text-muted-foreground">Bid amount (ETH)</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={bidValue}
-              onChange={(event) => setBidValue(event.target.value)}
-              placeholder="0.05"
-              disabled={submitting || disabled || !endsInFuture}
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <div className="lg:w-1/2">
+            <AuctionArt
+              imageUrl={auction.imageUrl}
+              tokenId={auction.tokenId}
+              className="max-w-[420px] mx-auto"
             />
           </div>
-          <div className="flex flex-1 flex-wrap gap-2">
-            <Button
-              disabled={submitting || disabled || !endsInFuture || !bidValue}
-              onClick={() => onBid(bidValue)}
-            >
-              Place bid
-            </Button>
-            <Button
-              variant="outline"
-              disabled={submitting || disabled || endsInFuture}
-              onClick={onSettle}
-            >
-              Settle auction
-            </Button>
+          <div className="flex-1 space-y-6">
+            <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+              <div>
+                <div className="text-muted-foreground">Current bid</div>
+                <div className="text-lg font-semibold">{formatEth(currentBid)} ETH</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Highest bidder</div>
+                <div className="font-mono text-sm">
+                  {shortenAddress(auction.highestBidder ?? auction.winningBidder)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Ends</div>
+                <div>{new Date(auction.endTime * 1000).toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Countdown</div>
+                <div className="font-mono">{endsInFuture ? <Countdown endTime={auction.endTime} /> : "Ended"}</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="w-full sm:max-w-xs">
+                <label className="text-sm text-muted-foreground">Bid amount (ETH)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={bidValue}
+                  onChange={(event) => setBidValue(event.target.value)}
+                  placeholder="0.05"
+                  disabled={submitting || disabled || !endsInFuture}
+                />
+              </div>
+              <div className="flex flex-1 flex-wrap gap-2">
+                <Button
+                  disabled={submitting || disabled || !endsInFuture || !bidValue}
+                  onClick={() => onBid(bidValue)}
+                >
+                  Place bid
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={submitting || disabled || endsInFuture}
+                  onClick={onSettle}
+                >
+                  Settle auction
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -452,7 +466,6 @@ export const nounishAuctionsConfig: FidgetProperties = {
 const pageSize = 9;
 
 export const NounishAuctions: React.FC<FidgetArgs<NounishAuctionsSettings>> = ({ settings }) => {
-  const initialDao = settings.selectedDao ?? DAO_OPTIONS[0];
   const [activeAuction, setActiveAuction] = useState<BuilderAuction | null>(null);
   const [daoDetails, setDaoDetails] = useState<BuilderDao | null>(null);
   const [pastAuctions, setPastAuctions] = useState<BuilderAuction[]>([]);
@@ -463,17 +476,16 @@ export const NounishAuctions: React.FC<FidgetArgs<NounishAuctionsSettings>> = ({
   const [refreshKey, setRefreshKey] = useState(0);
   const [txPending, setTxPending] = useState(false);
   const [hasMorePast, setHasMorePast] = useState(true);
-  const [daoChoice, setDaoChoice] = useState<DaoOption>(initialDao);
-  const [customAddress, setCustomAddress] = useState(settings.customDaoContract ?? "");
-  const [networkValue, setNetworkValue] = useState<SupportedNetwork>(
-    (settings.builderNetwork ?? "base") as SupportedNetwork,
-  );
-  const [customGraphUrl, setCustomGraphUrl] = useState(settings.customGraphUrl ?? "");
 
   const { address, chainId } = useAccount();
   const { connectAsync, connectors } = useConnect();
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
+
+  const daoChoice = useMemo(() => settings.selectedDao ?? DAO_OPTIONS[0], [settings.selectedDao]);
+  const customAddress = settings.customDaoContract ?? "";
+  const networkValue = (settings.builderNetwork ?? "base") as SupportedNetwork;
+  const customGraphUrl = settings.customGraphUrl ?? "";
 
   const daoAddress = useMemo(() => {
     const override = customAddress.trim();
@@ -668,132 +680,79 @@ export const NounishAuctions: React.FC<FidgetArgs<NounishAuctionsSettings>> = ({
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4" style={{ fontFamily: settings.fontFamily, color: settings.fontColor }}>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>DAO</CardTitle>
-            <CardDescription>Select a Builder DAO</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DaoSelector
-              onChange={(dao) => {
-                setDaoChoice(dao);
-                setRefreshKey((prev) => prev + 1);
-              }}
-              value={daoChoice}
-            />
-            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-              <div>Address: {daoAddress ?? "-"}</div>
-              <div>Network: {resolvedNetwork.label}</div>
+    <div
+      className="flex h-full min-h-0 flex-col overflow-hidden"
+      style={{ fontFamily: settings.fontFamily, color: settings.fontColor }}
+    >
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex h-full flex-col gap-4 p-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="space-y-1">
+                <div className="text-sm font-semibold">{daoChoice?.name ?? "Builder DAO"}</div>
+                <div className="text-xs text-muted-foreground">Address: {daoAddress ?? "-"}</div>
+                <div className="text-xs text-muted-foreground">Network: {resolvedNetwork.label}</div>
+                <div className="text-xs text-muted-foreground break-all">Subgraph: {subgraphUrl}</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {error ? (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
             </div>
-          </CardContent>
-        </Card>
+          ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Custom DAO</CardTitle>
-            <CardDescription>Override DAO address</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Input
-              value={customAddress}
-              placeholder="0x..."
-              onChange={(event) => setCustomAddress(event.target.value)}
-              onBlur={() => setRefreshKey((prev) => prev + 1)}
+          {!hasValidDao && (
+            <div className="text-sm text-muted-foreground">
+              Enter a valid DAO contract address in the fidget settings to load auctions.
+            </div>
+          )}
+
+          {loadingActive && <div className="text-sm text-muted-foreground">Loading active auction...</div>}
+
+          {hasValidDao && !loadingActive && activeAuction && (
+            <ActiveAuctionCard
+              auction={activeAuction}
+              dao={daoDetails ?? undefined}
+              onBid={handleBid}
+              onSettle={handleSettle}
+              submitting={txPending}
+              disabled={!daoDetails?.auctionAddress}
             />
-            <Select
-              value={networkValue}
-              onValueChange={(value) => {
-                setNetworkValue(value as SupportedNetwork);
-                setRefreshKey((prev) => prev + 1);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Network" />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_NETWORKS.map((network) => (
-                  <SelectItem key={network.value} value={network.value}>
-                    {network.label}
-                  </SelectItem>
+          )}
+
+          {hasValidDao && !loadingActive && !activeAuction && (
+            <Card>
+              <CardContent className="p-4 text-sm text-muted-foreground">
+                No active auction found for this DAO.
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Past auctions</h3>
+              {loadingPast && <span className="text-xs text-muted-foreground">Loading...</span>}
+            </div>
+            {pastAuctions.length === 0 && !loadingPast ? (
+              <div className="text-sm text-muted-foreground">No past auctions yet.</div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {pastAuctions.map((auction) => (
+                  <PastAuctionCard key={auction.id} auction={auction} />
                 ))}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Subgraph endpoint</CardTitle>
-            <CardDescription>Override if your DAO uses a custom URL</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Input
-              value={customGraphUrl}
-              placeholder="https://..."
-              onChange={(event) => setCustomGraphUrl(event.target.value)}
-              onBlur={() => setRefreshKey((prev) => prev + 1)}
-            />
-            <div className="mt-2 text-xs text-muted-foreground">Current endpoint: {subgraphUrl}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Separator />
-
-      {error ? (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
-        </div>
-      ) : null}
-
-      {!hasValidDao && (
-        <div className="text-sm text-muted-foreground">Enter a valid DAO contract address to load auctions.</div>
-      )}
-
-      {loadingActive && <div className="text-sm text-muted-foreground">Loading active auction...</div>}
-
-      {hasValidDao && !loadingActive && activeAuction && (
-        <ActiveAuctionCard
-          auction={activeAuction}
-          dao={daoDetails ?? undefined}
-          onBid={handleBid}
-          onSettle={handleSettle}
-          submitting={txPending}
-          disabled={!daoDetails?.auctionAddress}
-        />
-      )}
-
-      {hasValidDao && !loadingActive && !activeAuction && (
-        <Card>
-          <CardContent className="p-4 text-sm text-muted-foreground">
-            No active auction found for this DAO.
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Past auctions</h3>
-          {loadingPast && <span className="text-xs text-muted-foreground">Loading...</span>}
-        </div>
-        {pastAuctions.length === 0 && !loadingPast ? (
-          <div className="text-sm text-muted-foreground">No past auctions yet.</div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pastAuctions.map((auction) => (
-              <PastAuctionCard key={auction.id} auction={auction} />
-            ))}
+              </div>
+            )}
+            {pastAuctions.length >= pageSize && hasMorePast && (
+              <div className="flex justify-center">
+                <Button variant="outline" disabled={loadingPast || !hasMorePast} onClick={handleLoadMore}>
+                  Load more
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-        {pastAuctions.length >= pageSize && hasMorePast && (
-          <div className="flex justify-center">
-            <Button variant="outline" disabled={loadingPast || !hasMorePast} onClick={handleLoadMore}>
-              Load more
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
