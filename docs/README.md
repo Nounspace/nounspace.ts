@@ -41,6 +41,10 @@ Nounspace is a highly customizable Farcaster client funded by Nouns DAO. This do
 - [Theme System](SYSTEMS/THEMES/OVERVIEW.md) - Theme architecture
 - [Customization](SYSTEMS/THEMES/CUSTOMIZATION.md) - Theme customization
 
+### Configuration
+- [Configuration System](SYSTEMS/CONFIGURATION/OVERVIEW.md) - Database-backed configuration system
+- [Configuration System Overview](SYSTEMS/CONFIGURATION/OVERVIEW.md) - Complete configuration system documentation
+
 ### Discovery
 - [Mini App Discovery System](SYSTEMS/DISCOVERY/MINI_APP_DISCOVERY_SYSTEM.md) - Mini-app discovery system
 - [Mini App Discovery](SYSTEMS/DISCOVERY/MINI_APP_DISCOVERY.md) - Mini-app discovery system (to be created)

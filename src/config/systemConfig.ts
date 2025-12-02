@@ -30,8 +30,6 @@ export interface SystemConfig {
   theme: ThemeConfig;
   community: CommunityConfig;
   fidgets: FidgetConfig;
-  homePage: HomePageConfig;
-  explorePage: ExplorePageConfig;
   navigation?: NavigationConfig;
   ui?: UIConfig;
 }
@@ -135,7 +133,7 @@ export interface FidgetConfig {
   disabled: string[];
 }
 
-export interface HomePageConfig {
+export interface NavPageConfig {
   defaultTab: string;
   tabOrder: string[];
   tabs: {
@@ -152,8 +150,6 @@ export interface HomePageConfig {
     };
   };
 }
-
-export type ExplorePageConfig = HomePageConfig;
 
 export interface NavigationConfig {
   items: NavigationItem[];
@@ -174,6 +170,7 @@ export interface NavigationItem {
   icon?: 'home' | 'explore' | 'notifications' | 'search' | 'space' | 'robot' | 'custom';
   openInNewTab?: boolean;
   requiresAuth?: boolean;
+  spaceId?: string; // Optional reference to Space for page content (navPage type)
 }
 
 export interface TabConfig {

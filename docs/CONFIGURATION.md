@@ -1,27 +1,36 @@
 # Configuration Guide
 
+Nounspace uses a **database-backed configuration system** with **domain-based multi-tenant support**. Community configurations are stored in Supabase and loaded dynamically based on the request domain, enabling a single deployment to serve multiple communities.
+
+## Database-Backed Configuration System
+
+For complete documentation on how the configuration system works, see:
+- **[Architecture Overview](SYSTEMS/CONFIGURATION/ARCHITECTURE_OVERVIEW.md)** - Complete description of the database-backed configuration system
+
 ## Environment Variables
 
 The application uses environment variables to configure community-specific settings and external services.
 
 ### Community Configuration
 
-The most important environment variable for whitelabeling is:
+The system automatically detects the community from the request domain via middleware. For local development, you can set:
 
 ```bash
-NEXT_PUBLIC_COMMUNITY=nouns
+NEXT_PUBLIC_TEST_COMMUNITY=nouns
 ```
 
-This determines which community configuration to load. Available options:
-- `nouns` (default) - Uses the Nouns community configuration
-- `example` - Uses the example community configuration template
-- `clanker` - Uses the Clanker community configuration
+**Available communities:**
+- `nouns`
+- `example`
+- `clanker`
+
+**Note:** In production, the community is automatically detected from the domain (e.g., `example.nounspace.com` → `example`). For local development, use `NEXT_PUBLIC_TEST_COMMUNITY` or localhost subdomains (e.g., `example.localhost:3000`).
 
 ### Required Environment Variables
 
 ```bash
-# Community Configuration
-NEXT_PUBLIC_COMMUNITY=nouns
+# Community Configuration (for local development only)
+# NEXT_PUBLIC_TEST_COMMUNITY=nouns  # Optional: override community for local testing
 
 # Database Configuration (Supabase)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
@@ -43,111 +52,158 @@ NEXT_PUBLIC_WEBSITE_URL=http://localhost:3000
 
 ## Configuration Loading
 
-The application automatically loads the appropriate configuration based on the `NEXT_PUBLIC_COMMUNITY` environment variable:
+The application uses **server-only runtime loading** from Supabase. Config is fetched from the database at runtime based on the request domain, enabling multi-tenant support.
 
-1. **Environment Variable Reading**: The system reads `NEXT_PUBLIC_COMMUNITY` from environment variables
-2. **Validation**: Validates that the configuration exists in the available configurations
-3. **Fallback**: Falls back to the `nouns` configuration if an invalid or missing value is provided
-4. **Loading**: Loads the corresponding community configuration
+### Server-Only Architecture
+
+**Important:** `loadSystemConfig()` is **server-only** and can only be called from Server Components. Client components receive config via the `systemConfig` prop.
+
+**Pattern:**
+```typescript
+// ✅ Server Component
+export default async function MyServerComponent() {
+  const systemConfig = await loadSystemConfig();
+  return <ClientComponent systemConfig={systemConfig} />;
+}
+
+// ✅ Client Component
+"use client";
+type Props = { systemConfig: SystemConfig };
+export function MyClientComponent({ systemConfig }: Props) {
+  const { brand, assets } = systemConfig;
+  // Use config...
+}
+```
+
+See [Architecture Overview](SYSTEMS/CONFIGURATION/ARCHITECTURE_OVERVIEW.md) for complete details.
 
 ## Configuration Structure
 
-The configuration is organized into community-specific folders:
+Configurations are stored in Supabase and loaded dynamically. Static TypeScript configs serve as fallback. The structure is organized into community-specific folders:
 
 ```
 src/config/
-├── nouns/                    # Nouns community configuration
+├── nouns/                    # Nouns community configuration (fallback)
 │   ├── nouns.brand.ts        # Brand identity
 │   ├── nouns.assets.ts       # Visual assets
-│   ├── nouns.theme.ts        # Theme definitions
 │   ├── nouns.community.ts    # Community integration
 │   ├── nouns.fidgets.ts      # Fidget management
-│   ├── nouns.home.ts         # Home page configuration
-│   ├── initial*.ts           # Initial space templates
-│   └── index.ts              # Configuration export
-├── example/                  # Example community configuration
-│   ├── example.brand.ts      # Brand identity template
-│   ├── example.assets.ts     # Visual assets template
-│   ├── example.theme.ts      # Theme definitions template
-│   ├── example.community.ts  # Community integration template
-│   ├── example.fidgets.ts    # Fidget management template
-│   ├── example.home.ts       # Home page configuration template
-│   ├── example.initialSpaces.ts # Initial space templates
-│   └── index.ts              # Configuration export
-├── clanker/                  # Clanker community configuration
-│   ├── clanker.brand.ts      # Brand identity
-│   ├── clanker.assets.ts     # Visual assets
-│   ├── clanker.theme.ts      # Theme definitions
-│   ├── clanker.community.ts  # Community integration
-│   ├── clanker.fidgets.ts    # Fidget management
-│   ├── clanker.home.ts       # Home page configuration
+│   ├── nouns.home.ts         # Home page configuration (legacy)
+│   ├── nouns.explore.ts      # Explore page configuration (legacy)
+│   ├── nouns.navigation.ts   # Navigation config
+│   ├── nouns.theme.ts        # Theme config (references shared)
+│   ├── nouns.ui.ts           # UI colors
 │   ├── initialSpaces/        # Initial space templates
 │   └── index.ts              # Configuration export
+├── clanker/                  # Clanker community configuration (fallback)
+├── example/                  # Example community configuration (fallback)
+├── shared/                   # Shared configuration
+│   └── themes.ts            # Shared theme definitions (all communities)
+├── loaders/                  # Configuration loading
+│   ├── types.ts             # Loader interfaces
+│   ├── registry.ts          # Domain resolution
+│   ├── runtimeLoader.ts     # Runtime config loader
+│   ├── factory.ts           # Loader factory
+│   └── index.ts             # Public API
 ├── systemConfig.ts           # System configuration interface
 ├── initialSpaceConfig.ts     # Base space configuration
 └── index.ts                  # Main configuration loader
 ```
 
-## Build-Time Configuration
+**Note:** Themes are stored in `shared/themes.ts` and pages (homePage/explorePage) are stored as Spaces in Supabase Storage. See [Architecture Overview](SYSTEMS/CONFIGURATION/ARCHITECTURE_OVERVIEW.md) for details.
 
-The system uses build-time configuration to determine which community configuration to use. This means:
+## Domain-Based Multi-Tenant Configuration
 
-1. **Environment Variable**: Set `NEXT_PUBLIC_COMMUNITY` at build time
-2. **Build Process**: The configuration is baked into the build
-3. **No Runtime Switching**: The configuration cannot be changed after build
+The system uses **middleware-based domain detection** to automatically determine which community configuration to load:
 
-### Building Different Communities
+1. **Middleware** detects the domain from request headers (e.g., `example.nounspace.com`)
+2. **Resolves community ID** from domain (e.g., `example.nounspace.com` → `example`)
+3. **Sets headers** for Server Components to read (`x-community-id`, `x-detected-domain`)
+4. **Loads config** from database at runtime
 
-**For Nouns community (default):**
-```bash
-npm run build
-# or explicitly
-NEXT_PUBLIC_COMMUNITY=nouns npm run build
+### Special Domain Mappings
+
+Certain domains can be mapped to specific communities, overriding normal domain resolution. This is useful for staging environments, preview deployments, etc.
+
+**Configured in:** `src/config/loaders/registry.ts`
+
+**Current mappings:**
+- `staging.nounspace.com` → `nouns`
+- `staging.localhost` → `nouns` (for local testing)
+
+To add more mappings, edit the `DOMAIN_TO_COMMUNITY_MAP` object in `src/config/loaders/registry.ts`:
+
+```typescript
+const DOMAIN_TO_COMMUNITY_MAP: Record<string, string> = {
+  'staging.nounspace.com': 'nouns',
+  'staging.localhost': 'nouns',
+  'preview.nounspace.com': 'example', // Add your mappings here
+};
 ```
 
-**For Example community:**
-```bash
-NEXT_PUBLIC_COMMUNITY=example npm run build
+**Priority:** Special domain mappings take priority over normal domain resolution.
+
+### How It Works
+
+**Request Flow:**
+```
+Browser Request (example.nounspace.com)
+  ↓
+Middleware (detects domain, sets x-community-id header)
+  ↓
+Server Component (reads header, loads config)
+  ├─ Calls: await loadSystemConfig() ← SERVER-ONLY
+  └─ Passes systemConfig as prop to Client Components
+  ↓
+Client Components receive systemConfig prop
+  ↓
+Renders with correct community config
 ```
 
-**For Clanker community:**
-```bash
-NEXT_PUBLIC_COMMUNITY=clanker npm run build
-```
+**For All Communities:**
+- Config loaded from Supabase database at runtime
+- Supports multi-tenant (different domains → different communities)
+- Single deployment serves all communities
 
 ### Development
 
-**For Nouns development:**
-```bash
-npm run dev
-# or explicitly
-NEXT_PUBLIC_COMMUNITY=nouns npm run dev
-```
+**Testing Runtime Communities Locally:**
 
-**For Example development:**
+1. **Use localhost subdomains:**
+   ```bash
+   # Visit: example.localhost:3000
+   # System detects 'example' from subdomain
+   ```
+
+2. **Or use environment variable override:**
+   ```bash
+   NEXT_PUBLIC_TEST_COMMUNITY=example npm run dev
+   ```
+
+**Testing Specific Communities:**
 ```bash
-NEXT_PUBLIC_COMMUNITY=example npm run dev
+NEXT_PUBLIC_TEST_COMMUNITY=nouns npm run dev
 ```
 
 ### What Gets Configured
 
-When you set `NEXT_PUBLIC_COMMUNITY=example` (or `clanker`), the system will:
+For each community, the system loads:
 
-1. **Load that community's system config** (brand, assets, theme, community settings)
-2. **Use that community's fidget configurations**
-3. **Use that community's home page configuration**
-4. **Use that community's initial space templates** (profile, channel, token, proposal, homebase)
+1. **System config** from Supabase (brand, assets, community settings, fidgets, navigation, UI)
+2. **Shared themes** from `src/config/shared/themes.ts`
+3. **Navigation pages** as Spaces from Supabase Storage (referenced by navigation items)
+4. **Initial space templates** (profile, channel, token, proposal, homebase)
 
 ## Adding New Community Configurations
 
 To add a new community configuration:
 
-1. Create a new folder under `src/config/` (e.g., `src/config/mycommunity/`)
-2. Copy the structure from `src/config/example/` as a template
-3. Update all configuration files with your community's specific values
-4. Add the new configuration to the `AVAILABLE_CONFIGURATIONS` array in `src/config/index.ts`
-5. Add a new case to the switch statement in `loadSystemConfig()` and the runtime delegates for space creators
-6. Update this documentation
+1. **Create database entry**: Insert a new row in the `community_configs` table with your community's configuration
+2. **Create static config files** (for seeding): Create a new folder under `src/config/` (e.g., `src/config/mycommunity/`) with your community's configuration files
+3. **Create navigation spaces**: If your community has navigation pages, create `navPage` type spaces in `spaceRegistrations` and upload their configs to Storage
+4. **Update seed data**: Add seed data in `supabase/seed.sql` for the new community, or use `scripts/seed-all.ts` to seed the database
+
+See [Architecture Overview](SYSTEMS/CONFIGURATION/ARCHITECTURE_OVERVIEW.md) for detailed instructions.
 
 ## Development vs Production
 
