@@ -10,34 +10,21 @@ import {
   WagmiProvider,
   useAccount,
   useConnect,
+  useEnsAvatar,
   useEnsName,
   useSwitchChain,
   useWriteContract,
 } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { simulateContract, waitForTransactionReceipt } from "wagmi/actions";
-import { ContractFunctionExecutionError } from "viem";
 import AuctionHero from "./components/AuctionHero";
 import BidModal from "./components/BidModal";
-import StatsRow from "./components/StatsRow";
-import {
-  AlreadyOwnSection,
-  FaqAccordion,
-  GetANounSection,
-  GovernedByYouSection,
-  JourneySection,
-  LearnSection,
-  NounsFundsIdeasSection,
-  TheseAreNounsStrip,
-  ThisIsNounsSection,
-} from "./components/Sections";
 import { nounsWagmiConfig, REQUIRED_CHAIN_ID } from "./wagmiConfig";
 import { nounsPublicClient, NOUNS_AH_ADDRESS } from "./config";
 import { NounsAuctionHouseV3Abi, NounsAuctionHouseExtraAbi } from "./abis";
-import type { Auction, Settlement } from "./types";
-import { formatEth, getAuctionStatus } from "./utils";
-import { useEthUsdPrice, formatUsd } from "./price";
-import { fetchExecutedProposalsCount, fetchCurrentTokenHolders, fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX, fetchAccountLeaderboardCount } from "./subgraph";
+import type { Auction } from "./types";
+import { getAuctionStatus } from "./utils";
+import { fetchLatestAuction, fetchAuctionById, fetchNounSeedBackground, NOUNS_BG_HEX } from "./subgraph";
 import LinkOut from "./LinkOut";
 
 
@@ -118,106 +105,8 @@ const useAuctionData = () => {
   };
 };
 
-const pageSize = 12;
-
-const useSettlements = (auction?: Auction) => {
-  const [settlements, setSettlements] = useState<Settlement[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
-  const loadSettlements = useCallback(
-    async (pageToLoad: number, reset = false) => {
-      if (!auction) return;
-      setIsLoading(true);
-      try {
-        const currentAuctionId = Number(auction.nounId);
-        const latestSettledId = auction.settled
-          ? currentAuctionId
-          : currentAuctionId - 1;
-        if (latestSettledId < 0) {
-          setSettlements([]);
-          setHasMore(false);
-          return;
-        }
-        const endId = latestSettledId - pageToLoad * pageSize;
-        if (endId < 0) {
-          setHasMore(false);
-          return;
-        }
-        const startId = Math.max(0, endId - (pageSize - 1));
-        if (startId > endId) {
-          setHasMore(false);
-          return;
-        }
-        const data = await nounsPublicClient.readContract({
-          address: NOUNS_AH_ADDRESS,
-          abi: NounsAuctionHouseV3Abi,
-          functionName: "getSettlements",
-          args: [BigInt(startId), BigInt(endId), true],
-        });
-        const normalized = (data as unknown as Settlement[])
-          .map((item) => ({
-            blockTimestamp: Number(item.blockTimestamp),
-            amount: BigInt(item.amount),
-            winner: item.winner,
-            nounId: BigInt(item.nounId),
-            clientId: Number(item.clientId),
-          }))
-          .sort((a, b) => Number(b.nounId - a.nounId));
-        setSettlements((prev) => {
-          if (reset || pageToLoad === 0) {
-            return normalized;
-          }
-          const existingIds = new Set(prev.map((item) => item.nounId.toString()));
-          const merged = [
-            ...prev,
-            ...normalized.filter(
-              (item) => !existingIds.has(item.nounId.toString()),
-            ),
-          ];
-          return merged;
-        });
-        setHasMore(startId > 0);
-        setPage(pageToLoad);
-      } catch (error) {
-        if (error instanceof ContractFunctionExecutionError) {
-          // The contract reverts with "Internal error" when a requested range has
-          // no settlements yet. This is expected during gaps and does not impact
-          // the user experience, so we treat it as "no more data".
-          setHasMore(false);
-          return;
-        }
-        console.error("Failed to load settlements", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [auction],
-  );
-
-  useEffect(() => {
-    if (!auction) return;
-    loadSettlements(0, true);
-  }, [auction, loadSettlements]);
-
-  return {
-    settlements,
-    isLoading,
-    hasMore,
-    loadNext: () => {
-      if (!hasMore || isLoading) return;
-      loadSettlements(page + 1);
-    },
-    refresh: () => loadSettlements(0, true),
-  };
-};
-
-const INNER_PADDING = "space-y-10 md:space-y-14";
-
 const NounsHomeInner: React.FC = () => {
   const { auction, refetch } = useAuctionData();
-  const { settlements, refresh } = useSettlements(auction);
   const { isConnected, address, chainId } = useAccount();
   const { connectAsync, connectors } = useConnect();
   const { switchChainAsync } = useSwitchChain();
@@ -234,8 +123,6 @@ const NounsHomeInner: React.FC = () => {
   const [viewNounId, setViewNounId] = useState<number | null>(null);
   const [displayAuction, setDisplayAuction] = useState<Auction | undefined>();
   const [bgHex, setBgHex] = useState<string | undefined>(undefined);
-  const [floorNative, setFloorNative] = useState<number | undefined>(undefined);
-  const [topOfferNative, setTopOfferNative] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (!auction) return;
@@ -254,6 +141,7 @@ const NounsHomeInner: React.FC = () => {
   useEffect(() => {
     (async () => {
       if (viewNounId == null) return;
+      setBgHex(undefined);
       try {
         const sg = await fetchAuctionById(viewNounId);
         if (sg) {
@@ -275,34 +163,6 @@ const NounsHomeInner: React.FC = () => {
       }
     })();
   }, [viewNounId]);
-
-  // Fetch collection floor / top offer (Reservoir)
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(
-          "https://api.reservoir.tools/collections/v7?id=0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03&includeTopBid=true",
-          { cache: 'no-store' }
-        );
-        if (!res.ok) return;
-        const json = await res.json();
-        const col = json?.collections?.[0];
-        // Read exactly what nouns.com reads from Reservoir
-        const floor = col?.floorAsk?.price?.amount?.decimal ?? col?.floorAsk?.price?.native;
-        const top = col?.topBid?.price?.amount?.decimal ?? col?.topBid?.price?.native;
-        if (!cancelled) {
-          if (Number.isFinite(floor)) setFloorNative(floor);
-          if (Number.isFinite(top)) setTopOfferNative(top);
-        }
-      } catch (_) {
-        // ignore; non-blocking
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Fetch precise bidding parameters when the component mounts
   useEffect(() => {
@@ -345,68 +205,13 @@ const NounsHomeInner: React.FC = () => {
         activeAuction?.bidder !== "0x0000000000000000000000000000000000000000",
     },
   });
-
-  const totalSettled = useMemo(() => {
-    if (!activeAuction) return 0;
-    const base = Number(activeAuction.nounId);
-    return activeAuction.settled ? base + 1 : base;
-  }, [activeAuction]);
-
-  const nounHolderCount = useMemo(() => {
-    if (!settlements?.length) return undefined;
-    const holders = new Set<string>();
-    for (const settlement of settlements) {
-      const winner = settlement.winner?.toLowerCase();
-      if (winner && winner !== '0x0000000000000000000000000000000000000000') {
-        holders.add(winner);
-      }
-    }
-    if (auction?.bidder && auction.bidder !== '0x0000000000000000000000000000000000000000') {
-      holders.add(auction.bidder.toLowerCase());
-    }
-    return holders.size || undefined;
-  }, [settlements, auction]);
-
-  // Fetch precise counts from public subgraph
-  const [executedCount, setExecutedCount] = useState<number | undefined>();
-  const [holdersFromSubgraph, setHoldersFromSubgraph] = useState<number | undefined>();
-  const [holdersFromPonder, setHoldersFromPonder] = useState<number | undefined>();
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [exec, holders, ponder] = await Promise.all([
-          fetchExecutedProposalsCount().catch(() => undefined),
-          fetchCurrentTokenHolders().catch(() => undefined),
-          fetchAccountLeaderboardCount().catch(() => undefined),
-        ]);
-        if (!cancelled) {
-          setExecutedCount(exec);
-          setHoldersFromSubgraph(holders);
-          setHoldersFromPonder(ponder);
-        }
-      } catch (_) {
-        // ignore
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const treasuryRaisedLabel = useMemo(() => {
-    if (!settlements?.length) return undefined;
-    const totalEth = settlements.reduce((acc, item) => acc + item.amount, 0n);
-    return formatEth(totalEth);
-  }, [settlements]);
-  const ethUsd = useEthUsdPrice();
-  const treasuryRaisedUsdLabel = useMemo(() => {
-    if (!settlements?.length || !ethUsd) return undefined;
-    const totalEth = settlements.reduce((acc, item) => acc + item.amount, 0n);
-    const asEth = Number(formatEth(totalEth).split(' ')[0].replace(/,/g, ''));
-    if (!Number.isFinite(asEth)) return undefined;
-    return formatUsd(asEth * ethUsd);
-  }, [settlements, ethUsd]);
+  const { data: bidderEnsAvatar } = useEnsAvatar({
+    name: bidderEns ?? undefined,
+    chainId: mainnet.id,
+    query: {
+      enabled: Boolean(bidderEns),
+    },
+  });
 
   const status = getAuctionStatus(activeAuction);
   const dateLabel = useMemo(() => {
@@ -512,7 +317,6 @@ const NounsHomeInner: React.FC = () => {
           setActionMessage("Bid confirmed!");
           setBidModalOpen(false);
           await refetch();
-          await refresh();
         } else {
           setActionError("Bid transaction failed");
         }
@@ -527,17 +331,16 @@ const NounsHomeInner: React.FC = () => {
         setTimeout(() => setActionMessage(null), 6_000);
       }
     },
-    [
-      auction,
-      isConnected,
-      chainId,
-      address,
-      refetch,
-      refresh,
-      writeContractAsync,
-      switchChainAsync,
-    ],
-  );
+      [
+        auction,
+        isConnected,
+        chainId,
+        address,
+        refetch,
+        writeContractAsync,
+        switchChainAsync,
+      ],
+    );
 
   const attemptSettle = useCallback(
     async (fnName: "settleAuction" | "settleCurrentAndCreateNewAuction") => {
@@ -597,7 +400,6 @@ const NounsHomeInner: React.FC = () => {
       if (success) {
         setActionMessage("Auction settled!");
         await refetch();
-        await refresh();
       } else {
         throw lastError ?? new Error("Settle reverted");
       }
@@ -611,25 +413,19 @@ const NounsHomeInner: React.FC = () => {
       setIsSettling(false);
       setTimeout(() => setActionMessage(null), 6_000);
     }
-  }, [auction, attemptSettle, chainId, isConnected, refetch, refresh]);
+  }, [auction, attemptSettle, chainId, isConnected, refetch]);
 
-  const rootRef = React.useRef<HTMLDivElement>(null);
-  const heroRef = React.useRef<HTMLDivElement>(null);
-  const scrollToAuction = React.useCallback(() => {
-    const root = rootRef.current;
-    const hero = heroRef.current;
-    if (!root || !hero) return;
-    const top = hero.offsetTop - 8;
-    root.scrollTo({ top, behavior: 'smooth' });
-  }, []);
+  const containerBg = bgHex ?? "#f0f0ff";
 
   return (
-    <div ref={rootRef} className="flex h-full flex-col gap-6 overflow-y-auto p-4 md:p-6">
-
-      <div ref={heroRef}>
+    <div
+      className="flex h-full flex-col gap-6 overflow-y-auto p-4 md:p-6"
+      style={{ backgroundColor: containerBg }}
+    >
       <AuctionHero
         auction={activeAuction}
         ensName={bidderEns}
+        ensAvatar={bidderEnsAvatar}
         countdownMs={countdown}
         onOpenBid={handleOpenBid}
         onSettle={handleSettle}
@@ -644,33 +440,8 @@ const NounsHomeInner: React.FC = () => {
         backgroundHex={bgHex}
         minRequiredWei={minRequiredWei}
         onPlaceBid={canBid ? handleBidSubmit : undefined}
-        floorPriceNative={floorNative}
-        topOfferNative={topOfferNative}
         isCurrentView={!canGoNext}
       />
-      </div>
-      <div className={INNER_PADDING}>
-        <ThisIsNounsSection />
-        <NounsFundsIdeasSection />
-        <GovernedByYouSection nounHolderCount={holdersFromPonder ?? holdersFromSubgraph ?? nounHolderCount} />
-        <TheseAreNounsStrip />
-        <GetANounSection
-          currentAuction={activeAuction}
-          countdownMs={countdown}
-          onScrollToAuction={scrollToAuction}
-          auctionBgHex={bgHex}
-        />
-        <AlreadyOwnSection />
-        <StatsRow
-          totalSettled={totalSettled}
-          nounHolderCount={holdersFromPonder ?? holdersFromSubgraph ?? nounHolderCount}
-          ideasFundedLabel={(executedCount ?? undefined)?.toLocaleString() || "Hundreds+"}
-          treasuryRaisedLabel={treasuryRaisedUsdLabel ?? treasuryRaisedLabel}
-        />
-        <JourneySection />
-        <LearnSection />
-        <FaqAccordion settlements={settlements} />
-      </div>
 
       {bidModalOpen && auction && (
         <BidModal
@@ -689,7 +460,7 @@ const NounsHomeInner: React.FC = () => {
       )}
 
       {(actionMessage || actionError || txHash) && (
-        <div className="rounded-2xl border border-black/10 bg-white p-4 text-sm shadow-sm">
+        <div className="rounded-2xl border border-black/10 bg-white/90 p-4 text-sm shadow-sm">
           {actionMessage && <p className="font-medium">{actionMessage}</p>}
           {actionError && <p className="text-red-600">{actionError}</p>}
           {txHash && (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseEther } from 'viem';
 import NounImage from '../NounImage';
 import { formatCountdown, formatEth, getAuctionStatus } from '../utils';
@@ -10,6 +10,7 @@ import type { Auction } from '../types';
 interface AuctionHeroProps {
   auction?: Auction;
   ensName?: string | null;
+  ensAvatar?: string | null;
   countdownMs: number;
   onOpenBid: () => void;
   onSettle: () => void;
@@ -24,8 +25,6 @@ interface AuctionHeroProps {
   backgroundHex?: string;
   minRequiredWei?: bigint;
   onPlaceBid?: (valueWei: bigint) => void;
-  floorPriceNative?: number | undefined;
-  topOfferNative?: number | undefined;
   isCurrentView?: boolean;
 }
 
@@ -34,6 +33,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const AuctionHero: React.FC<AuctionHeroProps> = ({
   auction,
   ensName,
+  ensAvatar,
   countdownMs,
   onOpenBid,
   onSettle,
@@ -48,26 +48,28 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   backgroundHex,
   minRequiredWei,
   onPlaceBid,
-  floorPriceNative,
-  topOfferNative,
   isCurrentView = true,
 }) => {
   const status = getAuctionStatus(auction);
   const nounId = auction ? Number(auction.nounId) : undefined;
-  const bidderLabel =
-    auction && auction.bidder !== ZERO_ADDRESS
-      ? ensName || `${auction.bidder.slice(0, 6)}...${auction.bidder.slice(-4)}`
-      : 'No bids yet';
+  const hasBidder = Boolean(auction && auction.bidder !== ZERO_ADDRESS);
+  const bidderAddress = auction?.bidder;
+  const bidderLabel = hasBidder
+    ? ensName || `${auction!.bidder.slice(0, 6)}...${auction!.bidder.slice(-4)}`
+    : 'No bids yet';
   const countdownLabel = formatCountdown(countdownMs);
   const etherLabel = auction ? formatEth(auction.amount, 3) : 'Loading';
   const isEnded = status === 'ended';
   const buttonDisabled = isEnded ? !auction || auction.settled || isSettling : status === 'pending';
+  const requiresSettlement = isEnded && auction && !auction.settled;
+  const isActive = status === 'active';
+  const isPastView = !isCurrentView;
 
   const placeholderEth = useMemo(() => {
-    if (!minRequiredWei) return '0.10';
+    if (!minRequiredWei) return '0.10 ETH min';
     const eth = Number(minRequiredWei) / 1e18;
     const roundedUp = Math.ceil(eth * 100) / 100;
-    return roundedUp.toFixed(2);
+    return `${roundedUp.toFixed(2)} ETH min`;
   }, [minRequiredWei]);
 
   const [bidInput, setBidInput] = useState('');
@@ -81,183 +83,170 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
     }
   };
 
+  const renderBidder = () => {
+    if (!hasBidder || !bidderAddress) {
+      return <span className="text-sm text-[#5a5a70]">No bids yet</span>;
+    }
+
+    return (
+      <a
+        href={`https://etherscan.io/address/${bidderAddress}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 rounded-full bg-black/5 px-3 py-1 text-sm font-semibold text-[#1f1f2a] transition hover:bg-black/10"
+      >
+        {ensAvatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={ensAvatar} alt={bidderLabel} className="h-6 w-6 rounded-full" />
+        ) : (
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/10 text-[11px] font-bold text-[#1f1f2a]">
+            {bidderLabel.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+        <span className="underline decoration-black/30 underline-offset-[3px]">{bidderLabel}</span>
+      </a>
+    );
+  };
+
+  const DetailCard = ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <div className="flex flex-col gap-1 rounded-2xl border border-black/10 bg-white/70 p-3 text-sm font-medium text-[#5a5a70] shadow-sm">
+      <span>{label}</span>
+      <span className="text-xl font-semibold text-[#1f1f2a]">{value}</span>
+    </div>
+  );
+
+  const nounHeading = nounId !== undefined ? `Noun ${nounId}` : 'Loading auction...';
+  const bidLabel = isPastView || isEnded ? 'Winning bid' : 'Current bid';
+  const timeValue = status === 'pending' ? countdownLabel : isActive ? countdownLabel : 'Ended';
+
   return (
     <section
-      className="rounded-3xl p-6 text-[#17171d] shadow-sm md:p-10 md:min-h-[420px] overflow-visible md:overflow-hidden"
-      style={{ backgroundColor: backgroundHex ?? '#f0f0ff' }}
+      className="rounded-3xl border bg-white/75 p-6 text-[#17171d] shadow-sm backdrop-blur md:min-h-[420px] md:p-10"
+      style={{ borderColor: backgroundHex ?? '#dcdce5' }}
     >
-      <div className="mx-auto grid h-full max-w-[1200px] items-center gap-6 md:grid-cols-[minmax(0,520px)_minmax(0,560px)] md:gap-12">
-        <div className="flex h-full items-end justify-center md:justify-start md:ml-8">
-          {nounId !== undefined ? (
-            <NounImage
-              nounId={auction!.nounId}
-              className="h-[200px] w-auto max-w-full object-contain sm:h-[260px] md:h-[400px] md:translate-y-10"
-              priority
-            />
-          ) : (
-            <div className="flex aspect-square w-full max-w-[320px] items-center justify-center rounded-2xl border border-dashed border-black/10 bg-white/50">
-              <span className="text-sm text-muted-foreground">Fetching Noun...</span>
-            </div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-semibold text-[#4a4a59]">{dateLabel ?? 'Auction date pending'}</span>
+        <div className="flex items-center gap-2">
+          {onPrev && (
+            <button
+              type="button"
+              onClick={onPrev}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/15 bg-white text-black shadow-sm transition hover:-translate-y-[1px]"
+              aria-label="Previous auction"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )}
+          {onNext && (
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={!canGoNext}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/15 bg-white text-black shadow-sm transition hover:-translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Next auction"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           )}
         </div>
+      </div>
 
-        <div className="-mt-6 flex flex-col justify-center gap-4 pl-4 pr-4 md:mt-0 md:pl-10 md:pr-6 self-center bg-white border border-black/10 rounded-2xl p-4 md:bg-transparent md:border-0 md:rounded-none md:p-0">
-          <div className="flex flex-col gap-4">
-            {/* Mobile top bar: date left, arrows right */}
-            <div className="flex items-center justify-between text-sm text-[#5a5a70] md:hidden">
-              {dateLabel && <span className="font-semibold">{dateLabel}</span>}
-              <div className="flex items-center gap-2">
-                {onPrev && (
-                  <button type="button" onClick={onPrev} className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black" aria-label="Previous auction"><ChevronLeft className="h-4 w-4" /></button>
-                )}
-                {onNext && (
-                  <button type="button" onClick={onNext} disabled={!canGoNext} className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black disabled:opacity-40" aria-label="Next auction"><ChevronRight className="h-4 w-4" /></button>
-                )}
+      <div className="mt-6 grid gap-8 md:grid-cols-[minmax(0,440px)_1fr] md:items-start">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white/60 p-4 shadow-inner">
+            {nounId !== undefined ? (
+              <NounImage
+                nounId={auction!.nounId}
+                className="h-[260px] w-auto max-w-full object-contain sm:h-[320px] md:h-[400px]"
+                priority
+              />
+            ) : (
+              <div className="flex aspect-square w-full max-w-[320px] items-center justify-center rounded-2xl border border-dashed border-black/10 bg-white/70">
+                <span className="text-sm text-muted-foreground">Fetching Noun...</span>
               </div>
-            </div>
-            {/* Desktop top bar (arrows then date) */}
-            <div className="hidden items-center gap-2 text-sm text-[#5a5a70] md:flex">
-              {onPrev && (
-                <button
-                  type="button"
-                  onClick={onPrev}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black"
-                  aria-label="Previous auction"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-              )}
-              {onNext && (
-                <button
-                  type="button"
-                  onClick={onNext}
-                  disabled={!canGoNext}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-black/15 bg-white text-black disabled:opacity-40"
-                  aria-label="Next auction"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              )}
-              {dateLabel && <span className="ml-1 font-semibold">{dateLabel}</span>}
-            </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#4a4a59]">
+            <span className="rounded-full bg-black/5 px-3 py-1">{nounHeading}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <div className="flex items-start justify-between gap-3">
             <h1
               className={`text-3xl font-semibold md:text-5xl ${headingFontClassName ?? ''}`}
               style={headingFontFamilyCss ? { fontFamily: headingFontFamilyCss } : undefined}
             >
-              {nounId !== undefined ? `Noun ${nounId}` : 'Loading'}
+              {nounHeading}
             </h1>
-            <div className="space-y-3">
-              {/* Mobile compact rows */}
-              <div className="space-y-2 md:hidden">
-                <div className="flex w-full items-baseline justify-between">
-                  <span className="text-sm text-[#5a5a70]">{isCurrentView ? 'Current bid' : 'Winning bid'}</span>
-                  <span className="text-xl font-semibold">{etherLabel}</span>
-                </div>
-                <div className="flex w-full items-baseline justify-between">
-                  <span className="text-sm text-[#5a5a70]">{isCurrentView ? 'Time left' : 'Won by'}</span>
-                  <span className="text-xl font-semibold">{isCurrentView ? (status === 'ended' ? '00:00' : countdownLabel) : (auction && auction.bidder !== '0x0000000000000000000000000000000000000000' ? (<a href={`https://etherscan.io/address/${auction.bidder}`} target="_blank" rel="noopener noreferrer" className="underline">{bidderLabel}</a>) : '-')}</span>
-                </div>
-              </div>
-              {/* Desktop stats */}
-              <div className="hidden flex-wrap gap-10 md:flex">
-                <div>
-                  <div className="text-sm font-medium text-[#5a5a70]">{isCurrentView ? 'Current bid' : 'Winning bid'}</div>
-                  <div className="text-3xl font-medium md:text-4xl">{etherLabel}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-[#5a5a70]">{isCurrentView ? 'Time left' : 'Won by'}</div>
-                  <div className="text-3xl font-medium md:text-4xl">
-                    {isCurrentView
-                      ? (status === 'ended' ? '00:00' : countdownLabel)
-                      : (
-                        auction && auction.bidder !== '0x0000000000000000000000000000000000000000' ? (
-                          <a href={`https://etherscan.io/address/${auction.bidder}`} target="_blank" rel="noopener noreferrer" className="underline">
-                            {bidderLabel}
-                          </a>
-                        ) : '-'
-                      )}
-                  </div>
-                </div>
-              </div>
-              {isCurrentView && (
-              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#6b6b80] md:text-sm">
-                <span className="mr-1 hidden h-6 w-6 items-center justify-center rounded-full bg-[#d9dbe8] text-[#5a5a70] md:inline-flex"><Info className="h-4 w-4" /></span>
-                <span className="flex items-baseline gap-1 whitespace-nowrap">
-                  <a
-                    href="https://www.nouns.com/explore"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    Floor price:
-                  </a>
-                  <span>{typeof floorPriceNative === 'number' ? `${floorPriceNative.toFixed(2)} ETH` : '—'}</span>
-                </span>
-                <span className="flex items-baseline gap-1 whitespace-nowrap">
-                  <a
-                    href="https://www.nouns.com/explore"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    Top offer:
-                  </a>
-                  <span>{typeof topOfferNative === 'number' ? `${topOfferNative.toFixed(2)} ETH` : '—'}</span>
-                </span>
-              </div>
-              )}
-            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                isActive
+                  ? 'bg-green-100 text-green-800'
+                  : requiresSettlement
+                  ? 'bg-amber-100 text-amber-800'
+                  : 'bg-black/5 text-[#1f1f2a]'
+              }`}
+            >
+              {requiresSettlement ? 'Needs settlement' : isActive ? 'Active' : 'Ended'}
+            </span>
           </div>
 
-          <div className="flex flex-col gap-2 md:gap-2 md:mt-1">
-            {isCurrentView && status === 'ended' && auction && !auction.settled ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <DetailCard label="Date of auction" value={dateLabel ?? '—'} />
+            <DetailCard label="Auction ID" value={nounId !== undefined ? `#${nounId}` : '—'} />
+            <DetailCard label={bidLabel} value={etherLabel} />
+            <DetailCard label="Time left" value={timeValue} />
+          </div>
+
+          {(isPastView || isEnded || hasBidder) && (
+            <div className="rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm">
+              <div className="text-sm font-medium text-[#5a5a70]">
+                {isPastView || isEnded ? 'Won by' : 'Highest bidder'}
+              </div>
+              <div className="mt-2">{renderBidder()}</div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {requiresSettlement ? (
               <button
                 type="button"
                 onClick={onSettle}
                 disabled={buttonDisabled}
-                className="inline-flex h-12 items-center justify-center rounded-[12px] bg-black px-6 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
+                className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-black px-6 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
               >
                 {isSettling ? 'Settling...' : 'Settle auction'}
               </button>
-            ) : isCurrentView ? (
+            ) : isCurrentView && isActive ? (
               <>
-              <div className="flex w-full max-w-md items-center gap-2">
-                <div className="relative flex-1">
-                  <input
-                    className="w-full rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 pr-16 text-base outline-none focus:border-black placeholder:font-semibold"
-                    placeholder={placeholderEth}
-                    inputMode="decimal"
-                    value={bidInput}
-                    onChange={(e) => setBidInput(e.target.value)}
-                    disabled={isEnded}
-                    aria-label="Bid amount in ETH"
-                  />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-[8px] border border-black/10 bg-white px-2 py-1 text-xs font-semibold text-[#5a5a70]">ETH</span>
-                </div>
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="relative flex-1">
+                    <input
+                      className="w-full rounded-[12px] border-2 border-black/10 bg-white px-4 py-3 pr-16 text-base font-semibold outline-none focus:border-black placeholder:font-semibold"
+                      placeholder={placeholderEth}
+                      inputMode="decimal"
+                      value={bidInput}
+                      onChange={(e) => setBidInput(e.target.value)}
+                      disabled={isEnded}
+                      aria-label="Bid amount in ETH"
+                    />
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-[8px] border border-black/10 bg-white px-2 py-1 text-xs font-semibold text-[#5a5a70]">
+                      ETH
+                    </span>
+                  </div>
                   <button
                     type="button"
                     onClick={handleBidClick}
                     disabled={isEnded || buttonDisabled}
                     className="inline-flex h-12 items-center justify-center rounded-[12px] bg-black px-6 text-base font-semibold text-white transition hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
                   >
-                    Place Bid
+                    Place bid
                   </button>
                 </div>
-                <div className="text-sm font-medium text-[#5a5a70]">
-                  Highest bidder{' '}
-                  {auction && auction.bidder !== ZERO_ADDRESS ? (
-                    <a
-                      href={`https://etherscan.io/address/${auction.bidder}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                    >
-                      {bidderLabel}
-                    </a>
-                  ) : (
-                    bidderLabel
-                  )}
-                </div>
+                {!isConnected && (
+                  <p className="text-sm text-[#5a5a70]">Connect your wallet to place a bid.</p>
+                )}
               </>
             ) : null}
           </div>
