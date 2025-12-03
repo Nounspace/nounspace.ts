@@ -837,7 +837,9 @@ export const NounishAuctions: React.FC<FidgetArgs<NounishAuctionsSettings>> = ({
       : "Settled auction";
 
   const bidderHasValue = Boolean(
-    displayAddressRaw && displayAddressRaw !== ZERO_ADDRESS && (currentAuction?.highestBidAmount || currentAuction?.winningBidAmount),
+    displayAddressRaw &&
+    displayAddressRaw !== ZERO_ADDRESS &&
+    (currentAuction?.highestBidAmount || currentAuction?.winningBidAmount),
   );
 
   return (
