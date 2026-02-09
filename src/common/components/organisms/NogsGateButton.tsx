@@ -12,6 +12,7 @@ import { isUndefined } from "lodash";
 import { mapNetworkToAlchemy } from "@/common/lib/utils/tokenGates";
 import { getNftTokens } from "@/common/lib/utils/tokenGates";
 import { useTokenGate } from "@/common/lib/hooks/useTokenGate";
+import { useSystemConfigContext } from "@/common/providers/SystemConfigProvider";
 import { type SystemConfig } from "@/config";
 
 type NogsGateButtonProps = ButtonProps & {
@@ -49,12 +50,14 @@ const NogsGateButton = ({ systemConfig, ...props }: NogsGateButtonProps) => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const { user } = usePrivy();
+  const contextConfig = useSystemConfigContext();
+  const effectiveConfig = systemConfig ?? contextConfig ?? undefined;
   
   // Use token gate hook for ERC20 token gating
-  const { erc20Token, gatingSatisfied, walletAddress } = useTokenGate(systemConfig);
+  const { erc20Token, gatingSatisfied, walletAddress } = useTokenGate(effectiveConfig);
   
   // Extract NFT tokens from config - memoize to prevent infinite re-renders
-  const nftTokens = useMemo(() => getNftTokens(systemConfig), [systemConfig]);
+  const nftTokens = useMemo(() => getNftTokens(effectiveConfig), [effectiveConfig]);
 
   // Optional debug logs
   useEffect(() => {

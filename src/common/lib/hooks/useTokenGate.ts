@@ -4,6 +4,7 @@ import { zeroAddress, type Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { getPrimaryErc20Token, getChainForNetwork, formatTokenBalance } from "@/common/lib/utils/tokenGates";
 import { MIN_SPACE_TOKENS_FOR_UNLOCK } from "@/common/constants/gates";
+import { useSystemConfigContext } from "@/common/providers/SystemConfigProvider";
 import type { SystemConfig } from "@/config";
 
 /**
@@ -15,7 +16,9 @@ import type { SystemConfig } from "@/config";
  */
 export function useTokenGate(systemConfig?: SystemConfig) {
   const { user } = usePrivy();
-  const erc20Token = getPrimaryErc20Token(systemConfig);
+  const contextConfig = useSystemConfigContext();
+  const effectiveConfig = systemConfig ?? contextConfig ?? undefined;
+  const erc20Token = getPrimaryErc20Token(effectiveConfig);
   const walletAddress = user?.wallet?.address as Address | undefined;
   
   const { data: balanceData, isLoading, isFetching } = useBalance({
@@ -44,4 +47,3 @@ export function useTokenGate(systemConfig?: SystemConfig) {
     hasNogs,
   };
 }
-

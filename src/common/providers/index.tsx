@@ -17,6 +17,8 @@ import MobilePreviewProvider from "./MobilePreviewProvider";
 import { SharedDataProvider } from "./SharedDataProvider";
 import { MiniKitContextProvider } from "./MiniKitProvider";
 import { GlobalErrorHandler } from "./GlobalErrorHandler";
+import { SystemConfigProvider } from "./SystemConfigProvider";
+import type { SystemConfig } from "@/config";
 
 const RarelyUpdatedProviders = React.memo(
   function RarelyUpdatedProviders({
@@ -38,9 +40,15 @@ const RarelyUpdatedProviders = React.memo(
   },
 );
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+  children,
+  systemConfig,
+}: {
+  children: React.ReactNode;
+  systemConfig: SystemConfig;
+}) {
   return (
-    <>
+    <SystemConfigProvider systemConfig={systemConfig}>
       <GlobalErrorHandler />
       <VersionCheckProivder>
         <Privy>
@@ -65,6 +73,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           </Query>
         </Privy>
       </VersionCheckProivder>
-    </>
+    </SystemConfigProvider>
   );
 }

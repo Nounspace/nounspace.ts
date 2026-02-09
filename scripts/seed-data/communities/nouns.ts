@@ -106,10 +106,10 @@ export function createNounsCommunityConfig(
         ],
         nftTokens: [
           {
-            address: '0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03',
-            symbol: 'Nouns',
+            address: '0xD094D5D45c06c1581f5f429462eE7cCe72215616',
+            symbol: 'nOGs',
             type: 'erc721',
-            network: 'eth',
+            network: 'base',
           },
         ],
       },
@@ -188,4 +188,3 @@ export function createNounsCommunityConfig(
     },
   };
 }
-
